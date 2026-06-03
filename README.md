@@ -62,7 +62,32 @@ Do LLMs internally represent CI violations without verbalizing them (unverbalize
 - Tier 1 likely highest eval awareness (simple, textbook-looking)
 - Tier 4 likely lowest (complex multi-party, doesn't pattern-match to benchmark)
 
+**Methodology**
+
+*Measuring CI-Relevant Themes*
+- Embed each NLA description using `all-MiniLM-L6-v2`
+- Embed reference CI concept phrases ("privacy violation", "inappropriate information sharing", "sensitive context", etc.)
+- Include adversarial non-CI privacy phrases ("data encryption", "password security") as negative controls — ensures the score discriminates CI specifically, not just privacy-adjacent language broadly
+- Compute cosine similarity → average into a single CI-relevance score per scenario
+- Compare score distributions: violating vs appropriate scenarios
+
+*Measuring Eval Awareness*
+- Define coding guide before labeling (e.g., what in an NLA description counts as eval aware — explicit mentions of "benchmark/test/evaluation", hedging language, etc.)
+- Manually label 20–30 scenarios; re-label same set a week later to check self-consistency
+- Use labels to build a simple classifier or keyword list for remaining scenarios
+- No immediate automation
+
+*Layer 20 Justification*
+- Layer 20 is ~71% through Qwen2.5-7B (28 layers total)
+- Hypothesis: CI violation as a semantic concept is encoded in middle-to-late layers, not output layers — but this is a hypothesis, not established
+- Cheap multi-layer comparison: extract activations at layers 10, 20, 28 and feed into same NLA checkpoint (layers 10/28 are out-of-distribution for the NLA — treat as exploratory, not a test set)
+
+*Corroborating Method: Linear Probe*
+- Train logistic regression on raw layer 20 activation vectors to predict CI violation (yes/no)
+- If NLA descriptions AND linear probe both distinguish violating from appropriate scenarios, that's converging evidence
+- Important distinction: probe shows CI violation is *linearly decodable* from activations, not that the model *uses* that representation in its output — two different claims
+
 **Limitations**
-- Layer 20 only, no choice given compute
+- Layer 20 only — the publicly released NLA checkpoint; not a design choice
 - Can't fully solve unobservability problem
 - Mitigation: show signal is systematic and predictable across scenario types
