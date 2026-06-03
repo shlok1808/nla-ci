@@ -2,9 +2,9 @@
 can LLMs internally represent contextual integrity (CI)
 violations using Natural Language Autoencoders (NLAs).
 
-## Background
+## background
 
-### Contextual Integrity (CI)
+### contextual integrity (CI)
 Contextual integrity, developed by Helen Nissenbaum, reframes privacy around appropriate information flow rather than data secrecy. Privacy is violated not when information is shared, but when it flows in ways that breach contextual norms. CI operates through five components: sender, recipient, subject, information type, and transmission principle. The same detail can be appropriate in one setting and a violation in another.
 
 Niloofar Mireshghallah's work ([ConfAIde](https://github.com/skywalker023/confaide), [CIMemories](https://github.com/facebookresearch/CIMemories)) shows that LLMs frequently fail to respect these norms — acknowledging sensitivity yet sharing secrets anyway, or incorrectly assuming recipients already know protected details. Her blog post [*From Black and White to Gray: Redefining Privacy for Language*](https://mireshghallah.github.io/blog/contextual_integrity.html) is a good primer.
