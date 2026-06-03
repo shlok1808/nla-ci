@@ -95,9 +95,9 @@ All three outcomes are publishable:
 |---------|-------------|-------------|
 | No CI signal | No internal representation of CI violations | CI failures are a knowledge/training problem — fix requires retraining |
 | Signal exists, model fails | Represents the violation but doesn't act on it | Unverbalized cognition — model "knows" but doesn't "do" |
-| Signal exists, model passes | Internal representation predicts correct output | CI reasoning is happening internally and surfacing correctly |
+| Signal exists, model passes | Internal representation predicts correct output | CI reasoning is happening internally and surfacing correctly — but correlation only; signal and correct output may both be downstream of general semantic understanding, not one causing the other |
 
-> We are not claiming the model causally uses these representations. We are asking whether the information is linearly decodable from activations. Causal intervention (activation patching) is future work.
+> We are not claiming the model causally uses these representations. We are asking whether the information is linearly decodable from activations. Even Outcome 3 does not imply causal use — only correlation. Causal intervention (activation patching) is future work.
 
 **Limitations**
 - Layer 20 only — the publicly released NLA checkpoint; not a design choice
