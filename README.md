@@ -103,3 +103,8 @@ All three outcomes are publishable:
 - Layer 20 only — the publicly released NLA checkpoint; not a design choice
 - Can't fully solve unobservability problem
 - Mitigation: show signal is systematic and predictable across scenario types
+
+## Licenses
+- ConfAIde benchmark: MIT
+- Qwen2.5-7B-Instruct: Apache 2.0
+- NLA checkpoints ([kitft/nla-qwen2.5-7b-L20-av/ar](https://huggingface.co/kitft)): Apache 2.0
