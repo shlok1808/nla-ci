@@ -30,6 +30,8 @@ Do LLMs internally represent CI violations without verbalizing them (unverbalize
 - Feed to NLA AV → get NL descriptions
 - Analyze descriptions for CI-relevant themes
 
+> Note: ConfAIde has not been previously evaluated on Qwen2.5-7B — running the benchmark on this model is itself a contribution.
+
 **Key Design Choices**
 - Don't trust individual descriptions, trust patterns across many
 - Analysis is statistical: do violating scenarios produce privacy-themed descriptions significantly more than appropriate scenarios?
