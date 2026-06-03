@@ -87,6 +87,18 @@ Do LLMs internally represent CI violations without verbalizing them (unverbalize
 - If NLA descriptions AND linear probe both distinguish violating from appropriate scenarios, that's converging evidence
 - Important distinction: probe shows CI violation is *linearly decodable* from activations, not that the model *uses* that representation in its output — two different claims
 
+**Expected Outcomes**
+
+All three outcomes are publishable:
+
+| Outcome | Description | Implication |
+|---------|-------------|-------------|
+| No CI signal | No internal representation of CI violations | CI failures are a knowledge/training problem — fix requires retraining |
+| Signal exists, model fails | Represents the violation but doesn't act on it | Unverbalized cognition — model "knows" but doesn't "do" |
+| Signal exists, model passes | Internal representation predicts correct output | CI reasoning is happening internally and surfacing correctly |
+
+> We are not claiming the model causally uses these representations. We are asking whether the information is linearly decodable from activations. Causal intervention (activation patching) is future work.
+
 **Limitations**
 - Layer 20 only — the publicly released NLA checkpoint; not a design choice
 - Can't fully solve unobservability problem
