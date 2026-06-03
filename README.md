@@ -18,3 +18,39 @@ Introduced in [*Natural Language Autoencoders Produce Unsupervised Explanations 
 Do models internally represent CI violations without verbalizing them in
 outputs (unverbalized cognition), or do they simply lack the representation
 entirely?
+
+## Research Design
+
+**Core Question**
+Do LLMs internally represent CI violations without verbalizing them (unverbalized cognition), or do they simply lack the representation entirely?
+
+**Setup**
+- Run ConfAIde scenarios through Qwen2.5-7B
+- Extract layer 20 residual stream activations at last token position
+- Feed to NLA AV → get NL descriptions
+- Analyze descriptions for CI-relevant themes
+
+**Key Design Choices**
+- Don't trust individual descriptions, trust patterns across many
+- Analysis is statistical: do violating scenarios produce privacy-themed descriptions significantly more than appropriate scenarios?
+
+**Main Matrix (2x2)**
+- Passed/Failed ConfAIde × Eval Aware/Not Aware
+- Cleanest signal: passed + not eval aware = genuine CI understanding
+- Scariest: failed + eval aware = can't even perform under pressure
+- Most interesting: passed + eval aware = deceptive alignment concern
+
+**Extended Analysis (2x2x4)**
+- Add ConfAIde tier dimension (1–4)
+- Hypothesis: eval awareness decreases with tier complexity, CI signals stay consistent
+- If true: model's internal CI representations are independent of eval detection
+
+**Secondary Finding**
+- Eval awareness itself across tiers is a publishable observation
+- Tier 1 likely highest eval awareness (simple, textbook-looking)
+- Tier 4 likely lowest (complex multi-party, doesn't pattern-match to benchmark)
+
+**Limitations**
+- Layer 20 only, no choice given compute
+- Can't fully solve unobservability problem
+- Mitigation: show signal is systematic and predictable across scenario types
