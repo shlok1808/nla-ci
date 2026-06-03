@@ -22,6 +22,17 @@
 - Tier 1 = highest expected eval awareness (simple, textbook-looking); Tier 4 = lowest (complex multi-party)
 
 ## Next steps
-- Run `notebooks/setup.ipynb` and verify data loads correctly
-- Pull NLA code from transformer-circuits release
-- Start manual labeling of eval awareness on 20–30 scenarios
+
+**Before writing any more code:**
+- Run `notebooks/setup.ipynb` and verify all tiers load correctly
+- Read the ConfAIde paper/blog to understand the tier structure and what "passing" means before labeling anything
+- Pull NLA weights from HuggingFace: `kitft/nla-qwen2.5-7b-L20-av` and `kitft/nla-qwen2.5-7b-L20-ar` (separate from Qwen — don't forget this)
+
+**Notebook sequence:**
+- `notebook_02_benchmark.ipynb` — run Qwen2.5-7B on all ConfAIde scenarios, collect pass/fail labels per scenario
+- `notebook_03_activations.ipynb` — extract layer 20 residual stream activations at last token position for each scenario
+- `notebook_04_nla.ipynb` — run NLA activation verbalizer on those activations, collect NL descriptions
+- Manual step: read 20–30 NLA output descriptions, define eval awareness coding guide before labeling anything
+- `notebook_05_scoring.ipynb` — embed NLA descriptions with `all-MiniLM-L6-v2`, compute CI-relevance scores via cosine similarity to reference phrases
+- `notebook_06_probe.ipynb` — train linear probe (logistic regression) on raw layer 20 activations to predict CI violation as corroborating method
+- `notebook_07_analysis.ipynb` — build the 2x2 matrix, visualize distributions, run statistical tests
