@@ -1,5 +1,5 @@
 # nla-ci
-Investigating whether LLMs internally represent contextual integrity (CI)
+can LLMs internally represent contextual integrity (CI)
 violations using Natural Language Autoencoders (NLAs).
 
 ## research question
