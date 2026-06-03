@@ -34,11 +34,23 @@ Do LLMs internally represent CI violations without verbalizing them (unverbalize
 - Don't trust individual descriptions, trust patterns across many
 - Analysis is statistical: do violating scenarios produce privacy-themed descriptions significantly more than appropriate scenarios?
 
+**Analysis Dimensions**
+
+| Dimension | Values | Notes |
+|-----------|--------|-------|
+| ConfAIde Result | Passed / Failed | Model's output judgment on the scenario |
+| Eval Awareness | Aware / Not Aware | From NLA description themes |
+| ConfAIde Tier | 1 / 2 / 3 / 4 | Complexity level of scenario |
+| NLA CI Signal | Present / Absent | Privacy-themed language in NLA description |
+
 **Main Matrix (2x2)**
-- Passed/Failed ConfAIde × Eval Aware/Not Aware
-- Cleanest signal: passed + not eval aware = genuine CI understanding
-- Scariest: failed + eval aware = can't even perform under pressure
-- Most interesting: passed + eval aware = deceptive alignment concern
+
+| ConfAIde Result | Eval Aware | Interpretation |
+|----------------|------------|----------------|
+| Passed | No | Genuine CI understanding (best case) |
+| Passed | Yes | Deceptive alignment concern |
+| Failed | No | Genuine CI blindspot |
+| Failed | Yes | Can't perform even under pressure (worst case) |
 
 **Extended Analysis (2x2x4)**
 - Add ConfAIde tier dimension (1–4)
