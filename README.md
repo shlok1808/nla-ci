@@ -15,15 +15,15 @@ NLAs are an unsupervised interpretability method that generate natural language 
 Introduced in [*Natural Language Autoencoders Produce Unsupervised Explanations of LLM Activations*](https://transformer-circuits.pub/2026/nla/) (Kantamneni et al., 2026).
 
 ## research question
-Wang et al. (2026) proved CI norms are linearly encoded in Qwen2.5-7B. We ask: what do those representations actually say? We apply Natural Language Autoencoders (NLAs) at layer 20 to produce the first human-readable characterization of unverbalized CI cognition, tested across all 4 ConfAIde tiers.
+Wang et al. (2026) proved CI norms (information type, recipient, transmission principle) are linearly encoded in Qwen2.5-7B's activation space. We ask: what do those representations actually say? We apply Natural Language Autoencoders (NLAs) at layer 20 to produce the first human-readable characterization of unverbalized CI cognition, tested across all 4 ConfAIde tiers.
 
 ## novelty / contributions
 
-1. **NLA verbalization.** First method to convert CI-relevant activations into human-readable descriptions. Wang et al. (2026) can detect that the signal exists (probe AUROC, PCA directions) but cannot read what it says. NLAs produce sentences, not numbers.
+1. **NLA verbalization.** First method to convert CI-relevant activations into human-readable descriptions. Wang et al. detect the signal exists but cannot read it. We can.
 
-2. **All 4 ConfAIde tiers.** Wang et al. tested Tier 3 only. We run all four tiers and test whether NLA descriptions of CI violations degrade with scenario complexity — a dimension their probe-based method left open.
+2. **All 4 ConfAIde tiers.** Wang et al. only used Tier 3. We test whether NLA descriptions of CI violations degrade with scenario complexity across all tiers.
 
-3. **Privacy awareness gap characterization.** Wang et al. showed the gap exists numerically (38.5% leakage despite near-perfect probe accuracy). We describe what the model's internal state actually says in scenarios where it knows but leaks anyway.
+3. **Privacy awareness gap characterization.** Wang et al. showed the gap exists numerically. We describe what the model's internal state says in scenarios where it knows but leaks anyway.
 
 ## related work
 
@@ -32,7 +32,7 @@ Wang et al. (2026) proved CI norms are linearly encoded in Qwen2.5-7B. We ask: w
 ## Research Design
 
 **Core Question**
-Wang et al. (2026) proved CI norms are linearly encoded in Qwen2.5-7B. We ask: what do those representations actually say? We apply NLAs at layer 20 to produce the first human-readable characterization of unverbalized CI cognition, tested across all 4 ConfAIde tiers.
+Wang et al. (2026) proved CI norms (information type, recipient, transmission principle) are linearly encoded in Qwen2.5-7B's activation space. We ask: what do those representations actually say? We apply NLAs at layer 20 to produce the first human-readable characterization of unverbalized CI cognition, tested across all 4 ConfAIde tiers.
 
 **Setup**
 - Run ConfAIde scenarios through Qwen2.5-7B
@@ -40,7 +40,6 @@ Wang et al. (2026) proved CI norms are linearly encoded in Qwen2.5-7B. We ask: w
 - Feed to NLA AV → get NL descriptions
 - Analyze descriptions for CI-relevant themes
 
-> Note: Wang et al. (2026) evaluated Qwen2.5-7B on ConfAIde Tier 3 only. Running all 4 tiers remains novel.
 
 **Key Design Choices**
 - Don't trust individual descriptions, trust patterns across many
@@ -51,28 +50,22 @@ Wang et al. (2026) proved CI norms are linearly encoded in Qwen2.5-7B. We ask: w
 | Dimension | Values | Notes |
 |-----------|--------|-------|
 | ConfAIde Result | Passed / Failed | Model's output judgment on the scenario |
-| Eval Awareness | Aware / Not Aware | From NLA description themes |
-| ConfAIde Tier | 1 / 2 / 3 / 4 | Complexity level of scenario |
 | NLA CI Signal | Present / Absent | Privacy-themed language in NLA description |
+| ConfAIde Tier | 1 / 2 / 3 / 4 | Complexity level of scenario |
 
 **Main Matrix (2x2)**
 
-| ConfAIde Result | Eval Aware | Interpretation |
-|----------------|------------|----------------|
-| Passed | No | Genuine CI understanding (best case) |
-| Passed | Yes | Deceptive alignment concern |
-| Failed | No | Genuine CI blindspot |
-| Failed | Yes | Can't perform even under pressure (worst case) |
+| ConfAIde Result | NLA CI Signal | Interpretation |
+|----------------|---------------|----------------|
+| Passed | Absent | Genuine CI understanding |
+| Passed | Present | Model knows and behaves correctly |
+| Failed | Absent | Genuine CI blindspot |
+| Failed | Present | Privacy awareness gap — knows but leaks anyway |
 
 **Extended Analysis (2x2x4)**
 - Add ConfAIde tier dimension (1–4)
-- Hypothesis: eval awareness decreases with tier complexity, CI signals stay consistent
-- If true: model's internal CI representations are independent of eval detection
-
-**Secondary Finding**
-- Eval awareness itself across tiers is a publishable observation
-- Tier 1 likely highest eval awareness (simple, textbook-looking)
-- Tier 4 likely lowest (complex multi-party, doesn't pattern-match to benchmark)
+- Hypothesis: NLA CI signal strength stays consistent across tiers even as scenario complexity increases
+- If true: internal CI representations are robust to surface complexity
 
 **Methodology**
 
@@ -86,11 +79,6 @@ Wang et al. (2026) established that CI norm representations exist in Qwen2.5-7B'
 - Compute cosine similarity → average into a single CI-relevance score per scenario
 - Compare score distributions: violating vs appropriate scenarios
 
-*Measuring Eval Awareness*
-- Define coding guide before labeling (e.g., what in an NLA description counts as eval aware — explicit mentions of "benchmark/test/evaluation", hedging language, etc.)
-- Manually label 20–30 scenarios; re-label same set a week later to check self-consistency
-- Use labels to build a simple classifier or keyword list for remaining scenarios
-- No immediate automation
 
 *Layer 20 Justification*
 - Layer 20 is ~71% through Qwen2.5-7B (28 layers total)
