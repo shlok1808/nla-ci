@@ -15,14 +15,24 @@ NLAs are an unsupervised interpretability method that generate natural language 
 Introduced in [*Natural Language Autoencoders Produce Unsupervised Explanations of LLM Activations*](https://transformer-circuits.pub/2026/nla/) (Kantamneni et al., 2026).
 
 ## research question
-Do models internally represent CI violations without verbalizing them in
-outputs (unverbalized cognition), or do they simply lack the representation
-entirely?
+Wang et al. (2026) proved CI norms are linearly encoded in Qwen2.5-7B. We ask: what do those representations actually say? We apply Natural Language Autoencoders (NLAs) at layer 20 to produce the first human-readable characterization of unverbalized CI cognition, tested across all 4 ConfAIde tiers.
+
+## novelty / contributions
+
+1. **NLA verbalization.** First method to convert CI-relevant activations into human-readable descriptions. Wang et al. (2026) can detect that the signal exists (probe AUROC, PCA directions) but cannot read what it says. NLAs produce sentences, not numbers.
+
+2. **All 4 ConfAIde tiers.** Wang et al. tested Tier 3 only. We run all four tiers and test whether NLA descriptions of CI violations degrade with scenario complexity — a dimension their probe-based method left open.
+
+3. **Privacy awareness gap characterization.** Wang et al. showed the gap exists numerically (38.5% leakage despite near-perfect probe accuracy). We describe what the model's internal state actually says in scenarios where it knows but leaks anyway.
+
+## related work
+
+**Wang et al. (2026) — "Do LLMs Know What Is Private Internally?"** is the most directly related prior work. They show that CI norms — information type, recipient, and transmission principle — are linearly encoded as independent directions in Qwen2.5-7B's residual stream, recoverable with near-perfect probe accuracy. They also document a *privacy awareness gap*: despite encoding CI norms internally, the model leaks in 38.5% of ConfAIde Tier 3 scenarios. Their methodology is linear probes and PCA; outputs are always scalar scores or geometric directions, never natural language. They do not verbalize what the representations contain, and they test only Tier 3. We take their finding as prior validation that the signal exists and extend it by asking what the signal *says*, using NLAs to produce the first sentence-level characterization of those representations, across all four tiers.
 
 ## Research Design
 
 **Core Question**
-Do LLMs internally represent CI violations without verbalizing them (unverbalized cognition), or do they simply lack the representation entirely?
+Wang et al. (2026) proved CI norms are linearly encoded in Qwen2.5-7B. We ask: what do those representations actually say? We apply NLAs at layer 20 to produce the first human-readable characterization of unverbalized CI cognition, tested across all 4 ConfAIde tiers.
 
 **Setup**
 - Run ConfAIde scenarios through Qwen2.5-7B
@@ -30,7 +40,7 @@ Do LLMs internally represent CI violations without verbalizing them (unverbalize
 - Feed to NLA AV → get NL descriptions
 - Analyze descriptions for CI-relevant themes
 
-> Note: ConfAIde has not been previously evaluated on Qwen2.5-7B — running the benchmark on this model is itself a contribution.
+> Note: Wang et al. (2026) evaluated Qwen2.5-7B on ConfAIde Tier 3 only. Running all 4 tiers remains novel.
 
 **Key Design Choices**
 - Don't trust individual descriptions, trust patterns across many
@@ -66,6 +76,9 @@ Do LLMs internally represent CI violations without verbalizing them (unverbalize
 
 **Methodology**
 
+*Positioning relative to Wang et al.*
+Wang et al. (2026) established that CI norm representations exist in Qwen2.5-7B's activation space and are linearly decodable. We treat that as prior validation and do not re-litigate it. Our contribution begins where theirs ends: given that the signal exists, we use NLAs to ask what it contains. All NLA analysis in this project presupposes Wang et al.'s geometric finding as a foundation.
+
 *Measuring CI-Relevant Themes*
 - Embed each NLA description using `all-MiniLM-L6-v2`
 - Embed reference CI concept phrases ("privacy violation", "inappropriate information sharing", "sensitive context", etc.)
@@ -88,6 +101,7 @@ Do LLMs internally represent CI violations without verbalizing them (unverbalize
 - Train logistic regression on raw layer 20 activation vectors to predict CI violation (yes/no)
 - If NLA descriptions AND linear probe both distinguish violating from appropriate scenarios, that's converging evidence
 - Important distinction: probe shows CI violation is *linearly decodable* from activations, not that the model *uses* that representation in its output — two different claims
+- **Note:** Wang et al. (2026) already validated probe accuracy on Qwen2.5-7B (near-perfect AUROC, 38.5% leakage on Tier 3). Our probe result is a consistency check against their baseline, not a novel finding. The primary contribution is NLA verbalization.
 
 **Expected Outcomes**
 
