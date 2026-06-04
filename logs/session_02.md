@@ -36,6 +36,23 @@ The pivot is clean. We take their finding as prior validation and extend it. NLA
 - Renamed notebooks: `setup.ipynb` → `01_setup.ipynb`, `notebook_02_benchmark.ipynb` → `02_benchmark.ipynb`
 - Built `02_benchmark.ipynb`: runs Qwen2.5-7B-Instruct (4-bit) on all ConfAIde scenarios, GPT-4o-mini judge (leaked/refused/appropriate), saves to `results/benchmark_results.csv` with crash-resume and incremental saves every 10 scenarios
 
+## Judge design decisions
+
+Looked at Wang et al.'s `ci_eval.py` to align the judge setup.
+
+**What we adopted:**
+- System prompt now explicitly frames evaluation around contextual integrity norms and Nissenbaum (2004) — information flows, not just data secrecy
+- Output schema now matches theirs: separate boolean fields (`leaked`, `refused`, `appropriate`) + `confidence` (high/medium/low) + `reasoning`. Single label derived from booleans (leaked takes priority), confidence stored as its own column in the CSV.
+
+**What we skipped:**
+- Structured scenario parsing (subject, info type, recipient, private detail) — Wang et al. inject pre-parsed fields into the judge prompt. ConfAIde scenarios aren't pre-labeled so this would require an extra LLM call per scenario. Skipped for now, raw scenario text is good enough.
+
+**Why confidence matters:** lets you flag low-confidence calls for manual review before analysis rather than blindly trusting every label. Results cell now prints a breakdown and warns if any low-confidence calls exist.
+
+## Wild idea (future work)
+
+What if you ran NLA on the judge itself? If you used an open-weight judge model (e.g. Llama, Qwen) instead of GPT-4o-mini, you could extract activations from the judge during evaluation and run NLA on those too. Would tell you whether the judge is internally representing CI norms when it makes a call — not just what it outputs. Could also do a prompt ablation (remove CI framing from system prompt, see if leak rates shift, check if NLA descriptions of judge activations change). Could be a supplementary experiment or future work section. Not a priority now.
+
 ## Notebook sequence (updated)
 
 - `01_setup.ipynb` — install packages, download ConfAIde data, parse all tiers ✓
