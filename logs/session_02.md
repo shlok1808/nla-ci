@@ -69,7 +69,7 @@ cd nla-ci
 pip install transformers torch bitsandbytes accelerate tqdm openai pandas numpy
 export OPENAI_API_KEY=sk-...
 tmux new -s benchmark
-python benchmark.py
+python scripts/benchmark.py
 # Ctrl+B D to detach, close laptop
 # tmux attach -t benchmark to recheck
 ```
