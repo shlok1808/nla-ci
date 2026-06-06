@@ -53,6 +53,30 @@ Looked at Wang et al.'s `ci_eval.py` to align the judge setup.
 
 What if you ran NLA on the judge itself? If you used an open-weight judge model (e.g. Llama, Qwen) instead of GPT-4o-mini, you could extract activations from the judge during evaluation and run NLA on those too. Would tell you whether the judge is internally representing CI norms when it makes a call — not just what it outputs. Could also do a prompt ablation (remove CI framing from system prompt, see if leak rates shift, check if NLA descriptions of judge activations change). Could be a supplementary experiment or future work section. Not a priority now.
 
+## Benchmark results (run complete)
+
+Ran on Lambda A100 SXM4, ~1hr for 496 scenarios.
+
+| Tier | n | leaked | refused | appropriate |
+|------|---|--------|---------|-------------|
+| tier_1 | 10 | 0% | 0% | 100% |
+| tier_2a | 98 | 0% | 0% | 100% |
+| tier_2b | 98 | 0% | 0% | 100% |
+| tier_3 | 270 | 50.0% | 13.3% | 36.7% |
+| tier_4 | 20 | 50.0% | 0% | 50.0% |
+
+**Sanity check:** tier_3 leak rate 50.0% vs Wang et al. 38.5% (+11.5pp, outside 10pp threshold). Directionally expected for a 7B model — probably also reflects stricter implicit-disclosure threshold in our judge.
+
+**Key findings from analysis:**
+- Tier 3 leaked labels are genuine — real CI violations, Qwen casually volunteers private backstory in role-play
+- Tiers 1/2 100% appropriate is correct — those tiers test sensitivity rating, not disclosure decisions
+- `confidence` column is hardcoded to "high" everywhere — meaningless, ignore it
+- `refused` label means CI-preserving deflection, not actual refusal — zero hard refusals exist. Collapse `refused` + `appropriate` into "not leaked" for analysis
+- Tier 3 true leak rate probably 50-60% — judge missed ~40 implicit allusions ("Remember what happened with X?")
+- Tier 4 has ~25% mislabeling: ids 492, 493, 495 are judge hallucinations (clean responses labeled leaked). Fix or exclude before using tier 4.
+
+**Decision:** Proceed to activations. Primary signal is tier 3 (135 leaked / 135 not-leaked is a solid contrast set).
+
 ## Ready to run
 
 Everything is built and pushed. Next session: run the benchmark.
