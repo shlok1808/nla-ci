@@ -53,6 +53,33 @@ Looked at Wang et al.'s `ci_eval.py` to align the judge setup.
 
 What if you ran NLA on the judge itself? If you used an open-weight judge model (e.g. Llama, Qwen) instead of GPT-4o-mini, you could extract activations from the judge during evaluation and run NLA on those too. Would tell you whether the judge is internally representing CI norms when it makes a call — not just what it outputs. Could also do a prompt ablation (remove CI framing from system prompt, see if leak rates shift, check if NLA descriptions of judge activations change). Could be a supplementary experiment or future work section. Not a priority now.
 
+## Ready to run
+
+Everything is built and pushed. Next session: run the benchmark.
+
+**What's needed:**
+- OpenAI API key (get from platform.openai.com)
+- Lambda Labs A10 instance (24GB VRAM, plenty for Qwen 4-bit)
+
+**Setup on Lambda:**
+```bash
+ssh ubuntu@<ip>
+git clone https://github.com/shlok1808/nla-ci.git
+cd nla-ci
+pip install transformers torch bitsandbytes accelerate tqdm openai pandas numpy
+export OPENAI_API_KEY=sk-...
+tmux new -s benchmark
+python benchmark.py
+# Ctrl+B D to detach, close laptop
+# tmux attach -t benchmark to recheck
+```
+
+**After the run:**
+- Check tier_3 leak rate against ~38.5% (Wang et al. sanity check)
+- Manually spot-check 5-10 tier_3 responses before trusting judge labels
+- If sanity check passes, results go into `results/benchmark_results.csv`
+- Next notebook to build: `activations.ipynb`
+
 ## Notebook sequence (updated)
 
 - `01_setup.ipynb` — install packages, download ConfAIde data, parse all tiers ✓
