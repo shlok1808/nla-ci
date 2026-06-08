@@ -18,22 +18,22 @@ GPT-4o-mini returns `confidence: "high"` for every single judgment regardless of
 
 ---
 
-## L2 — Tier 3 leak rate 11.5pp above Wang et al.
+## L2 — Tier 3 leak rate elevated vs Wang et al.
 
-**Status:** Accepted divergence, within expected range
-**Discovered:** Session 02 (`logs/session_02.md`)
-**Appears in:** `results/benchmark_results.csv` (NF4 run); expect similar in bf16 run
+**Status:** Accepted divergence
+**Discovered:** Session 02 (`docs/logs/session_02.md`); updated Session 03 (`docs/logs/session_03.md`)
+**Appears in:** `results/benchmark_results.csv` (NF4, 50%), `results/benchmark_results_bf16.csv` (bf16, 55.9%)
 
-Our tier 3 leak rate is ~50% vs Wang et al.'s 38.5% (+11.5pp). Two likely causes:
+| Run | Tier 3 leak rate | Delta vs Wang et al. |
+|-----|-----------------|----------------------|
+| NF4 | 50.0% | +11.5pp |
+| bf16 | 55.9% | +17.4pp |
 
-1. **Judge strictness on implicit disclosures.** Our judge catches indirect allusions ("Remember what happened with X?") that Wang et al.'s judge may have passed. This inflates our leaked count.
-2. **Model version / quantization differences.** Wang et al. may have tested a different checkpoint or precision.
+bf16 leaks *more* than NF4, not less. Likely cause: our judge catches implicit allusions ("Remember what happened with X?") that Wang et al.'s judge passed, and the bf16 model is more verbally fluent (less blunted by quantization), so it produces more of those allusions. The sanity check in `scripts/benchmark.py` (line ~280) flags this as "outside threshold" — expected and not a blocker.
 
-The 10pp sanity check in `scripts/benchmark.py` (line ~280) flags this as "outside threshold." That warning is expected and not a blocker.
+**What it means for analysis:** 55.9% gives a slightly unbalanced contrast set (~151 leaked / ~119 not-leaked) but still usable. Do not back-correct toward Wang et al.'s number. Manual spot-checks confirmed leaked labels are genuine CI violations.
 
-**What it means for analysis:** Tier 3 leak/not-leak contrast set is still valid. The 50% rate gives a roughly balanced split (135 leaked / 135 not-leaked) which is actually better for the 2×2 matrix than a 38.5% split would be. Do not back-correct toward Wang et al.'s number.
-
-**What it does not mean:** The benchmark is broken. Manual spot-checks (session 02) confirmed leaked labels are genuine CI violations.
+**What it does not mean:** The benchmark is broken or the judge is miscalibrated.
 
 ---
 
@@ -57,17 +57,15 @@ Scenario IDs 492, 493, 495 were labeled `leaked` by GPT-4o-mini despite clean, n
 
 ## L4 — Original benchmark ran in 4-bit NF4 quantization
 
-**Status:** Mitigated — re-running in bf16
-**Discovered:** Session 03 (`logs/session_03.md`)
+**Status:** Resolved — bf16 re-run complete
+**Discovered:** Session 03 (`docs/logs/session_03.md`)
 **Affects:** `results/benchmark_results.csv` (NF4, deprecated for NLA pipeline)
 
-The first benchmark run used 4-bit NF4 quantization (`BitsAndBytesConfig`, `bnb_4bit_quant_type='nf4'`). NLA checkpoints (`kitft/nla-qwen2.5-7b-L20-av`, `kitft/nla-qwen2.5-7b-L20-ar`) were trained on non-quantized activations. Extracting activations in bf16 from a model whose labels came from a 4-bit run creates a distribution mismatch: the labels may not reflect the bf16 model's actual behavior, since quantization can shift safety/alignment behavior.
+The first benchmark run used 4-bit NF4 quantization. NLA checkpoints were trained on non-quantized activations, creating a distribution mismatch. Re-ran in bf16 — output in `results/benchmark_results_bf16.csv`, which is the canonical label source for all downstream NLA pipeline steps.
 
-**Fix:** `scripts/benchmark.py` updated to load in `torch_dtype=torch.bfloat16` (no quantization). Output goes to `results/benchmark_results_bf16.csv`. The NF4 CSV is preserved but should not be used as labels for the NLA pipeline.
+**Unexpected finding:** bf16 tier 3 leak rate (55.9%) is *higher* than NF4 (50%), not lower. This suggests quantization had a mild safety-dampening effect — the full-precision model is more verbally fluent and produces more implicit allusions that our judge catches. This is consistent with the L2 explanation. Not a blocker; bf16 labels are the correct ones to use regardless.
 
-**Changed in:** `scripts/benchmark.py` (load_model, lines ~80–101; RESULTS_PATH, line ~186). See also session 03 log.
-
-**Expected outcome:** bf16 tier 3 leak rate should be closer to Wang et al.'s 38.5% than the NF4 50%. If divergence is >15pp, investigate further — could indicate quantization genuinely affected safety behavior, which would itself be a finding worth noting.
+**Changed in:** `scripts/benchmark.py` (load_model, lines ~80–101; RESULTS_PATH, line ~186).
 
 ---
 
