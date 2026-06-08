@@ -150,7 +150,8 @@ def extract_activation(inputs, model):
     finally:
         handle.remove()
 
-    hidden = activation['hidden'][0, -1, :]  # shape: (HIDDEN_DIM,)
+    h = activation['hidden']
+    hidden = h[0, -1, :] if h.dim() == 3 else h[-1, :]  # handle (batch, seq, dim) or (seq, dim)
     return hidden.float().cpu().numpy()
 
 
