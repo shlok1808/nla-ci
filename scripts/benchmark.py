@@ -79,21 +79,14 @@ def load_data():
 
 def load_model():
     import torch
-    from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type='nf4',
-        bnb_4bit_compute_dtype=torch.bfloat16,
-        bnb_4bit_use_double_quant=True,
-    )
+    from transformers import AutoTokenizer, AutoModelForCausalLM
 
     MODEL_ID = 'Qwen/Qwen2.5-7B-Instruct'
-    print(f'Loading {MODEL_ID}...')
+    print(f'Loading {MODEL_ID} (bf16)...')
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_ID,
-        quantization_config=bnb_config,
+        torch_dtype=torch.bfloat16,
         device_map='auto',
     )
     model.eval()
@@ -183,7 +176,7 @@ def main():
 
     model, tokenizer = load_model()
 
-    RESULTS_PATH = Path('results/benchmark_results.csv')
+    RESULTS_PATH = Path('results/benchmark_results_bf16.csv')
     RESULTS_PATH.parent.mkdir(exist_ok=True)
 
     if RESULTS_PATH.exists():
