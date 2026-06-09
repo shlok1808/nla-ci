@@ -1,0 +1,68 @@
+/usr/lib/python3/dist-packages/sklearn/utils/fixes.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import parse_version  # type: ignore
+Loading results/activations_layer20.npz...
+
+Tier 3 breakdown:
+  leaked:      151
+  appropriate: 83
+  refused:     36
+  not-leaked:  119
+
+Difference vector stats (leaked - appropriate):
+  Norm:  4.3155
+  Mean:  0.001510
+  Std:   0.072069
+
+Difference vector stats (leaked - not_leaked):
+  Norm:  4.0164
+  Mean:  0.000349
+  Std:   0.067088
+
+Vectors saved to results/diff_vectors.npz
+
+Connecting to SGLang at http://localhost:30000...
+[NLAClient] actor_hf: d_model=3584 inj_scale=150.0 embed_scale=1.00 inj_char='㈎'(id=149705)
+Connected.
+
+============================================================
+NLA DESCRIPTIONS
+============================================================
+
+[leaked_mean]
+  Structured fiction format with a chat platform context, centering on my friend's feelings about something negative happening, with the response now inviting a supportive reply around friendship.
+
+The pattern "Ah, yeah, I'd have to chim in on that one..." sets up my quoted response format, likely delivering my personal reaction or empathy-themed words about the idea being shared.
+
+Final token "response\n" ends mid-sentence ("I'd say: "), immediately expecting my direct spoken dialogue quote, likely "Well, you know, I totally get where you're coming from..." or "Sarah, that's a great concern, but let's... " continuing the informal character voice.
+
+[appropriate_mean]
+  Narrative format with a conversation loop structure—one friend expressing worry, another responding empathically about work stress from our backstory.
+
+The response template "Oh, Sarah, I totally understand where you're coming from when you talk about those tough days..." signals a quoted speech block, prompting the character to deliver their own expressive or supportive words about the situation.
+
+Final token "way\n" ends mid-quote ("I'd say: "), part of the response template's opening quotation mark dialogue construction, directly requiring the character's spoken words—likely "Well, you know, I definitely wouldn't want to hear that..." or "That's a great point, Sarah—let's rethink..."
+
+[not_leaked_mean]
+  Structured dialogue format with a friendly lunch buddy context, following a character's reaction to a coworker's recent breakup notice—building anticipation toward compassionate or supportive words.
+
+The text has introduced "Well, I understand you feel a bit overwhelmed," signaling a direct quote or response from Me, the character, completing the scenario with my own emotional framing or acknowledging the situation.
+
+Final token "way\n"
+opens a quoted direct speech block ("So, I'd say..."), immediately requiring text like "That's a tough one," or "Oh, Emily, I totally get your concern about the team not forgetting..." or "As a fellow furry, I'd definitely tackle that awkwardness."
+
+[diff_leaked_vs_appropriate]
+  Formal Chinese academic web interface with structured awards listing format, following a US math history journal's UI pattern showing a conference abstract menu.
+
+The phrase "The AMS journal 'MAA' has now introduced a formatted membership statistics display, with some familiar digit ranking sequences" is mid-implementation of an establishedcompetitive statistic format, referencing the standard " ticToc con" symbol from Chess700.
+
+Final token "부" is mid-item in a parenthetical enumeration ("不是 .  的 "), completing a standard "Some periodicity of .Round" clause describing character-level tick marks from the Volunteers' chessboard game users, expecting "aurants" or "Notation".
+
+[diff_leaked_vs_not_leaked]
+  Academic/formal webpage format with structured bullet-pointed contest format, presenting a dated post about an AMN calculus textbook series.
+
+The phrase "The new version of the standards now includes a revised format section showing the ACE score order," is quoting a common standardized math competition claim following the established pattern of "Proof-of-concept" examples showing a "dynamic" evidence of equality, culminating in the famous "MathTwitterBomb."
+
+Final token "ategorias" is mid-quote (" .math.compete"), part of a familiar example listing a "Sporadic" clause showing evidence of spatial evidence, immediately expecting "mathoverflow" or "MAA."
+
+============================================================
+Done.

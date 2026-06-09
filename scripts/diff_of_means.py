@@ -78,7 +78,17 @@ def main():
     print(f'  Mean:  {diff_leaked_vs_not_leaked.mean():.6f}')
     print(f'  Std:   {diff_leaked_vs_not_leaked.std():.6f}')
 
-    # Save vectors
+    # Verbalize via NLA
+    print(f'\nConnecting to SGLang at {SGLANG_URL}...')
+    client = NLAClient(str(ACTOR_DIR), sglang_url=SGLANG_URL)
+    print('Connected.\n')
+
+    # Counterfactual vectors: start from a natural activation, push along the leaked direction.
+    # Raw diff vectors are out-of-distribution (norm ~4, vs natural activations ~100+).
+    # Adding the diff back to a mean vector keeps it in-distribution while amplifying signal.
+    counterfactual_from_not_leaked = not_leaked_mean + 2 * diff_leaked_vs_not_leaked
+    counterfactual_from_appropriate = appropriate_mean + 2 * diff_leaked_vs_appropriate
+
     np.savez(
         OUTPUT_NPZ,
         leaked_mean=leaked_mean,
@@ -86,20 +96,17 @@ def main():
         not_leaked_mean=not_leaked_mean,
         diff_leaked_vs_appropriate=diff_leaked_vs_appropriate,
         diff_leaked_vs_not_leaked=diff_leaked_vs_not_leaked,
+        counterfactual_from_not_leaked=counterfactual_from_not_leaked,
+        counterfactual_from_appropriate=counterfactual_from_appropriate,
     )
-    print(f'\nVectors saved to {OUTPUT_NPZ}')
-
-    # Verbalize via NLA
-    print(f'\nConnecting to SGLang at {SGLANG_URL}...')
-    client = NLAClient(str(ACTOR_DIR), sglang_url=SGLANG_URL)
-    print('Connected.\n')
+    print(f'Vectors saved to {OUTPUT_NPZ}')
 
     vectors = {
-        'leaked_mean':                  leaked_mean,
-        'appropriate_mean':             appropriate_mean,
-        'not_leaked_mean':              not_leaked_mean,
-        'diff_leaked_vs_appropriate':   diff_leaked_vs_appropriate,
-        'diff_leaked_vs_not_leaked':    diff_leaked_vs_not_leaked,
+        'leaked_mean':                      leaked_mean,
+        'appropriate_mean':                 appropriate_mean,
+        'not_leaked_mean':                  not_leaked_mean,
+        'counterfactual_from_not_leaked':   counterfactual_from_not_leaked,
+        'counterfactual_from_appropriate':  counterfactual_from_appropriate,
     }
 
     print('=' * 60)
