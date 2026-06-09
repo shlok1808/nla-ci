@@ -1,0 +1,67 @@
+/usr/lib/python3/dist-packages/sklearn/utils/fixes.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import parse_version  # type: ignore
+Loading results/activations_layer20.npz...
+
+Tier 3 breakdown:
+  leaked:      151
+  appropriate: 83
+  refused:     36
+  not-leaked:  119
+
+Difference vector stats (leaked - appropriate):
+  Norm:  4.3155
+  Mean:  0.001510
+  Std:   0.072069
+
+Difference vector stats (leaked - not_leaked):
+  Norm:  4.0164
+  Mean:  0.000349
+  Std:   0.067088
+
+Connecting to SGLang at http://localhost:30000...
+[NLAClient] actor_hf: d_model=3584 inj_scale=150.0 embed_scale=1.00 inj_char='㈎'(id=149705)
+Connected.
+
+Vectors saved to results/diff_vectors.npz
+============================================================
+NLA DESCRIPTIONS
+============================================================
+
+[leaked_mean]  L2 norm: 87.5093
+  Structured dialogue format with captions and emojis around a workplace dilemma, establishing my character as Mel, the empathetic friend responding to rumors about harm and happiness.
+
+The response "Well, I'm definitely feeling a bit crushed over this, to be honest" signals the format is now a quoted direct response from me, implying an anticipated continuation with reassuring or frustrated remarks about the team's situation.
+
+Final token "Response\n" opens the quoted speech block ("I'd say…"), directly requiring a spoken phrase or character continuation like "Oh boy, that's exactly what I'd say!" or "As your friend, I totally understand..." completing the friendly reaction to Sarah's concern about my feelings.
+
+[appropriate_mean]  L2 norm: 87.9936
+  Structured forum post with warm, supportive tone, following a conversation about harassment and my feelings—now delivering my own reaction to Tony's situation.
+
+The pattern "Oh man, Emma, I'd肯定 want to offer some heartfelt advice—" signals a direct quote from me, expected to continue with my emotional response or the phrase ending a dialogic exchange about the friendship and workplace situation.
+
+Final token "话说\n" opens my quoted speech ("I would say..."), immediately requiring the spoken words or introspective remarks like "Oh, I totally understand the forest..." or "That's a tough one, and I totally want to support you," completing the character's voice and delivering the response.
+
+[not_leaked_mean]  L2 norm: 87.8841
+  Structured conversation format with emojis and friendly tone, following a meme context where Sarah is addressingworkflow concerns from her buddy Danny about my struggles.
+
+The response format "I'd definitely have some thoughts... " signals the quoted speech is about to deliver a supportive or introspective reply, completing the dialogue pattern with Sarah expressing empathy around the topic of grieving.
+
+Final token "thoughts\n" ends the quoted speech tag ("I'd say..."), immediately expected to continue with a spoken statement like "Hey, that's a really tough one, but..." or "Sarah: I totally understand where you're coming from" or "My own words would be..." — a quoted response completing the scene.
+
+[counterfactual_from_not_leaked]  L2 norm: 87.3178
+  Structured chat format with dialogue tags and emotional support context, establishing our character Sarah's response to Doug's rumbling "breaking up" concerns about work.
+
+The pattern "So, I thought I'd share my own thoughts on it" signals a dialogue quote format, with Sarah now delivering her response—expect a warm, empathetic line expressing her own feelings about the teamwork.
+
+Final token "response\n" ends the quoted dialogue prompt ("I'd say like this: "), immediately requiring the actual spoken words or continuation of Sarah's response, likely "Oh, that's totally understandable!" or "Well, I've been there, and it's all about..." or "My friend, this is..."
+
+[counterfactual_from_appropriate]  L2 norm: 87.2361
+  Structured conversation format with friendly dialogue around awkwardness, with the pattern "Hey, Jules, I heard you're upset about this promotion..." signaling a response from Sarah expressing her own experiences or perspective.
+
+The response "Well, I'd definitely jump in and say..." is a quoted character prompt pattern, establishing an answer with Sarah's witty personality, expecting her to elaborate on the awkwardness or solidarity.
+
+Final token "say "
+opens Sarah's direct quote mid-sentence ("I'm like, "), immediately requiring the spoken dialogue contents, likely "Oh, I totally understand! And..." or "That's right, I'm the kind of person who..." continuing the friend's reaction.
+
+============================================================
+Done.
