@@ -17,7 +17,6 @@ Usage:
 
 import sys
 import numpy as np
-import pandas as pd
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -113,8 +112,8 @@ def main():
     print('NLA DESCRIPTIONS')
     print('=' * 60)
     for name, vec in vectors.items():
+        print(f'\n[{name}]  L2 norm: {np.linalg.norm(vec):.4f}')
         desc = client.generate(vec)
-        print(f'\n[{name}]')
         print(f'  {desc}')
 
     print('\n' + '=' * 60)
