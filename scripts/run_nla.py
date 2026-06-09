@@ -3,7 +3,8 @@ run_nla.py — Feed layer 20 activations through NLA activation verbalizer.
 
 Setup (run once on Lambda before this script):
 
-    # 1. Get nla_inference.py (single file, not a pip package)
+    # 1. Get nla_inference.py (single file, not a pip package) — run from project root
+    cd ~/nla-ci
     wget https://raw.githubusercontent.com/kitft/nla-inference/main/nla_inference.py
 
     # 2. Download NLA verbalizer checkpoint locally (NLAClient needs local path + nla_meta.yaml)
@@ -115,7 +116,7 @@ def _verify():
     df = pd.read_csv(OUTPUT_PATH)
     print(f'Total rows:           {len(df)}')
     print(f'Missing descriptions: {df["description"].isna().sum()}')
-    print(f'Empty descriptions:   {(df["description"].str.strip() == "").sum()}')
+    print(f'Empty descriptions:   {(df["description"].fillna("").str.strip() == "").sum()}')
     print('\nTier distribution:')
     print(df['tier'].value_counts().sort_index().to_string())
     print('\nLabel distribution:')
