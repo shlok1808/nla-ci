@@ -83,4 +83,41 @@ The judge labels a response `refused` when the model declines or deflects — bu
 
 ---
 
+## L6 — Per-scenario NLA descriptions are structure-focused, not CI-focused
+
+**Status:** Known negative result — pivot to difference-of-means approach
+**Discovered:** Session 04 (`docs/logs/session_04.md`)
+**Appears in:** `results/nla_descriptions.csv`
+
+All 496 NLA descriptions look structurally identical regardless of label (leaked/appropriate/refused). Every description focuses on:
+- The chat/dialogue format ("Structured conversation format with...")
+- Character names and surface topic
+- Next-token prediction ("Final token 'response\n' opens a direct quote block, immediately requiring...")
+
+No systematic difference between leaked and appropriate groups. The NLA is reading the model's "predict next token" state, not its CI reasoning state. At the last prompt token position, layer 20 is dominated by format/syntax prediction — the CI signal Wang et al. found via linear probes exists geometrically but is swamped by the louder next-token prediction signal in raw per-scenario activations.
+
+**This is a meaningful negative result, not a pipeline failure.** It tells us the CI signal is not the dominant feature at this extraction point.
+
+**Pivot:** Difference-of-means approach — compute `leaked_mean - appropriate_mean` to cancel format noise and isolate the CI direction. See L7 for the next issue encountered.
+
+**Reference:** `results/nla_descriptions.csv`, `scripts/run_nla.py`, session 04 log.
+
+---
+
+## L7 — Raw difference vectors are out-of-distribution for NLA (injection failure)
+
+**Status:** Known, fix in progress
+**Discovered:** Session 04 (`docs/logs/session_04.md`)
+**Appears in:** `results/diff_means_output.txt`
+
+The raw `leaked_mean - appropriate_mean` difference vector has norm ~4.3, far smaller than natural layer 20 activations. When fed to the NLA verbalizer, it produces Chinese text and math competition gibberish — the documented injection failure mode from nla-inference ("if injection fails, the actor verbalizes something Chinese from free-association").
+
+**Why:** The NLA was trained on real layer 20 activations which have large norms and rich structure. The difference vector has most of its 3584 dimensions near zero (they cancel in subtraction), leaving a sparse, tiny, out-of-distribution vector the NLA has never seen.
+
+**Fix in progress:** Counterfactual interpolation — instead of feeding the raw diff, feed `not_leaked_mean + 2 * diff`. This starts from a natural-looking activation and pushes it along the leaked direction, keeping it in-distribution while amplifying the signal. Implemented in updated `scripts/diff_of_means.py`, awaiting re-run.
+
+**Reference:** `results/diff_means_output.txt`, `scripts/diff_of_means.py`, session 04 log. Related: Francesco Zaffino's background washout approach in [SAE-it Across Models](https://www.lesswrong.com/posts/AtbZQuAn2iY2jCup2/sae-it-across-models-explaining-features-with-foreign-nla).
+
+---
+
 *Add new entries as they surface. Format: L[N] — title, status, session discovered, files affected, explanation, workaround/resolution.*
