@@ -120,4 +120,32 @@ The raw `leaked_mean - appropriate_mean` difference vector has norm ~4.3, far sm
 
 ---
 
+## L8 — Leak behavior is only weakly decodable at the extraction point (probe AUC 0.68, not ~1.0)
+
+**Status:** Known — reframes L6/L7
+**Discovered:** Session 05 (Fable methodology review)
+**Appears in:** `scripts/probe_diagnostics.py` (run locally on `results/activations_layer20.npz`)
+
+Wang et al.'s near-perfect AUROC is for recovering **CI norm attributes** (information type, recipient, transmission principle) — properties of the input scenario. It is *not* a claim that the **leak/no-leak behavioral outcome** is linearly decodable. Those are different probe targets, and their own privacy awareness gap (correct norm encoding, 38.5% leakage) implies the two must dissociate.
+
+Measured on our tier 3 activations (leaked vs not-leaked, 151/119):
+
+| Quantity | Value |
+|---|---|
+| 5-fold CV logistic probe AUC | **0.68** (C=1e-3; 0.65–0.68 across C) |
+| cosine(leaked_mean, not_leaked_mean) | 0.9990 |
+| ‖diff‖ vs mean within-class distance | 4.0 vs 18.5 |
+| Permutation test on ‖diff‖ | p < 0.002 (null mean 2.3, max 3.3) — real but weak |
+| Held-out projection onto diff direction | AUC 0.67 |
+| Control: tier_3 vs tier_1/2 probe | AUC 1.00 |
+
+**Implications:**
+- The diff-of-means direction is statistically real (passes permutation test) but carries at most AUC-0.68 worth of signal — roughly a third of its energy is label-sampling noise.
+- The NLA "failure" in L6/L7 is therefore largely *expected*: there was never a near-perfect leak signal at this position to surface. The honest claim is "weakly decodable, not verbalizable," not "strongly decodable but unverbalizable."
+- Counterfactual interpolation at α=2 rotated the mean vector by only ~5° (‖2·diff‖ ≈ 8 against a mean of norm ~88, with the NLA renormalizing to inj_scale=150 anyway) — identical descriptions were geometrically guaranteed, not evidence of absence.
+
+**Reference:** `scripts/probe_diagnostics.py`, session 05 log.
+
+---
+
 *Add new entries as they surface. Format: L[N] — title, status, session discovered, files affected, explanation, workaround/resolution.*
