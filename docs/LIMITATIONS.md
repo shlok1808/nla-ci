@@ -148,4 +148,22 @@ Measured on our tier 3 activations (leaked vs not-leaked, 151/119):
 
 ---
 
+## L9 — Injection mechanics resolved: ID discrepancy was misrecorded; NLA is direction-only (revises L7's mechanism)
+
+**Status:** Resolved — documentation correction + mechanism correction
+**Discovered:** Session 06 (read `nla_inference.py` source + shipped `nla_meta.yaml` from HuggingFace)
+**Affects:** `docs/logs/session_04.md` (misrecorded fix), L7 (wrong mechanism), all future NLA runs
+
+**1. The injection-token "fix" in session 04 is misrecorded.** The shipped `nla_meta.yaml` on HuggingFace has `injection_token_id: 149705`, and `load_nla_config()` **hard-asserts** `tokenizer.encode('㈎') == [injection_token_id]` at client init — a mismatched ID crashes before any request and cannot silently produce gibberish. Both logged runs printed `id=149705` and completed, so yaml and tokenizer agreed at 149705 at run time. The session-04 claim that "the tokenizer maps ㈎ to 149785" was likely a measurement error — the source explicitly notes `convert_tokens_to_ids('㈎') → None for Qwen; encode('㈎') → [149705]` (byte-level BPE keys on byte strings, not unicode chars). **Action:** if `actor_hf/nla_meta.yaml` on Lambda still carries a sed'd 149785, the next run will crash with "tokenizer drift" — restore 149705 (or re-download the checkpoint). Verify with `grep injection_token_id actor_hf/nla_meta.yaml`.
+
+**2. `injection_scale=150` is an L2-renormalization applied to every injected vector** (`normalize_activation`: `v / (||v|| / 150)`), and injection replaces the embedding row at the marker position. The NLA is therefore **sensitive to direction only — magnitude is always discarded.** This revises L7:
+- L7's mechanism ("diff vector norm ~4.3 is too small → OOD") is wrong. Norm cannot be the failure cause; every vector reaches the model at norm 150. The raw diff failed because its *direction* is off the natural activation manifold (≈⅓ of its energy is label-sampling noise per L8, and the signal component is a small perturbation direction never seen in isolation during NLA training) → free-association CJK output, the documented failure mode.
+- Counterfactual interpolation can only work by *rotating* the mean direction. α=2 rotated it ~5° (L8) — unchanged descriptions were guaranteed. Meaningful α must rotate substantially: α≈20 for ~45° given ‖diff‖≈4 against means of norm ~88. See `scripts/alpha_sweep_f.py`.
+
+**3. All existing NLA runs sampled at temperature 1.0** (the client default; neither `run_nla.py` nor `diff_of_means.py` passes `temperature`). Descriptions are stochastic samples, not deterministic reads — this adds decode noise to all description-level analyses. Conservative for our negative results (noise can only hurt detectability), but any *contrastive* verbalization (e.g., same vector ± perturbation) must pass `temperature=0`.
+
+**Reference:** `nla_inference.py` (kitft/nla-inference, fetched 2026-06-10): `load_nla_config` asserts, `normalize_activation`, `inject_at_marked_positions`; shipped sidecar at `huggingface.co/kitft/nla-qwen2.5-7b-L20-av/raw/main/nla_meta.yaml`.
+
+---
+
 *Add new entries as they surface. Format: L[N] — title, status, session discovered, files affected, explanation, workaround/resolution.*

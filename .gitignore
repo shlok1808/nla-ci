@@ -13,3 +13,10 @@ venv/
 
 # macOS
 .DS_Store
+
+# R
+.Rhistory
+
+# Large activation stores (stay on Lambda; commit the derived CSVs/plots instead)
+results/position_sweep_acts_f.npz
+results/forced_prefix_acts_f.npz
