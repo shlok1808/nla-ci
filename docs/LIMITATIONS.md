@@ -166,4 +166,22 @@ Measured on our tier 3 activations (leaked vs not-leaked, 151/119):
 
 ---
 
+## L10 — Logit lens is uninformative at layer 20 (8-layer rotation gap → CJK/code junk)
+
+**Status:** Known negative result — method limitation, not a finding about the directions
+**Discovered:** Session 07 (`docs/logs/session_07.md`)
+**Appears in:** `results/logit_lens_output.txt`, `notebooks/logit_lens.ipynb`
+
+Projecting our candidate directions through the model's final RMSNorm + `lm_head` (raw logit lens) produces no privacy-flavored English tokens on **any** of the five directions tested (`diff_leaked_vs_not`, `refusal_dir`, `pc1`, `pc2`, `pc3`). Every top±40 list is dominated by CJK fragments, code/markup tokens (`(nonatomic`, `PROGMEM`, `offsetX`, `);}\n\n`, `ISOString`), and replacement-character noise (`�`).
+
+**Why this is expected, not a failure of the directions.** Layer 20 of 28 sits 8 transformer blocks before the unembedding. The logit lens assumes a direction already lives in the final-layer output basis; here the remaining 8 blocks will still rotate it substantially, so a direct unembed read is basis-misaligned. (This is exactly the regime the *tuned lens*, Belrose et al. 2023, was built for — a learned affine probe per layer rather than the frozen final norm+head.) Applying RMSNorm to a bare direction rather than a full residual state is a second approximation. A junk readout was the scaffold's stated prior (`scripts/logit_lens_f.py` docstring).
+
+**Positive control did not cleanly pass — but garbled, not erased.** `refusal_dir` is our strongest behavioral direction (probe ~0.89; deflection AUC 0.92 in the triad) and was meant to surface hedging/deflection tokens as a positive control (METHODOLOGY_f §5 E8). It did **not** render clean English hedging. The diagnostic value is exactly this: if even the strongest direction is illegible, the lens — not the signal — is what failed. Notably the garble is not uniform noise: `refusal_dir`'s +end carries `'拒'` (refuse), `'是不可能'` (is impossible), `'严格'` (strict), `'asking'`; and the not-leaked end of `diff_leaked_vs_not` carries `'严禁'` (forbidden), `'绝不'` (never), `'严格'` (strict). A faint prohibition/refusal theme leaks through in Chinese on precisely the directions where it would be semantically appropriate (and not on the PCs). This is weak corroboration that the lens garbles rather than erases — **not** a reportable result, and cherry-pickable against a backdrop of mostly-random tokens. Do not put weight on it.
+
+**Implication for the pipeline.** Logit lens is closed out as a cheap negative. It does not change the v_privacy / position-sweep plan — it was always the 5-minute "is it free?" check, and the answer is no. The rigorous vocabulary-space read, if wanted later, is a tuned lens or Patchscopes (`patchscopes_f.py`, already scaffolded), which routes the direction back through the model rather than straight to the unembedding. `v_privacy` was not yet available at run time (no `minimal_pairs_f` output), so it has not been logit-lensed; given the universal failure here, re-running `logit_lens_f.py` on Lambda once `v_privacy` exists is low priority.
+
+**Reference:** `notebooks/logit_lens.ipynb` (Colab `1yZj0CA9nWIBEjrk3uX4vjagtdfuftGXH`), `results/logit_lens_output.txt`, `scripts/logit_lens_f.py`, METHODOLOGY_f §5 E8.
+
+---
+
 *Add new entries as they surface. Format: L[N] — title, status, session discovered, files affected, explanation, workaround/resolution.*

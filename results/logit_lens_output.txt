@@ -1,0 +1,44 @@
+# Logit lens — raw Colab output (2026-06-16)
+# Source: notebooks/logit_lens.ipynb (Colab: https://colab.research.google.com/drive/1yZj0CA9nWIBEjrk3uX4vjagtdfuftGXH)
+# Input: results/activations_layer20.npz (tier 3 only)
+# Model: Qwen/Qwen2.5-7B-Instruct (bf16), final RMSNorm + lm_head, TOP_K=40
+# Directions: diff_leaked_vs_not, refusal_dir, pc1, pc2, pc3
+#   (v_privacy not yet available — minimal_pairs_f.py has not been run)
+# Method: project unit-normalized direction through model.model.norm then model.lm_head.
+# NOTE: logit lens at layer 20 of 28 — 8 transformer blocks of rotation remain. See L10.
+
+keys: ['scenario_ids', 'activations', 'tiers', 'labels']
+  scenario_ids: shape=(496,), dtype=int64
+  activations: shape=(496, 3584), dtype=float32
+  tiers: shape=(496,), dtype=<U7
+  labels: shape=(496,), dtype=<U11
+unique tiers : ['tier_1' 'tier_2a' 'tier_2b' 'tier_3' 'tier_4']
+unique labels: ['appropriate' 'leaked' 'refused']
+refused in t3: 36
+
+Loading Qwen/Qwen2.5-7B-Instruct (bf16)...
+
+======================================================================
+[diff_leaked_vs_not]
+  +dir: 'ificate', ' Smarty', 'ifestyles', ' CONTRIBUTORS', '不公平', '_ARGUMENT', '自豪', '(nonatomic', '.argument', ' comeback', ' PROGMEM', 'тради', 'groundColor', '不在乎', '惬意', 'jay', '我爸', '反驳', ' QIcon', ' ///<', '反正', '.sav', '.orange', '追捧', 'lords', '豨', '舒服', '纠正', 'благо', 'Wal', '榜样', '生活水平', '贡献', '뤘', '.VAL', '躔', ' 스스', ".'/'.$", ' offsetX', '上年同期'
+  -dir: '严格的', '严禁', '处理', 'gfx', '蒟', '��', 'ɨ', 'amina', '+Sans', '绝不', ' ?><?', 'cern', 'Cpp', 'irates', '.titleLabel', ' pBuffer', '严格', 'чки', '实', '熊', ' approaching', '-NLS', ' ?><', '.contentMode', 'lut', ' خط', 'ITES', 'Mathf', 'örü', '芬', '��', '问', ' clearColor', ');}\n\n', ' REGARD', '-repeat', 'ISOString', '-buttons', '治理', '純'
+
+======================================================================
+[refusal_dir]
+  +dir: 'أوض', '严格', 'oplay', 'anmar', ' Annunci', 'noinspection', ' piger', '﻿/*\n', '��', 'nü', '睃', ' frosting', '膘', '.Accessible', 'ISOString', 'ditor', ')){\n\n', ');}\n\n', '拒', 'edm', 'gages', 'cold', 'izzato', ' Đề', ' blev', '专业从事', 'berra', 'ordial', 'asking', '?"\n\n\n\n', '苕', 'putc', '%X', '&view', 'culo', '-notification', '是不可能', 'athed', '国际在线', 'orget'
+  -dir: '骶', '乐观', ' strokeWidth', ' clich', '(fixture', '女朋友', '逆袭', 'uguay', '\'=>"', ' subsid', ' Hancock', '多吃', '共鸣', 'bel', 'فيل', 'Refresh', '��', 'rhs', '."&', '根据自己', '逆势', '不限', '细心', ' fontStyle', " ['#", '趸', 'ain', '选股', '�', '功率', 'موقع', 'itude', '靡', '有信心', ' Loki', '因地', 'Ly', '钇', 'italic', ' Obamacare'
+
+======================================================================
+[pc1]
+  +dir: 'أوض', ' Почем', 'UrlParser', '勠', 'asin', '❮', 'ﷺ', '/Typography', '始终坚持', '☺', ' volunte', 'llib', '黝', '.getSeconds', '뭐', '😀', ' practition', 'Cos', '笑意', '警示教育', 'ATER', '-len', '拜师学', '微软雅黑', 'lernen', '圆满完成', '捍卫', 'ossal', '왜', 'rlen', ' discriminator', '☰', ' defending', '四个意识', '%"><', '.unregister', 'TECTED', '宄', '℠', 'anmar'
+  -dir: 'illisecond', '=fopen', ' hel', ' egreg', ' Ease', ' Aç', 'ampoo', '悉', ' anonym', ' McCoy', ' },{', ' suspicions', '握', '小时前', 'uele', ' På', ' impro', 'slideDown', 'ファー', '倾', ' سبحانه', 'ót', ' minced', ' devez', ' sessionFactory', 'arms', 'anos', ' Succ', '借鉴', 'rô', ' sluts', '婊', ' Gratuit', '_province', ' guide', 'obook', 'undra', ' Laundry', '慌', ' helped'
+
+======================================================================
+[pc2]
+  +dir: '∖', ';};\n', '站', '碎', '罔', '渥', ' revers', ' buc', '立即', 'im', '面对面', 'usterity', 'rev', ' abi', ' }},\n', '责令', 'immel', '灌', '��', ' luc', '一对一', ' Heaven', ' improv', ' afl', ' Ab', ' vit', '寸', ' bbw', 'Divider', ' fod', 'Qualifier', ' luxe', ' siti', 'Immediate', ' immediate', ' RTL', ' synd', ' stderr', " ');\r\n", ' wrong'
+  -dir: '﻿/*\n', 'ltra', 'READING', 'oplay', 'webdriver', 'OKIE', 'benh', '谗', 'nü', '(iOS', 'DEL', 'FOUNDATION', '所有情节', '鹌', 'ponge', 'ificate', 'mitter', '",__', ' scaleX', '呸', 'потенци', 'oard', '应用查看', 'enha', "'options", ' nackt', 'erin', '⊿', 'благо', '㎜', 'przed', 'atedRoute', 'ään', '.Selenium', 'quee', '��', '_DIGEST', '在網路上', 'mouseup', ' dikke'
+
+======================================================================
+[pc3]
+  +dir: ' QIcon', '乐观', ' ragazze', 'nar', '豁', 'setStatus', '纠正', ' QPixmap', '复工复', '因地', ' PROGMEM', 'refresh', '擁', 'فيل', ' CONTRIBUTORS', ' tantra', '全民', '反驳', '壅', '}}},\n', '(fixture', ' dias', '�', 'موقع', 'fortawesome', ' strokeWidth', ' offsetY', '棒', ' refreshed', '."&', '入境', '旺盛', '有信心', '醚', ' QFont', '落户', '小康社会', 'ain', ' triumph', '顺'
+  -dir: 'anmar', ' ?><', 'athed', '蒟', 'StackNavigator', 'Uvs', 'ISOString', '��', 'ditor', ');}\n\n', '-disable', '="?', "=\\'", 'ijkl', 'abcdefghijkl', '(targetEntity', ' embod', 'ynchronously', ' (![', 'schlie', 'ató', ' Venezuel', 'ordial', 'oidal', ' strictly', 'handling', '_INCREMENT', 'culo', ')];\n\n', '国际在线', 'putc', 'mercial', ' condolences', 'DEX', ' Roulette', 'emales', ' prio', 'aton', 'ewire', 'arella'
