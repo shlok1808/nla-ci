@@ -2,6 +2,26 @@
 can LLMs internally represent contextual integrity (CI)
 violations using Natural Language Autoencoders (NLAs).
 
+## setup (Lambda A100)
+
+On a fresh Lambda instance (image ships **torch 2.11.0+cu130**), from the repo root:
+
+```bash
+bash setup_lambda.sh
+```
+
+Idempotent — safe to re-run on every spin-up. It installs sglang + the scientific
+stack, pins the torchvision build matched to torch 2.11/cu130 (sglang otherwise
+drags in an ABI-mismatched one → `operator torchvision::nms does not exist` →
+transformers can't import `Qwen2ForCausalLM`), downloads the public ConfAIde
+benchmark into `data/` (not vendored in the repo), and verifies the imports before
+you start a run. It never reinstalls torch. Then:
+
+```bash
+tmux new -s sweep        # detach with Ctrl+B D
+python scripts/position_sweep_f.py
+```
+
 ## background
 
 ### contextual integrity (CI)
