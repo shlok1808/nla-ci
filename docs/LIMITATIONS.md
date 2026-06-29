@@ -184,4 +184,23 @@ Projecting our candidate directions through the model's final RMSNorm + `lm_head
 
 ---
 
+## L13 — Minimal-pair rewrites carry a lexical secret/public marker (v_privacy may track vocabulary, not privacy semantics)
+
+**Status:** Flagged at GATE 1 — not fixed; to be quantified at `validate` GATE 2 check [4]
+**Discovered:** Session 10 (`minimal_pairs_f.py --review`, all 237 valid pairs)
+**Appears in:** `data/minimal_pairs_f.csv`, downstream `results/v_privacy_f.npz`
+
+The minimal-pairs method makes the SAME information go from private to public, so by construction every **public** rewrite carries openness vocabulary ("everyone", "openly", "common knowledge", "aware", "discussed") and every **secret** version carries secrecy vocabulary ("only", "confided", "kept", "private", "secret", "between them"). This lexical contrast is near-perfectly aligned with the label. Risk: `v_privacy` (the secret−public activation direction) may be partly tracking these **rewrite lexical markers** rather than the **privacy/CI semantics** we intend.
+
+This is largely inherent to the design — you cannot flip secrecy without flipping the words that express secrecy — so it is **not fixable at the rewrite stage**. It is instead *measured* downstream:
+
+- `stage_validate` check **[4]** fits a TF-IDF(text) probe on secret-vs-public and reports `privileged delta = activation_AUC − text_AUC`. A delta `<= 0` means `v_privacy` adds nothing over surface lexicon (it may be a lexical marker); a clearly positive delta means the activation separates beyond what the words alone explain. The validate VERDICT raises a CONFOUND FLAG on `delta <= 0`.
+- The human makes the call at GATE 2; do not run `--stage project` (the 2×2) over a v_privacy that is lexical-confound-dominated without caveating it.
+
+**Workaround / what to watch:** read the [4] privileged delta and the printed ↑secret / ↑public token lists at GATE 2. If the delta is thin, the honest framing is "privacy *and its lexical expression* are jointly encoded here," not "privacy semantics are encoded." Does not block extraction.
+
+**Reference:** `scripts/minimal_pairs_f.py` (`stage_validate` check [4], lines ~450–468; thresholds `LEN_AUC_FLAG`/verdict at ~498–512), session 10 GATE 1 review.
+
+---
+
 *Add new entries as they surface. Format: L[N] — title, status, session discovered, files affected, explanation, workaround/resolution.*
