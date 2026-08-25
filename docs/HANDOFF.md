@@ -1,15 +1,26 @@
 # HANDOFF — read this first
 
 **Purpose:** single A–Z entry point for a fresh Claude Code session (e.g. after an
-account switch on the same machine). It narrates the whole project from start to *now*
-so you can pick up where the previous session left off without reconstructing state from
-scattered logs. Written 2026-06-29.
+account switch or a model switch on the same machine). It narrates the whole project from
+start to *now* so you can pick up where the previous session left off without
+reconstructing state from scattered logs.
+**Written 2026-06-29; §2/§3/§5/§6 updated 2026-08-25 (session 11).**
 
 **Where the real detail lives** (this file is the map, not the territory):
 - `CLAUDE.local.md` — project rules, model checkpoints, benchmark table, git rules. Authoritative.
-- `docs/logs/session_01..09.md` — chronological session logs. Read the latest before working.
-- `docs/LIMITATIONS.md` — L1–L10 methodological caveats. Read before trusting any result.
+- `docs/logs/session_01..11.md` — chronological session logs. **Read `session_11.md` first** —
+  it is the most recent state and supersedes older logs where they conflict.
+- `docs/LIMITATIONS.md` — **L1–L15** methodological caveats. Read before trusting any result.
+- `docs/PREREGISTRATION.md` — dated, locked predictions + decision rules for every
+  remaining experiment. Read before running anything; do not edit past entries.
+- `docs/E3_CLAIM_LANGUAGE.md` — permitted/forbidden claim language for minimal pairs,
+  fixed in advance of GATE 2.
+- `REPORT.md` (repo root) — independent research audit, 2026-07-02. Verifies every headline
+  number and adds five findings that reshaped the paper.
+- `scratch/README.md` + `results/audit/*.txt` — the audit's analysis scripts and their
+  captured output (re-run and verified 2026-08-25).
 - `docs/METHODOLOGY_f.md` — §2 run order, §5 per-experiment hypotheses/decision rules.
+  Predates the audit; where it conflicts with `PREREGISTRATION.md`, the latter wins.
 - `docs/fable_deflection_ideas_audit.md` — audit of two new candidate experiments (ideas 1 & 2).
 
 ---
@@ -79,6 +90,7 @@ Headline findings:
 - Figures saved: `results/position_sweep_{heatmap,trajectory,pos0_depth,threeway}_f.png`.
 
 **Session 09 (2026-06-20/21, build session, no GPU) — `docs/logs/session_09.md`:**
+
 - `minimal_pairs_f.py` rebuilt as a **gated pipeline** (commit 94fcaf1): stages
   `generate → review → extract → validate → project`, with a human checkpoint between
   each (nothing auto-chains). Plus rewrite-quality fixes + a judge/label spot-check
@@ -89,26 +101,75 @@ Headline findings:
   `alpha_sweep_f.py`) and **idea 2** (project deflection onto leaked cases, rank, NLA the
   extremes). Both sit "one edit away" from existing scaffolds.
 
+**Session 10 (2026-06-29, commit `8ede759`, no log written).** GATE-1 review of the
+minimal pairs: 4 pairs dropped (289/372/449/475), leaving **233 valid**; L13 written.
+
+**Independent audit (2026-07-02) — `REPORT.md`, `scratch/01–06`.** Left untracked for
+eight weeks; adopted into the repo in session 11. Every headline number reproduces. Five
+findings that reshaped the paper: (1) nonlinear probes do **not** beat linear on leak —
+the signal is genuinely thin, not hidden (kills the planned MLP experiment); (2)
+cos(v_leak, v_deflect) = **−0.52** and erasing deflection drops the leak probe
+0.684→0.628, so ~⅓ of the leaked-vs-not signal was "absence of deflection"; (3)
+full-response text recovers the judge's own leak label at only **0.749** ≈ the activation
+ceiling, so ~0.75 may be a label-subtlety ceiling rather than a probe failure; (4) the
+sweep covers only the first 64 of a **median-111-token** response; (5) the minimal-pairs
+lexical confound is near-total (text AUC **0.956**, 0.824 marker-ablated) and inherent.
+Also found a live data bug: the L3 tier-4 label fix never reached the bf16 CSV.
+
+**Session 11 (2026-08-25, commit `ebfc148`, local only) — `docs/logs/session_11.md`.**
+Adopted the audit into the record; wrote **L11/L12/L14/L15** and upgraded L13; produced
+`docs/PREREGISTRATION.md` and `docs/E3_CLAIM_LANGUAGE.md`; built the eval-awareness
+control; and ran a **paired bootstrap on the triad deltas** that changed the paper's
+framing (see §3a below).
+
 ---
 
 ## 3. Current state in one screen
 
-**Benchmark (use bf16 CSV):** tier 3 is the primary contrast set — ~151 leaked /
-~119 not-leaked (collapsed). Leak rate 55.9%. Tiers 1/2 are 100% appropriate (they test
-sensitivity rating, not disclosure — not useful for the 2×2). Tier 4 exploratory (n=20).
+**Benchmark (use bf16 CSV):** tier 3 is the primary contrast set — 151 leaked / 83
+appropriate / 36 refused. Leak rate 55.9%. **Canonical leak contrast is leaked-vs-
+appropriate (0.65), not leaked-vs-not (0.68)** — see L12. Tiers 1/2 are 100% appropriate
+(they test sensitivity rating, not disclosure). Tier 4 exploratory (n=20) and carries a
+live label bug (**L14**) — fix or drop before reporting any tier-4 number.
 
-**Pipeline status (per `CLAUDE.local.md` table + session 08):**
+**Pipeline status:**
 - Steps 1–7 (setup → verbalization-survival triad): **done.**
 - Logit lens: **done, negative (L10).**
-- Position sweep (E1): **run + fully analyzed (session 08).**
-- `forced_prefix_f.py` (E2): **scaffolded — this is the next Lambda run.**
-- `minimal_pairs_f.py` (E3, the keystone): **gated pipeline built; not yet run.**
-- patchscopes / introspection / alpha_sweep / steering (E5/E6/E7/E4): **scaffolded.**
+- Position sweep (E1): **run + analyzed** (session 08), now qualified by **L15**.
+- Independent audit + stats hardening: **done** (`REPORT.md`, `results/audit/`,
+  `results/stats_hardening_f.csv`).
+- `minimal_pairs_f.py` (E3, keystone): `generate` **done**, GATE-1 review **done**
+  (233 valid pairs); `extract` / `validate` / `project` **not yet run.**
+- `relative_position_sweep_f.py` (E2b): **written, never run.**
+- `forced_prefix_f.py` (E2): **scaffolded, never run.**
+- `eval_awareness_f.py` (E-EVAL): `--stage build` **done** (1620 prompts);
+  `extract` / `analyze` **not yet run.**
+- `alpha_sweep_f.py` (E-NLA): scaffolded; temp 0 and the `v_privacy` hookup are already
+  correct, but **the deflection direction is not in its `dirs` dict** — it currently
+  builds only leak-derived variants, which the audit deprioritized. One-line add.
+- patchscopes / introspection / steering (E5/E6/E4): **scaffolded**, deprioritized.
 
-**Two outstanding loose ends from session 08:** (a) dump leaked-vs-refused &
-refused-vs-appropriate AUCs at k=42 from `position_sweep_acts_f.npz` (Lambda-only,
-~4 lines) to finish the three-way at the plateau; (b) write candidate L11/L12 into
-`docs/LIMITATIONS.md`.
+### 3a. The result that changed the framing (session 11)
+
+The triad's published CIs are on the *marginal* AUCs and overlap heavily. But the three
+probes score the same scenarios, so the correct object is a **paired bootstrap on the
+delta** (`scripts/stats_hardening_f.py` → `results/stats_hardening_f.csv`):
+
+| Contrast | acts − input | desc − input | acts − desc |
+|---|---|---|---|
+| leaked vs not | **+0.103** p=.009 | +0.025 **n.s.** | +0.077 p=.046 |
+| leaked vs appropriate | **+0.104** p=.020 | +0.051 **n.s.** | +0.053 **n.s.** |
+| refused vs appropriate | **+0.297** p<.001 | **+0.138** p=.042 | **+0.159** p<.001 |
+
+**The leak row cannot carry a "verbalization destroys the signal" claim** — `desc − input`
+is indistinguishable from zero, so the description channel never rose above the input
+baseline and there is no collapse to demonstrate. **Deflection** is where channel loss is
+shown: descriptions retain roughly half the privileged signal and lose the rest. Report
+deltas with CIs, never bare AUCs.
+
+**Outstanding loose end from session 08:** dump leaked-vs-refused & refused-vs-appropriate
+AUCs at k=42 from `position_sweep_acts_f.npz` (Lambda-only, ~4 lines). Low priority now
+that **L11** retires the argmax framing.
 
 ---
 
@@ -139,23 +200,47 @@ minimal-pairs, *without* leak labels → non-circular).
 - **L8** leak is only weakly decodable at the extraction point (AUC 0.68, not ~1.0).
 - **L9** injection is direction-only; `injection_token_id` must be 149705.
 - **L10** logit lens uninformative at L20 (rotation gap → CJK/code junk).
-- **L11/L12** (candidates, not yet written): drop "position 42"; use leaked-vs-appropriate.
+- **L11** "position 42" retired — argmax of 975 correlated AUCs, ≤1 SE margin.
+- **L12** use leaked-vs-appropriate as canonical; leaked-vs-not is inflated by deflection.
+- **L13** minimal-pair lexical confound, quantified pre-GPU (text AUC 0.956) — the GATE-2
+  confound flag **will fire by design** and does not block `--stage project`.
+- **L14** tier-4 label bug live in the bf16 CSV (ID 495 is a confirmed judge hallucination).
+- **L15** the position sweep covers only the first 64 of a median-111-token response.
 
 ---
 
 ## 6. What to do next (in priority order)
 
-1. **Run `forced_prefix_f.py` (E2) on Lambda** — the text-matched control that isolates
-   transcript from decision in the leak "climb." Report (E1 − E2), not E1 alone. This is
-   the canonical next step per METHODOLOGY_f §2 and session 08 §10.
-2. **Run the minimal-pairs keystone (`minimal_pairs_f.py`)** through its gated stages.
-   *Spot-check ≥10 rewrites at GATE 1 before trusting anything* — pairs must differ ONLY
-   in privacy flow, not topic/length/wording. This produces `v_privacy` → unlocks the 2×2.
-3. Housekeeping: write L11/L12 into LIMITATIONS.md; close the two missing k=42 pairwise
-   AUCs; consider the two new audited experiments (ideas 1 & 2).
+All local prep is done. The next action is a **single Lambda session running four
+experiments back to back** (~2h, ~$5–10). Read `docs/PREREGISTRATION.md` first — each
+experiment's prediction and decision rule is locked there.
+
+**Session A — one A100 spin-up, plain HuggingFace transformers:**
+
+1. **`relative_position_sweep_f.py` (E2b, ~40 min)** — samples at relative positions
+   {10,25,50,75,90}% of each response plus the final token. Closes **L15**. Prereg §3.
+2. **`minimal_pairs_f.py --stage extract` then `--stage validate` (E3, ~30 min)** —
+   produces `v_privacy` → unlocks the non-circular 2×2. **Read
+   `docs/E3_CLAIM_LANGUAGE.md` §4 at GATE 2 before proceeding to `--stage project`.**
+   Prereg §4.
+3. **`forced_prefix_f.py` (E2, ~30–60 min)** — text-matched control for the leak climb.
+   `scratch/03` predicts flat; run it anyway (TF-IDF is a weak baseline and reviewers
+   want the model-grade control). Prereg §2.
+4. **`eval_awareness_f.py --stage extract` (E-EVAL, ~20 min)**, then `--stage analyze`
+   locally — tests whether the strongest result (deflection, 0.89) is CI content or the
+   model detecting that it is being evaluated. Prereg §6.
+
+**Session B — separate, needs SGLang (~1h):**
+
+5. **E-NLA** — point the verbalizer at **`v_deflect`** and **`v_privacy`** via
+   `alpha_sweep_f.py` (requires adding the deflection direction to its `dirs` dict).
+   Scheduled after E3 because E3 creates the second direction. Prereg §5.
+
+**Also outstanding:** fix or drop tier 4 (**L14**).
 
 **Before any Lambda NLA run:** `grep injection_token_id actor_hf/nla_meta.yaml` → must be
-149705 (L9). Git rules: no Claude/AI attribution on commits; never push unless asked.
+**149705** (L9), and temperature must be **0** — all prior NLA runs used 1.0 and were
+stochastic samples. Git rules: no Claude/AI attribution on commits; never push unless asked.
 
 ---
 
