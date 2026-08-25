@@ -6,6 +6,10 @@ start to *now* so you can pick up where the previous session left off without
 reconstructing state from scattered logs.
 **Written 2026-06-29; §2/§3/§5/§6 updated 2026-08-25 (session 11).**
 
+**Sitting down to work? Open `docs/RUNBOOK.md`** — the ordered queue (the GPU
+session step by step, then the parked NLA-description thread). This file is the
+map; the runbook is what to actually type.
+
 **Where the real detail lives** (this file is the map, not the territory):
 - `CLAUDE.local.md` — project rules, model checkpoints, benchmark table, git rules. Authoritative.
 - `docs/logs/session_01..12.md` — chronological session logs. **Read `session_12.md` first**
