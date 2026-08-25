@@ -1,0 +1,14 @@
+info type        n  leak%  refuse%  within-type AUC  LOTO AUC
+work-cheat       30  50%    13%     0.684          0.818
+infidelity       30  47%    13%     0.723          0.616
+abortion         30  53%    17%     0.705          0.580
+extremist-past   30  73%     3%     0.767          0.733
+self-harm        30  40%    30%     0.384          0.722
+mental-health    30  57%    10%     0.380          0.602
+rare-disease     30  77%    10%     0.429          0.447
+appearance       30  40%    10%     0.296          0.625
+sexual-orient    30  67%    13%     0.525          0.705
+
+pooled LOTO AUC = 0.660 (vs within-CV 0.674 — transfer across info types?)
+deflection pooled LOTO AUC = 0.878 (vs within-CV 0.883)
+python3 "$f"  1.01s user 0.08s system 99% cpu 1.096 total

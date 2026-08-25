@@ -1,0 +1,19 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+k     text(scen+k-prefix)  best-acts-AUC@k(any layer)  acts@k L20
+      lvn    lva           lvn    lva                  lvn    lva
+0     0.581  0.547         0.689  0.679                0.687  0.652
+4     0.581  0.552         0.642  0.610                0.640  0.610
+8     0.582  0.548         0.629  0.542                0.629  0.542
+16    0.584  0.547         0.705  0.648                0.705  0.648
+24    0.588  0.552         0.667  0.574                0.667  0.573
+32    0.603  0.567         0.722  0.720                0.711  0.704
+42    0.612  0.583         0.746  0.772                0.740  0.772
+52    0.627  0.604         0.710  0.658                0.704  0.644
+64    0.637  0.616         0.689  0.711                0.681  0.711
+
+full response:  scen+resp text AUC lvn=0.668  lva=0.642
+response only:  text AUC lvn=0.749  lva=0.720
+first 64 resp tokens only: text AUC lvn=0.700  lva=0.716
+
+response token lengths: min=65 median=111 max=277; frac > 64 tokens: 100.00%
+python3 "$f"  4.85s user 0.29s system 85% cpu 6.043 total

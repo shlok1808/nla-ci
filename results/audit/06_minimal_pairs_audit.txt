@@ -1,0 +1,19 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+valid pairs: 233 (of 270)
+  words        secret-public delta: mean=+1.27 median=+1 sd=4.5 |d|>10: 10
+  chars        secret-public delta: mean=+5.18 median=+2 sd=25.2 |d|>10: 116
+  qwen tokens  secret-public delta: mean=+1.57 median=+1 sd=5.2 |d|>10: 14
+  token-length-only AUC: 0.522 (want ~0.5; gate flags >0.60)
+  TF-IDF (full vocab, 1-2gram)                 AUC=0.956 ± 0.009
+    ↑secret: only, kept, secret, the only, confided, between, they kept, anyone else, who knew, without, only one, else, kept this, between them, to keep
+    ↑public: everyone, openly, everyone knew, discussed, openly discussed, and everyone, everyone in, aware, aware of, knows, common knowledge, everyone knows, knows about, with, among
+  TF-IDF after marker-lexicon ablation         AUC=0.824 ± 0.009
+
+[5] edit sizes: median 9 distinct words/pair, p90=19; union of edit vocab: 389 words
+  TF-IDF after removing ALL edit-vocab words   AUC=0.500 ± 0.000
+  TF-IDF function-words only (style)           AUC=0.915 ± 0.017
+
+Summary: full=0.956  marker-ablated=0.824  edit-vocab-removed=0.500  function-words=0.915  length-only=0.522
+Reading: the activation probe must beat the FULL text AUC for any privileged-encoding claim (stage_validate [4] delta).
+python3 "$f"  1.88s user 0.23s system 84% cpu 2.503 total

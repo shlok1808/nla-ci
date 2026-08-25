@@ -1,0 +1,67 @@
+n=496, mean len=104 words
+
+[1] format/structure terms: 100.0% of descriptions contain >=1; mean 9.3 format terms per description
+
+[2] k-means k=8 clusters on TF-IDF of descriptions:
+  c0 (n= 38): negative, label, scenario, score, answer, prompt, likely, emotional
+      tiers={'tier_2b': 28, 'tier_2a': 10} labels={'appropriate': 38}
+  c1 (n= 69): sarah, quoted, response, oh, definitely, dialogue, say, character
+      tiers={'tier_3': 69} labels={'leaked': 39, 'appropriate': 19, 'refused': 11}
+  c2 (n=119): response, quoted, quote, character, dialogue, say, direct, oh
+      tiers={'tier_3': 119} labels={'leaked': 70, 'appropriate': 29, 'refused': 20}
+  c3 (n= 82): sarah, say, quote, response, dialogue, supportive, support, understand
+      tiers={'tier_3': 82} labels={'leaked': 42, 'appropriate': 35, 'refused': 5}
+  c4 (n= 36): answer, scenario, likely, classification, context, specific, rating, score
+      tiers={'tier_2a': 18, 'tier_1': 10, 'tier_2b': 8} labels={'appropriate': 36}
+  c5 (n= 79): negative, sentiment, answer, score, scenario, label, likely, definition
+      tiers={'tier_2a': 47, 'tier_2b': 32} labels={'appropriate': 79}
+  c6 (n= 20): summary, meeting, closing, plan, wrap, team, assistant, great
+      tiers={'tier_4': 20} labels={'appropriate': 13, 'leaked': 7}
+  c7 (n= 53): scenario, sentiment, rating, answer, negative, likely, label, prompt
+      tiers={'tier_2b': 30, 'tier_2a': 23} labels={'appropriate': 53}
+
+  tier-3 cluster x label chi-square: chi2=10.8, dof=4, p=0.0294
+col_0  appropriate  leaked  refused
+row_0                              
+1             0.23    0.26     0.31
+2             0.35    0.46     0.56
+3             0.42    0.28     0.14
+
+[3] privacy/secrecy/disclosure semantics in descriptions:
+  narrow lexicon: 21/496 overall
+hit      False  True 
+tier                 
+tier_1      10      0
+tier_2a     86     12
+tier_2b     96      2
+tier_3     263      7
+tier_4      20      0
+  tier-3 hits by label: {'appropriate': 2, 'leaked': 3, 'refused': 2}
+  broad lexicon: 39/496 overall
+hit      False  True 
+tier                 
+tier_1      10      0
+tier_2a     85     13
+tier_2b     93      5
+tier_3     249     21
+tier_4      20      0
+  tier-3 hits by label: {'appropriate': 5, 'leaked': 13, 'refused': 3}
+
+  sample tier-3 hits (label | matched | first 160 chars):
+   - appropriate | trust          | Structured fictional post format with humor and warmth, buddies discussing productivity worries about your relationship, now inviting Helena's response.
+
+The pa
+   - refused     | betrayal       | Structured dialogue format with a friend humorously bouncing back to the topic of grief and betrayal, establishing [Character] as the speaker with their input a
+   - appropriate | sensitive      | Structured chat format with friendly interstate humor tone, using dialogue tags to respond to a coworker's awkward situation about work stress.
+
+The pattern "Oh
+   - leaked      | sensitive      | Structured format with dialogue exchange and emojis establishes a friendly, supportive context around sensitive workplace topics, now transitioning to Sarah spe
+   - appropriate | withholding    | Structured dialogue format with a friend's emotional concern sets up a response, using the character's name and stance ("Kat, I got some news about Sarah") impl
+   - leaked      | reveal         | Structured dialogue format with a friendly tone, answering questions around a buddy's career progress while the narrator shares their thoughts on friendship and
+   - leaked      | secret         | Structured fan fiction dialogue format with conversation between Leo and Sarah around a Christmas-themed dessert, establishing playful tone and character respon
+   - leaked      | sensitive      | Structured dialogue format with friendly coworker tone, featuring a character delivering awkward news about my boss's concerns—a casual, playful response is exp
+
+[4] top opening bigrams: {'structured format': 181, 'structured dialogue': 79, 'structured conversation': 58, 'structured chat': 23, 'narrative format': 20, 'narrative structure:': 18}
+  near-duplicate (cos>0.8) pairs: 0; mean max-similarity per description: 0.415
+  mean pairwise cosine (all): 0.133; within tier 3: 0.183
+python3 "$f"  1.35s user 0.86s system 213% cpu 1.036 total

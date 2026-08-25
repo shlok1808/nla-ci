@@ -20,6 +20,13 @@ venv/
 # Large activation stores (stay on Lambda; commit the derived CSVs/plots instead)
 results/position_sweep_acts_f.npz
 results/forced_prefix_acts_f.npz
+results/minimal_pairs_acts_f.npz
+results/eval_awareness_acts_f.npz
+
+# Deterministically regenerable from a committed script — rebuild, don't vendor.
+# (Contrast: data/minimal_pairs_f.csv IS vendored; it is paid LLM output.)
+#   python scripts/eval_awareness_f.py --stage build
+data/eval_awareness_prompts_f.csv
 
 # ConfAIde benchmark (fetched by setup_lambda.sh, not vendored)
 data/tier_*.txt

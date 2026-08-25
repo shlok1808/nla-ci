@@ -1,0 +1,41 @@
+==============================================================================
+PART A — position_sweep_aucs_f.csv (as-committed numbers)
+==============================================================================
+rows=975, layers=[np.int64(10), np.int64(15), np.int64(20), np.int64(24), np.int64(28)], pos 0..64, targets=['leaked_vs_approp', 'leaked_vs_not', 'refused_vs_rest']
+n per target: {'leaked_vs_approp': array([234]), 'leaked_vs_not': array([270]), 'refused_vs_rest': array([270])}
+
+[C3] AUC at pos 0 by layer:
+layer                 10      15      20      24      28
+target                                                  
+leaked_vs_approp  0.5072  0.6144  0.6522  0.6795  0.6784
+leaked_vs_not     0.4818  0.6203  0.6865  0.6890  0.6555
+refused_vs_rest   0.5241  0.7436  0.8909  0.8695  0.8151
+
+[C2] global max per target across all (layer, pos):
+  leaked_vs_approp   max=0.7716 at L20/k42; cells>=0.80: 0/325
+  leaked_vs_not      max=0.7477 at L15/k43; cells>=0.80: 0/325
+  refused_vs_rest    max=0.8948 at L24/k26; cells>=0.80: 125/325
+
+[C1] refused_vs_rest: L20 pos0 = 0.8909; L20 range over pos: 0.743-0.891
+
+==============================================================================
+PART B — recompute from activations_layer20.npz (independent code path)
+==============================================================================
+tier3 n=270: leaked=151, appropriate=83, refused=36
+
+[C1/C5] pos-0 contrasts, 5-fold CV logistic (C=1e-3), seed-variance over 10 seeds:
+  leaked_vs_not        AUC=0.6744  seed-range [0.6569,0.6933]  n1=151, n0=119, Hanley SE=0.032
+  leaked_vs_approp     AUC=0.6530  seed-range [0.6258,0.6717]  n1=151, n0=83, Hanley SE=0.036
+  refused_vs_rest      AUC=0.8836  seed-range [0.8723,0.8934]  n1=36, n0=234, Hanley SE=0.037
+  refused_vs_approp    AUC=0.9149  seed-range [0.8976,0.9311]  n1=36, n0=83, Hanley SE=0.033
+  leaked_vs_refused    AUC=0.8776  seed-range [0.8624,0.8870]  n1=151, n0=36, Hanley SE=0.026
+
+[perm] leaked_vs_not AUC=0.6836; label-shuffled null: mean=0.502 p95=0.574 max=0.613  p=0.0000
+
+==============================================================================
+PART C — triad re-derivation (input / acts / desc)
+==============================================================================
+  leaked vs not (t3)       input=0.581  acts=0.684  desc=0.606  privileged=+0.103
+  leaked vs approp (t3)    input=0.547  acts=0.651  desc=0.598  privileged=+0.104
+  refused vs approp (t3)   input=0.622  acts=0.920  desc=0.760  privileged=+0.297
+python3 "$f"  9.75s user 0.14s system 97% cpu 10.120 total
