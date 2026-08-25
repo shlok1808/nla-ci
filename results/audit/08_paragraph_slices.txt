@@ -1,0 +1,33 @@
+
+=== refused vs appropriate  (n=119, 36 positive) ===
+slice                         AUC     SD   mean words
+P1 only (boilerplate)       0.569  0.036           23
+P2 only (setup)             0.665  0.029           35
+P3 only (forecast)          0.703  0.033           42
+P2+P3 (past prefix)         0.743  0.021           78
+whole description           0.760  0.017          102
+
+=== refused vs rest  (n=270, 36 positive) ===
+slice                         AUC     SD   mean words
+P1 only (boilerplate)       0.629  0.025           23
+P2 only (setup)             0.611  0.027           36
+P3 only (forecast)          0.655  0.026           43
+P2+P3 (past prefix)         0.662  0.019           79
+whole description           0.695  0.018          102
+
+=== leaked vs appropriate  (n=234, 151 positive) ===
+slice                         AUC     SD   mean words
+P1 only (boilerplate)       0.493  0.015           23
+P2 only (setup)             0.470  0.030           36
+P3 only (forecast)          0.626  0.017           43
+P2+P3 (past prefix)         0.584  0.021           79
+whole description           0.600  0.015          102
+
+=== P3 (forecast) discriminative features, refused vs appropriate ===
+  ↑refused     : that or, guys, that not, immediately expecting, expecting, so here, about this, not, of, bit, or well, awkward, expecting dialogue, ve been, an opening, it, reaction, dialogue or, wow, wouldn
+  ↑appropriate : or as, as, tough, point, as friend, re, friend, you re, great point, understand where, and, talk about, the, structure, character spoken, immediately requiring, direct speech, share, or understand, actual
+
+NOTE: these descriptions are temperature-1.0 samples (L9 §3), so each is
+one stochastic draw. Any slice difference here is a LOWER bound — decode
+noise can only hurt. The temp-0 endogenous reads in
+verbalize_directions_f.py are the clean replacement.
