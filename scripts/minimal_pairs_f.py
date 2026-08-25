@@ -67,7 +67,8 @@ REWRITE_MODEL = 'gpt-4o-mini'
 # Validation gate thresholds (recommendation only — the human makes the call)
 PASS_AUC      = 0.90   # held-out secret-vs-public AUC for "privacy is encoded"
 PASS_FRAC_POS = 0.80   # frac of per-pair cosines > 0 for "one direction, not a bundle"
-LEN_AUC_FLAG  = 0.60   # length-only AUC above this => length leaks the label
+LEN_AUC_FLAG  = 0.60   # length-only AUC above this => length leaks the label (BLOCKS, E3 §4)
+CROSSCHECK_COS = 0.98  # [5] median cosine vs activations_layer20.npz below this => pipeline bug (BLOCKS)
 REVIEW_N      = 10     # pairs shown by --review by default
 
 BENCHMARK_CSV = Path('results/benchmark_results_bf16.csv')
@@ -138,6 +139,17 @@ def load_tier3():
     df = df.merge(bench[['scenario_id', 'label']], on='scenario_id')
     assert len(df) == 270
     return df
+
+
+def divergent_ids(df):
+    """Scenario ids whose story under THIS file's parser differs from the story used
+    by benchmark.py/extract_activations.py (the narrow 'What should X say?' regex).
+    For these, benchmark labels and activations_layer20.npz come from a different
+    prompt than the one extracted here — see LIMITATIONS L16."""
+    old = df['scenario'].map(
+        lambda b: re.sub(r'\s+What should \w+ say\?\s*$', '', str(b),
+                         flags=re.DOTALL).strip())
+    return set(df.loc[old != df['story'].str.strip(), 'scenario_id'].astype(int))
 
 
 # ── Stage 1: generate rewrites ────────────────────────────────────────────────
@@ -467,20 +479,39 @@ def stage_validate(df):
     print(f'    tokens ↑secret: {", ".join(names[np.argsort(coef)[-12:]][::-1])}')
     print(f'    tokens ↑public: {", ".join(names[np.argsort(coef)[:12]])}')
 
-    # [5] extraction-consistency cross-check vs activations_layer20.npz (tier 3)
+    # [5] extraction-consistency cross-check vs activations_layer20.npz (tier 3).
+    # ENFORCED (prereg §4: a cross-check failure blocks everything). Ids whose story
+    # diverged from the benchmark-era parser (L16) are excluded from the pass bar —
+    # their reference acts come from a different prompt by construction — and are
+    # reported separately.
+    div = divergent_ids(df)
     ref = np.load(REF_ACTS, allow_pickle=True)
     rt3 = ref['tiers'] == 'tier_3'
     ref_by = {int(i): a.astype(float) for i, a in
               zip(ref['scenario_ids'][rt3], ref['activations'][rt3])}
     have = np.array([int(i) in ref_by for i in ids])
-    if have.any():
-        R = np.vstack([ref_by[int(i)] for i in ids[have]])
-        Ssub = S[have]
+    in_div = np.array([int(i) in div for i in ids])
+    cross_ok = False
+    if (have & ~in_div).any():
+        m = have & ~in_div
+        R = np.vstack([ref_by[int(i)] for i in ids[m]])
+        Ssub = S[m]
         cos = np.sum(R * Ssub, axis=1) / (np.linalg.norm(R, axis=1)
                                           * np.linalg.norm(Ssub, axis=1))
+        cross_ok = bool(np.median(cos) >= CROSSCHECK_COS)
         print(f'\n[5] extraction cross-check (acts_secret vs activations_layer20.npz, '
-              f'{int(have.sum())} ids): median cos={np.median(cos):.4f}  '
-              f'max|Δ|={np.max(np.abs(R - Ssub)):.3f}  (expect cos~1.0; Δ = bf16 noise)')
+              f'{int(m.sum())} same-parser ids): median cos={np.median(cos):.4f}  '
+              f'max|Δ|={np.max(np.abs(R - Ssub)):.3f}  '
+              f'(PASS bar: median cos >= {CROSSCHECK_COS}; Δ = bf16 noise)')
+    if (have & in_div).any():
+        m = have & in_div
+        R = np.vstack([ref_by[int(i)] for i in ids[m]])
+        Ssub = S[m]
+        cos_d = np.sum(R * Ssub, axis=1) / (np.linalg.norm(R, axis=1)
+                                            * np.linalg.norm(Ssub, axis=1))
+        print(f'    parser-divergent ids (L16, excluded from the bar, expected lower):')
+        for i, c in zip(ids[m], cos_d):
+            print(f'      id {int(i)}: cos={c:.4f}')
 
     # geometry vs behavioral leak direction
     rl = ref['labels'][rt3]; ra = ref['activations'][rt3].astype(float)
@@ -495,17 +526,27 @@ def stage_validate(df):
              proj_paired=proj_paired, proj_raw=proj_raw, per_pair_cosine=cons)
     print(f'\nSaved {VPRIV_PATH}')
 
-    # recommended verdict — the human makes the actual call
+    # recommended verdict — the human makes the actual call.
+    # Blocking and non-blocking conditions are kept separate per E3_CLAIM_LANGUAGE §4:
+    # cross-check failure and length confound BLOCK; the lexical delta is expected
+    # to fire (L13) and never blocks on its own.
     passed = (auc_sp >= PASS_AUC) and (np.median(cons) > 0) and (frac_pos >= PASS_FRAC_POS)
-    confound = (auc_len > LEN_AUC_FLAG) or (auc_sp - auc_txt <= 0.0)
+    len_fail = auc_len > LEN_AUC_FLAG
+    lex_flag = (auc_sp - auc_txt) <= 0.0
     print('\n' + '=' * 64)
-    if not passed:
+    if not cross_ok:
+        print('VERDICT: FAIL — extraction cross-check [5] below bar (prereg §4:')
+        print('  pipeline bug; fix before anything else). DO NOT run --stage project.')
+    elif len_fail:
+        print('VERDICT: FAIL — length-only AUC above flag (E3 §4 checklist item).')
+        print('  Length leaks the label; DO NOT run --stage project.')
+    elif not passed:
         print('VERDICT: FAIL — held-out secret-vs-public AUC/direction below bar.')
         print('  v_privacy is weak/noisy. DO NOT run --stage project; report the')
         print('  negative (the leak weakness stands as genuine, not a tooling gap).')
-    elif confound:
-        print('VERDICT: PASS w/ CONFOUND FLAG — separation real but partly')
-        print('  length/lexical-explained. Inspect [3]/[4]; decide before projecting.')
+    elif lex_flag:
+        print('VERDICT: PASS w/ CONFOUND FLAG (expected by design, L13 — does NOT')
+        print('  block `--stage project`). Claim language: docs/E3_CLAIM_LANGUAGE.md.')
     else:
         print('VERDICT: PASS — strong, direction-consistent, not length/lexical-')
         print('  explained. OK to run `--stage project`.')
@@ -540,6 +581,13 @@ def stage_project(df):
     m_la = np.isin(lab, ['leaked', 'appropriate'])         # canonical (session-08 L12)
     report(m_la, 'leaked vs appropriate (canonical)')
     report(np.ones(len(lab), bool), 'leaked vs not-leaked (continuity)')
+
+    # L16 sensitivity: parser-divergent ids were labelled under a different prompt
+    # than the one their activations here come from — report canonical AUC without them
+    div = divergent_ids(df)
+    in_div = np.array([int(i) in div for i in ids])
+    if in_div.any():
+        report(m_la & ~in_div, f'canonical excl. {int(in_div.sum())} parser-divergent (L16)')
     print('  (~0.5 = encoding strength unrelated to behavior — the awareness gap is')
     print('   not an encoding-strength gap, itself a finding)')
 

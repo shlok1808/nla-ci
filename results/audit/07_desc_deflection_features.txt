@@ -1,0 +1,11 @@
+tier-3 descriptions: 270  labels: {'leaked': 151, 'appropriate': 83, 'refused': 36}
+
+[refused_vs_rest] grouped-CV TF-IDF AUC: 0.658 ± 0.076 (n=270, 36 refused)
+  ↑refused : awkward, not, oh man, about my, expecting, really, that not, to the, that or, conversation context, immediately expecting, ll definitely, expecting dialogue, feelings or, response structure, reaction, narrative, feel, my, dilemma
+  ↑rest    : tough, or as, as, some, point, sarah, re, my character, you re, great point, understand where, words or, support, direct speech, signals direct, where you, spoken response, statement, defending, structured conversation
+
+[refused_vs_approp] grouped-CV TF-IDF AUC: 0.767 ± 0.067 (n=119, 36 refused)
+  ↑refused : awkward, that or, to the, guys, that not, about my, narrative, my, not, expecting, reaction, feel, it, so here, oh man, wouldn, ll definitely, expecting dialogue, ll, immediately expecting
+  ↑rest    : some, tough, or as, as, re, my character, you re, support, understand where, point, as friend, where you, great point, sarah, re coming, coming, coming from, where, character spoken, supportive tone
+
+Reading guide: if the ↑refused features are tone/structure words rather than privacy vocabulary, the E-NLA lexicon endpoint is insufficient alone and the description-text probe (tertiary endpoint, amendment A1) is the sensitive readout. NOTE: all descriptions here are temperature-1.0 samples (L9 §3) — the endogenous temp-0 reads in verbalize_directions_f.py are the clean replacement.

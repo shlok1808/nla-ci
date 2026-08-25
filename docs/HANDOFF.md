@@ -8,8 +8,10 @@ reconstructing state from scattered logs.
 
 **Where the real detail lives** (this file is the map, not the territory):
 - `CLAUDE.local.md` — project rules, model checkpoints, benchmark table, git rules. Authoritative.
-- `docs/logs/session_01..11.md` — chronological session logs. **Read `session_11.md` first** —
-  it is the most recent state and supersedes older logs where they conflict.
+- `docs/logs/session_01..12.md` — chronological session logs. **Read `session_12.md` first**
+  (2026-08-25 pre-flight audit + fixes: L16 parser fork, GATE-2 enforcement, eval-awareness
+  prompt rebuild, `verbalize_directions_f.py` supersedes `alpha_sweep_f.py`, prereg amendment A1)
+  — it is the most recent state and supersedes older logs where they conflict.
 - `docs/LIMITATIONS.md` — **L1–L15** methodological caveats. Read before trusting any result.
 - `docs/PREREGISTRATION.md` — dated, locked predictions + decision rules for every
   remaining experiment. Read before running anything; do not edit past entries.
@@ -144,9 +146,9 @@ live label bug (**L14**) — fix or drop before reporting any tier-4 number.
 - `forced_prefix_f.py` (E2): **scaffolded, never run.**
 - `eval_awareness_f.py` (E-EVAL): `--stage build` **done** (1620 prompts);
   `extract` / `analyze` **not yet run.**
-- `alpha_sweep_f.py` (E-NLA): scaffolded; temp 0 and the `v_privacy` hookup are already
-  correct, but **the deflection direction is not in its `dirs` dict** — it currently
-  builds only leak-derived variants, which the audit deprioritized. One-line add.
+- E-NLA: **`verbalize_directions_f.py`** (new, session 12) supersedes `alpha_sweep_f.py` —
+  angle-targeted rotations, v_deflect primary, matched-angle random + off-manifold controls,
+  endogenous temp-0 reads. `--dry-run` verified locally (125 calls). Prereg amendment A1.2.
 - patchscopes / introspection / steering (E5/E6/E4): **scaffolded**, deprioritized.
 
 ### 3a. The result that changed the framing (session 11)
@@ -206,6 +208,8 @@ minimal-pairs, *without* leak labels → non-circular).
   confound flag **will fire by design** and does not block `--stage project`.
 - **L14** tier-4 label bug live in the bf16 CSV (ID 495 is a confirmed judge hallucination).
 - **L15** the position sweep covers only the first 64 of a median-111-token response.
+- **L16** story-parser fork: 12 tier-3 stories diverge across pipeline stages (9 in the
+  valid minimal pairs) — cross-check excludes them; project reports a with/without sensitivity.
 
 ---
 
@@ -233,8 +237,8 @@ experiment's prediction and decision rule is locked there.
 **Session B — separate, needs SGLang (~1h):**
 
 5. **E-NLA** — point the verbalizer at **`v_deflect`** and **`v_privacy`** via
-   `alpha_sweep_f.py` (requires adding the deflection direction to its `dirs` dict).
-   Scheduled after E3 because E3 creates the second direction. Prereg §5.
+   **`verbalize_directions_f.py`** (run `--dry-run` first; supersedes `alpha_sweep_f.py`).
+   Scheduled after E3 because E3 creates the second direction. Prereg §5 + amendment A1.2.
 
 **Also outstanding:** fix or drop tier 4 (**L14**).
 

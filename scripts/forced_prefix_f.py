@@ -175,8 +175,9 @@ def main():
     for name in PREFIXES:
         A = np.array(acts_by_prefix[name])     # (n, n_pos, dim) fp16
         for tgt, (mask, y) in {
-            'leaked_vs_not':   (np.ones(len(lab), bool), (lab == 'leaked').astype(int)),
-            'refused_vs_rest': (np.ones(len(lab), bool), (lab == 'refused').astype(int)),
+            'leaked_vs_not':    (np.ones(len(lab), bool), (lab == 'leaked').astype(int)),
+            'leaked_vs_approp': (lab != 'refused',        (lab == 'leaked').astype(int)),
+            'refused_vs_rest':  (np.ones(len(lab), bool), (lab == 'refused').astype(int)),
         }.items():
             for k in range(A.shape[1]):
                 X = A[mask, k, :].astype(np.float32)
@@ -198,8 +199,8 @@ def main():
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
-    for ax, tgt in zip(axes, ['leaked_vs_not', 'refused_vs_rest']):
+    fig, axes = plt.subplots(1, 3, figsize=(16, 4.5), sharey=True)
+    for ax, tgt in zip(axes, ['leaked_vs_not', 'leaked_vs_approp', 'refused_vs_rest']):
         for name in PREFIXES:
             s = aucs[(aucs.target == tgt) & (aucs.prefix == name)].sort_values('pos')
             ax.plot(s.pos, s.auc, marker='o', ms=4, label=name)
@@ -215,10 +216,15 @@ def main():
 
 
 def _save(done_ids, acts_by_prefix):
+    import os
     out = {'scenario_ids': np.array(done_ids)}
     for k, v in acts_by_prefix.items():
         out[f'acts_{k}'] = np.array(v)
-    np.savez(ACTS_PATH, **out)
+    # tmp name must end in .npz — np.savez appends .npz otherwise, and os.replace
+    # would then look for a file that does not exist
+    tmp = ACTS_PATH.with_suffix('.tmp.npz')
+    np.savez(tmp, **out)                 # atomic: a kill mid-write must not corrupt resume
+    os.replace(tmp, ACTS_PATH)
     print(f'  checkpoint: {len(done_ids)}')
 
 

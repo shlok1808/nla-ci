@@ -215,4 +215,60 @@ with a drop of <0.10 (i.e. remains ≥0.80).
 
 *Append dated entries below. Never edit the above after the registration commit.*
 
-(none)
+### A1 — 2026-08-25 (pre-flight audit; before any GPU extraction)
+
+An independent pre-flight audit of the five session scripts (findings F1–F10,
+session_12 log) prompted three amendments. All are registered **before** any of
+the affected extractions run; no observed result motivated any of them.
+
+**A1.1 — E-EVAL prompt fix (audit F1).** The original `--stage build` re-parsed
+scenarios with a third, unique regex and used a non-canonical user line
+("The conversation turns to you."), leaving 5 stories with dangling question
+fragments and one wrong questionee (id 255). Rebuilt on the canonical loader
+(`position_sweep_f.load_tier3`) with the canonical user line; the ONLY difference
+vs the `activations_layer20.npz` prompts is now the framing sentence in the
+system prompt. §6 predictions and decision rules are unchanged. **Addition:**
+"T2 substantially closed" additionally requires the deflection AUC to stay
+≥0.80 after erasing the **rank-3 span** of the nine test−deploy frame-mean
+differences (single-direction erasure cannot rule out a low-rank eval-awareness
+subspace). The 1-D erasure remains the registered primary readout.
+
+**A1.2 — E-NLA redesign (audit F4; makes §5 outcome (b) falsifiable).**
+`verbalize_directions_f.py` supersedes `alpha_sweep_f.py`. Design registered now:
+
+- Rotations are **angle-targeted** (θ = ±{10, 20, 30, 45, 60}°, α solved per
+  base/direction), not fixed-α — the old grid was calibrated to ‖diff_raw‖≈4 and
+  mis-rotates every other direction.
+- Directions: `v_deflect` (primary), `v_privacy` (if E3 validates), `v_eval`
+  (optional, post E-EVAL), `diff_raw` at 45° only (continuity; large-α
+  leak-direction rows killed per audit §5).
+- **Controls:** (i) 5 matched-angle random in-manifold directions at every
+  positive θ (direction-specificity null); (ii) the raw direction injected alone
+  — the off-manifold probe that turns L7/L9 from an excuse into a measured
+  control; (iii) endogenous temp-0 reads of all 36 `refused` + 36 matched
+  `appropriate` activations.
+- **Endpoints (in order):** primary = slope over θ of CI-lexicon and
+  caution-lexicon rates for v_deflect *relative to the random controls* (lexicons
+  frozen in the script); secondary = blinded judge classification of shuffled
+  descriptions with condition hidden, agreement (κ) against the lexicon;
+  tertiary = a grouped-CV text probe distinguishing v_deflect-injected from
+  random-injected descriptions at matched θ. Per `scratch/07`
+  (2026-08-25): the deflection trace in existing descriptions is **tonal, not
+  lexical** ("awkward/dilemma" vs "supportive/understand"; zero privacy terms in
+  the top-20 features), so a lexicon null alone is pre-declared insufficient and
+  the text probe is the sensitive endpoint.
+- **Falsification, pre-committed:** if v_deflect is indistinguishable from the
+  matched-angle random controls on all three endpoints at every sampled θ, the
+  reported finding is "the deflection direction is not verbalizable through the
+  AV at L20" — outcome (b) may no longer be attributed to manifold position when
+  the off-manifold control behaves differently.
+
+**A1.3 — E3 gate enforcement + parser-fork sensitivity (audit F2/F3; L16).**
+`stage_validate`'s verdict now *enforces* what §4 of the claim-language file
+already required: the extraction cross-check (median cos ≥0.98 vs
+`activations_layer20.npz` on same-parser ids) and the length flag
+(AUC > 0.60) **block**; the lexical privileged-delta flag remains expected and
+non-blocking. Twelve tier-3 scenarios (9 of the 233 valid pairs) have stories
+that diverge from the benchmark-era parser (L16); they are excluded from the
+cross-check bar, reported per-id, and the canonical projection AUC will be
+reported with and without them.

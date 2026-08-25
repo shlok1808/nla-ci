@@ -1,5 +1,12 @@
 """
-alpha_sweep_f.py — Verbalize counterfactual rotations properly: denoised
+alpha_sweep_f.py — SUPERSEDED 2026-08-25 by verbalize_directions_f.py (audit F4).
+Kept for the record; do not run. The fixed alpha grid below is calibrated to
+||diff_raw||~4 and mis-rotates any other direction; the deflection direction is
+missing; there is no direction-specificity control. See prereg amendment A1.
+
+Original docstring:
+
+Verbalize counterfactual rotations properly: denoised
 directions, meaningful alphas, temperature 0.
 
 Fixes three problems with the session-04 counterfactual attempt (L7/L8/L9):

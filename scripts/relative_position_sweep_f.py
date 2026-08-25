@@ -44,6 +44,7 @@ Outputs:
     results/relative_position_f.png
 """
 
+import os
 import sys
 import numpy as np
 import pandas as pd
@@ -70,6 +71,17 @@ N_POS = len(POS_NAMES)
 ACTS_PATH = Path('results/relative_position_acts_f.npz')
 AUCS_PATH = Path('results/relative_position_aucs_f.csv')
 PLOT_PATH = Path('results/relative_position_f.png')
+REF_ACTS  = Path('results/activations_layer20.npz')
+
+
+def _save(all_ids, all_acts, all_rlen):
+    # tmp name must end in .npz — np.savez appends .npz otherwise, and os.replace
+    # would then look for a file that does not exist
+    tmp = ACTS_PATH.with_suffix('.tmp.npz')
+    np.savez(tmp, scenario_ids=np.array(all_ids), acts=np.array(all_acts),
+             resp_len=np.array(all_rlen), layers=np.array(LAYERS),
+             pos_names=np.array(POS_NAMES))
+    os.replace(tmp, ACTS_PATH)           # atomic: a kill mid-write must not corrupt resume
 
 
 # ── Extraction ────────────────────────────────────────────────────────────────
@@ -182,12 +194,8 @@ def main():
             all_rlen.append(int(rlen))
             new += 1
             if new % SAVE_EVERY == 0:
-                np.savez(ACTS_PATH, scenario_ids=np.array(all_ids),
-                         acts=np.array(all_acts), resp_len=np.array(all_rlen),
-                         layers=np.array(LAYERS), pos_names=np.array(POS_NAMES))
-        np.savez(ACTS_PATH, scenario_ids=np.array(all_ids),
-                 acts=np.array(all_acts), resp_len=np.array(all_rlen),
-                 layers=np.array(LAYERS), pos_names=np.array(POS_NAMES))
+                _save(all_ids, all_acts, all_rlen)
+        _save(all_ids, all_acts, all_rlen)
     print(f'activations: {np.array(all_acts).shape}')
 
     # align labels to extracted IDs
@@ -198,6 +206,18 @@ def main():
 
     print(f'response lengths: min={rlen.min()} median={int(np.median(rlen))} '
           f'max={rlen.max()}; frac >64 tokens: {100 * (rlen > 64).mean():.1f}%')
+
+    # Sanity: column 0 (k0) at layer 20 must reproduce activations_layer20.npz —
+    # this is the anchor that makes E2b comparable to E1 and to L8's 0.68.
+    ref = np.load(REF_ACTS, allow_pickle=True)
+    ref_map = dict(zip(ref['scenario_ids'].tolist(), ref['activations']))
+    i20 = LAYERS.index(19)
+    deltas = [np.abs(acts[j, i20, 0].astype(np.float32) - ref_map[sid]).max()
+              for j, sid in enumerate(all_ids[:5]) if sid in ref_map]
+    print(f'sanity vs npz (first 5, max abs delta): {np.max(deltas):.4f} '
+          f'(small = consistent; bf16 nondeterminism tolerated)')
+    assert np.max(deltas) < 1.0, ('k0 activations do not match '
+                                  'activations_layer20.npz — prompt/extraction drift')
 
     aucs = probe_curves(acts, labels)
     aucs.to_csv(AUCS_PATH, index=False)

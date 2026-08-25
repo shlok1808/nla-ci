@@ -313,4 +313,20 @@ Note that under L-2.3's reading (mid-response activations carry roughly as much 
 
 ---
 
+## L16 — Story-parser fork: 12 tier-3 scenarios have divergent story text across pipeline stages
+
+**Status:** Known, handled (sensitivity analysis + gated cross-check); eval-awareness rebuilt on the canonical parser
+**Discovered:** 2026-08-25 pre-flight audit (session 12, findings F1/F2)
+**Appears in:** `data/minimal_pairs_f.csv` (9 valid pairs), `scripts/minimal_pairs_f.py`, `scripts/eval_awareness_f.py` (fixed)
+
+The benchmark/extraction scripts strip only the literal trailing question `What should X say?` from each tier-3 story; `minimal_pairs_f.py` later introduced a broader regex that also strips variants ("what should X say in response to this?", "How should X respond?", forms with a leading subordinate clause). The two parsers disagree on **12 scenarios** (ids 210, 239, 260, 280, 281, 309, 315, 320, 359, 380, 410, 440), and the minimal-pairs CSV was generated with the broad parser — so for the **9 of those ids among the 233 valid pairs** (210, 239, 280, 281, 309, 359, 380, 410, 440), the E3-extracted "secret" activations come from a slightly different prompt than the one that produced the behavioral labels and `results/activations_layer20.npz`. A third, still-different parser in the original `eval_awareness_f.py` build additionally left dangling question fragments in 5 stories and assigned the wrong questionee to id 255; that script was rebuilt on the canonical loader before any extraction (prereg amendment A1.1).
+
+**What it does not affect:** `v_privacy` itself (a paired within-scenario difference), and the 261 same-parser pairs.
+
+**Handling (decided in advance, amendment A1.3):** `stage_validate`'s extraction cross-check excludes the divergent ids from its pass bar and prints their cosines separately; `stage_project` reports the canonical projection AUC with and without the 9; `minimal_pairs_f.divergent_ids()` derives the set programmatically rather than hardcoding it. The pairs are NOT regenerated — they are paid, GATE-1-reviewed output, and the divergence is a prompt-provenance caveat, not a rewrite defect.
+
+**Reference:** session_12 log, `scripts/minimal_pairs_f.py` (`divergent_ids`, check [5]), prereg amendment A1.
+
+---
+
 *Add new entries as they surface. Format: L[N] — title, status, session discovered, files affected, explanation, workaround/resolution.*
