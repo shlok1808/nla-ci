@@ -126,53 +126,92 @@ def main():
 
     # ── 3. 2AFC population integrity ────────────────────────────────────────
     print('\n2AFC scoring gate')
-    key = pd.DataFrame(dict(item=range(1, 41), scenario_id=range(1, 41),
-                            secret_side=['A', 'B'] * 20, identical=[False] * 40))
-    pk = pd.DataFrame(dict(item=range(1, 41), A=['x'] * 40, B=['y'] * 40,
-                           your_answer=['A', 'B'] * 20))
-    pc, kc = nt.packet_paths('P3')
-    nt.atomic_write_csv(key, kc)
+    nt.PILOT_N = n_pairs                       # locked population for these fixtures
+    dg = nt.file_digest(nt.MANIFEST)
 
-    blank = pk.copy(); blank.loc[6:, 'your_answer'] = ''      # only 6 answered
-    nt.atomic_write_csv(blank, pc)
+    def fixtures(n=n_pairs, digest=None, sl='P3', sids=None):
+        sids = list(ids[:n]) if sids is None else sids
+        sides = ['A', 'B'] * (n // 2) + (['A'] if n % 2 else [])
+        k = pd.DataFrame(dict(item=range(1, n + 1), scenario_id=sids,
+                              secret_side=sides, identical=[False] * n,
+                              slice=sl, manifest_digest=digest or dg))
+        p_ = pd.DataFrame(dict(item=range(1, n + 1), A=['x'] * n, B=['y'] * n,
+                               your_answer=sides, slice=sl,
+                               manifest_digest=digest or dg))
+        return p_, k
+
+    pc, kc = nt.packet_paths('P3')
+
+    def put(p_, k):
+        nt.atomic_write_csv(p_, pc); nt.atomic_write_csv(k, kc)
+        if nt.GO_JSON.exists():
+            nt.GO_JSON.unlink()
+
+    p_, k = fixtures(); blank = p_.copy(); blank.loc[2:, 'your_answer'] = ''
+    put(blank, k)
     ok, why = refuses(nt.stage_score_2afc, 'P3')
     check('refuses when items are left unanswered', ok, why)
 
-    junk = pk.copy(); junk.loc[3, 'your_answer'] = 'maybe'
-    nt.atomic_write_csv(junk, pc)
+    p_, k = fixtures(); junk = p_.copy(); junk.loc[1, 'your_answer'] = 'maybe'
+    put(junk, k)
     ok, why = refuses(nt.stage_score_2afc, 'P3')
     check('refuses on an invalid answer token', ok, why)
 
-    short = pk.iloc[:20].copy()
-    nt.atomic_write_csv(short, pc)
+    # the bug Codex flagged: a MATCHED truncated pair would grade the wrong n
+    p_, k = fixtures(n=n_pairs - 2, sids=list(ids[:n_pairs - 2]))
+    put(p_, k)
     ok, why = refuses(nt.stage_score_2afc, 'P3')
-    check('refuses when the packet is smaller than the locked population', ok, why)
+    check('refuses a matched truncated packet+key (not the locked population)', ok, why)
 
-    # a full, all-correct sheet must be graded against the LOCKED n and rule
-    full = pk.copy(); full['your_answer'] = key.secret_side
-    nt.atomic_write_csv(full, pc)
+    p_, k = fixtures(sids=list(ids[:-1]) + [99999])
+    put(p_, k)
+    ok, why = refuses(nt.stage_score_2afc, 'P3')
+    check('refuses when a graded scenario is not in the manifest', ok, why)
+
+    p_, k = fixtures(digest='stale-digest-0000')
+    put(p_, k)
+    ok, why = refuses(nt.stage_score_2afc, 'P3')
+    check('refuses a packet exported against a different manifest', ok, why)
+
+    p_, k = fixtures(sl='full')
+    put(p_, k)
+    ok, why = refuses(nt.stage_score_2afc, 'P3')
+    check('refuses when the packet slice does not match', ok, why)
+
+    # a clean, fully-answered sheet grades against the locked n
+    p_, k = fixtures(); put(p_, k)
     nt.stage_score_2afc('P3')
     g = json.loads(nt.GO_JSON.read_text())
-    check('grades against the locked n=40, not the answered subset', g['n'] == 40,
+    check('grades against the locked population', g['n'] == n_pairs,
           f"n={g['n']} correct={g['correct']}")
-    check('40/40 correct records GO', g['status'] == 'GO')
 
-    # 26/40 is the pre-registered boundary — 25 must fail, 26 must pass
-    for c, want in ((25, 'NO-GO'), (26, 'GO')):
-        ans = list(key.secret_side)
-        for i in range(c, 40):
+    ok, why = refuses(nt.stage_score_2afc, 'P3')
+    check('refuses to re-grade without --regrade', ok, why)
+
+    # the pre-registered boundary, scaled to this fixture population
+    nt.PILOT_2AFC_PASS = 6
+    for c, want in ((5, 'NO-GO'), (6, 'GO')):
+        p_, k = fixtures()
+        ans = list(k.secret_side)
+        for i in range(c, n_pairs):
             ans[i] = 'B' if ans[i] == 'A' else 'A'
-        sheet = pk.copy(); sheet['your_answer'] = ans
-        nt.atomic_write_csv(sheet, pc)
+        p_['your_answer'] = ans
+        put(p_, k)
         nt.stage_score_2afc('P3')
         got = json.loads(nt.GO_JSON.read_text())
-        check(f'{c}/40 -> {want}', got['status'] == want and got['correct'] == c,
-              f"got {got['status']} at {got['correct']}/40")
+        check(f'{c}/{n_pairs} -> {want}',
+              got['status'] == want and got['correct'] == c,
+              f"got {got['status']} at {got['correct']}/{n_pairs}")
 
     # ── 4. manifest locking ─────────────────────────────────────────────────
     print('\nmanifest locking')
+    ok, why = refuses(nt.stage_plan, 8, True)     # even with --force
+    check('plan refuses --force once downstream artifacts exist', ok, why)
+    for f in (nt.GO_JSON, nt.VERDICT_JSON, *nt.packet_paths('P3')):
+        if f.exists():
+            f.unlink()
     ok, why = refuses(nt.stage_plan, 8, False)
-    check('plan refuses to overwrite a locked manifest', ok, why)
+    check('plan refuses to overwrite a locked manifest without --force', ok, why)
 
     # ── 5. CSV NaN round-trip (shipped bug) ─────────────────────────────────
     print('\nCSV round-trip')
@@ -190,6 +229,41 @@ def main():
           nt.slice_text('a\n\nb', 'P3') == '')
     check('paragraph_valid rejects a 2-paragraph description',
           not nt.paragraph_valid('a\n\nb'))
+
+    # ── 6b. stage_pilot end-to-end against a fake client ────────────────────
+    print('\nstage_pilot (where the contamination bug lived)')
+    nt.METRICS_CSV = tmp / 'results/metrics.csv'
+    nt.PILOT_TXT = tmp / 'results/pilot.txt'
+    nt.PAIR_ACTS = tmp / 'results/acts.npz'
+    np.savez(nt.PAIR_ACTS, scenario_ids=ids, acts_secret=S, acts_public=P)
+    pairs_csv = tmp / 'data/pairs.csv'
+    pd.DataFrame(dict(scenario_id=ids, story_secret=['only Ann knew'] * n_pairs,
+                      story_public=['everyone knew'] * n_pairs,
+                      valid=True)).to_csv(pairs_csv, index=False)
+    nt.PAIRS_CSV = pairs_csv
+    nt.N_DETERMINISM = 2
+
+    class FakeAV:
+        def __init__(self, *a, **k): pass
+        def generate(self, v, **k):
+            tag = 'guarded' if float(v[0]) > 0 else 'open'
+            return f'Structured format.\n\nSetup {tag}.\n\nFinal token {tag}.'
+    nt.preflight = lambda: (FakeAV, dict(fake=1))
+    for f in (nt.PILOT_CSV, nt.VERDICT_JSON):
+        if f.exists():
+            f.unlink()
+    nt.stage_pilot()
+    v = json.loads(nt.VERDICT_JSON.read_text())
+    check('stage_pilot runs and records a verdict', v.get('status') == 'PILOT-COMPLETE',
+          str(v.get('status')))
+    check('stage_pilot wrote metrics to the redirected path', nt.METRICS_CSV.exists())
+
+    # a manifest whose digests no longer match the activations must be caught
+    S2 = S.copy(); S2[0] += 1.0
+    np.savez(nt.PAIR_ACTS, scenario_ids=ids, acts_secret=S2, acts_public=P)
+    nt.PILOT_CSV.unlink()
+    ok, why = refuses(nt.stage_pilot)
+    check('stage_pilot refuses when activations changed under the manifest', ok, why)
 
     # ── 7. no test wrote into the real repo ─────────────────────────────────
     print('\nisolation')

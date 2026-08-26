@@ -251,6 +251,15 @@ def stage_plan(n=PILOT_N, force=False):
     within-pair angle quartile so a NO-GO cannot be an artifact of having
     sampled only near-identical inputs, and so the verdict can be read by
     quartile (uniform insensitivity vs a threshold response)."""
+    downstream = [p for p in (PILOT_CSV, VERDICT_JSON, GO_JSON, METRICS_CSV,
+                              *packet_paths('P3'), *packet_paths('full'))
+                  if p.exists()]
+    if downstream:
+        raise SystemExit(
+            'refusing to re-plan: downstream artifacts already exist —\n  '
+            + '\n  '.join(str(p) for p in downstream)
+            + '\nRe-planning now would swap the sample under results already '
+              'produced from it. Delete them deliberately if that is the intent.')
     if MANIFEST.exists() and not force:
         raise SystemExit(
             f'{MANIFEST} already exists (digest {file_digest(MANIFEST)}).\n'
@@ -290,14 +299,20 @@ def preflight():
     assert m and int(m.group(1)) == EXPECTED_INJECTION_TOKEN_ID, (
         f'injection_token_id != {EXPECTED_INJECTION_TOKEN_ID} (L9)')
     sc = re.search(r'injection_scale:\s*([\d.]+)', txt)
+    assert sc and abs(float(sc.group(1)) - 150.0) < 1e-6, (
+        f'injection_scale is {sc.group(1) if sc else "absent"}, expected 150 (L9). '
+        f'The direction-only premise of this experiment depends on it.')
     from nla_inference import NLAClient
     import inspect
     sig = inspect.signature(NLAClient.generate)
     assert any(p.kind is inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()) \
         or {'temperature', 'max_new_tokens'} <= set(sig.parameters), \
         f'NLAClient.generate lacks temperature/max_new_tokens: {sig}'
+    inf_py = Path(__file__).resolve().parent.parent / 'nla_inference.py'
     prov = dict(injection_token_id=EXPECTED_INJECTION_TOKEN_ID,
-                injection_scale=(sc.group(1) if sc else 'unknown'),
+                injection_scale=float(sc.group(1)),
+                actor_meta_sha=file_digest(meta),
+                nla_inference_sha=(file_digest(inf_py) if inf_py.exists() else 'absent'),
                 python=platform.python_version(), temperature=0, max_new_tokens=MAX_NEW)
     for mod in ('torch', 'transformers', 'sglang'):
         try:
@@ -545,6 +560,7 @@ def stage_export_2afc(which='P3'):
               f'judgement cannot change this.')
         return
     man = pd.read_csv(MANIFEST)
+    man_digest = file_digest(MANIFEST)
     df = pd.read_csv(PILOT_CSV)
     df = df[(df.repeat == 0) & [text_valid(d, e) for d, e in zip(df.description, df.error)]]
     piv = df.pivot_table(index='scenario_id', columns='variant',
@@ -567,9 +583,11 @@ def stage_export_2afc(which='P3'):
         s_txt = slice_text(piv.iloc[pos]['secret'], which)
         p_txt = slice_text(piv.iloc[pos]['public'], which)
         pk.append(dict(item=item, A=s_txt if side == 'A' else p_txt,
-                       B=p_txt if side == 'A' else s_txt, your_answer=''))
+                       B=p_txt if side == 'A' else s_txt, your_answer='',
+                       slice=which, manifest_digest=man_digest))
         key.append(dict(item=item, scenario_id=int(sid), secret_side=side,
-                        identical=(norm_text(s_txt) == norm_text(p_txt))))
+                        identical=(norm_text(s_txt) == norm_text(p_txt)),
+                        slice=which, manifest_digest=man_digest))
     pcsv, kcsv = packet_paths(which)
     pcsv.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_csv(pd.DataFrame(pk), pcsv)
@@ -587,16 +605,41 @@ def stage_export_2afc(which='P3'):
     print(f'Then: python scripts/nla_transmission_f.py --stage score-2afc --slice {which}')
 
 
-def stage_score_2afc(which='P3'):
+def stage_score_2afc(which='P3', regrade=False):
     from scipy.stats import binomtest
+    if GO_JSON.exists() and not regrade:
+        prev = json.loads(GO_JSON.read_text())
+        raise SystemExit(
+            f'{GO_JSON} already records {prev.get("status")} '
+            f'({prev.get("correct")}/{prev.get("n")}, p={prev.get("p_value")}).\n'
+            f'Re-scoring the same answers cannot change them; re-scoring DIFFERENT '
+            f'answers after seeing a result is exactly what the pre-registration '
+            f'forbids. Pass --regrade only to correct a transcription error.')
     pcsv, kcsv = packet_paths(which)
     pk, key = pd.read_csv(pcsv), pd.read_csv(kcsv)
     n_locked = len(key)
 
-    # integrity: the graded population must BE the locked population
+    # integrity: the graded population must BE the locked population. Matching
+    # packet/key files are not enough — a truncated PAIR would grade 26/30 as GO.
+    man = pd.read_csv(MANIFEST)
+    man_ids, man_digest = set(man.scenario_id.astype(int)), file_digest(MANIFEST)
     assert len(pk) == n_locked, f'packet has {len(pk)} items, key has {n_locked}'
     assert pk.item.is_unique and key.item.is_unique, 'duplicate item numbers'
     assert set(pk.item) == set(key.item), 'packet and key items disagree'
+    assert n_locked == len(man_ids) == PILOT_N, (
+        f'key holds {n_locked} items but the manifest locks {len(man_ids)}')
+    assert key.scenario_id.is_unique, 'duplicate scenario_id in the key'
+    assert set(key.scenario_id.astype(int)) == man_ids, (
+        'the graded scenarios are not the locked manifest scenarios — '
+        f'{len(set(key.scenario_id.astype(int)) ^ man_ids)} differ')
+    for frame, nm in ((pk, 'packet'), (key, 'key')):
+        assert 'manifest_digest' in frame, f'{nm} predates digest binding; re-export'
+        assert set(frame.manifest_digest) == {man_digest}, (
+            f'{nm} was exported against a different manifest — re-export')
+        assert set(frame['slice']) == {which}, (
+            f'{nm} is slice {set(frame["slice"])}, scoring {which}')
+    nA = int((key.secret_side == 'A').sum())
+    assert abs(nA - n_locked / 2) <= 1, f'A/B balance is {nA}/{n_locked - nA}'
     m = pk.merge(key, on='item')
     ansd = m.your_answer.astype(str).str.strip().str.upper()
     bad = ~ansd.isin(['A', 'B'])
@@ -668,9 +711,11 @@ if __name__ == '__main__':
                     choices=['plan', 'pilot', 'export-2afc', 'score-2afc', 'verbalize'])
     ap.add_argument('--n', type=int, default=PILOT_N)
     ap.add_argument('--slice', default='P3', choices=SLICES)
+    ap.add_argument('--regrade', action='store_true',
+                    help='score-2afc: overwrite a recorded result (transcription fixes only)')
     ap.add_argument('--force', action='store_true',
                     help='plan: overwrite an existing locked manifest')
     a = ap.parse_args()
     {'plan': lambda: stage_plan(a.n, a.force), 'pilot': stage_pilot,
      'export-2afc': lambda: stage_export_2afc(a.slice),
-     'score-2afc': lambda: stage_score_2afc(a.slice), 'verbalize': stage_verbalize}[a.stage]()
+     'score-2afc': lambda: stage_score_2afc(a.slice, a.regrade), 'verbalize': stage_verbalize}[a.stage]()
