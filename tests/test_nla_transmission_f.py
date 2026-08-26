@@ -95,6 +95,7 @@ def main():
                             act_sha_public=[nt.sha(x.tobytes()) for x in P]))
     nt.MANIFEST = tmp / 'results/man.csv'
     nt.GO_JSON = tmp / 'results/go.json'
+    GP = lambda w='P3': nt.go_path(w)
     nt.VERDICT_JSON = tmp / 'results/verdict.json'
     nt.PILOT_CSV = tmp / 'results/pilot.csv'
     nt.PACKET_CSV = tmp / 'data/packet.csv'
@@ -108,21 +109,25 @@ def main():
 
     nt.atomic_write_json(dict(status='NO-GO', correct=12, n=40, p_value=0.9,
                               slice='P3', manifest_digest=nt.file_digest(nt.MANIFEST)),
-                         nt.GO_JSON)
+                         GP())
     ok, why = refuses(nt.stage_verbalize)
     check('refuses on a recorded NO-GO', ok, why)
 
     nt.atomic_write_json(dict(status='GO', correct=30, n=40, p_value=0.001,
                               slice='P3', manifest_digest='stale-digest-000'),
-                         nt.GO_JSON)
+                         GP())
     ok, why = refuses(nt.stage_verbalize)
     check('refuses when the manifest changed after scoring', ok, why)
 
     # a PILOT-COMPLETE verdict alone must NOT authorise the run
     nt.atomic_write_json(dict(status='PILOT-COMPLETE'), nt.VERDICT_JSON)
-    nt.GO_JSON.unlink()
+    GP().unlink()
     ok, why = refuses(nt.stage_verbalize)
     check('PILOT-COMPLETE alone does not authorise', ok, why)
+
+    for sl in ('P1', 'P2'):
+        ok, why = refuses(nt.stage_verbalize, sl)
+        check(f'{sl} (a control slice) can never authorise', ok, why)
 
     # ── 3. 2AFC population integrity ────────────────────────────────────────
     print('\n2AFC scoring gate')
@@ -144,8 +149,8 @@ def main():
 
     def put(p_, k):
         nt.atomic_write_csv(p_, pc); nt.atomic_write_csv(k, kc)
-        if nt.GO_JSON.exists():
-            nt.GO_JSON.unlink()
+        if GP().exists():
+            GP().unlink()
 
     p_, k = fixtures(); blank = p_.copy(); blank.loc[2:, 'your_answer'] = ''
     put(blank, k)
@@ -181,7 +186,7 @@ def main():
     # a clean, fully-answered sheet grades against the locked n
     p_, k = fixtures(); put(p_, k)
     nt.stage_score_2afc('P3')
-    g = json.loads(nt.GO_JSON.read_text())
+    g = json.loads(GP().read_text())
     check('grades against the locked population', g['n'] == n_pairs,
           f"n={g['n']} correct={g['correct']}")
 
@@ -198,16 +203,46 @@ def main():
         p_['your_answer'] = ans
         put(p_, k)
         nt.stage_score_2afc('P3')
-        got = json.loads(nt.GO_JSON.read_text())
+        got = json.loads(GP().read_text())
         check(f'{c}/{n_pairs} -> {want}',
               got['status'] == want and got['correct'] == c,
               f"got {got['status']} at {got['correct']}/{n_pairs}")
+
+    # ── 3b. authorisation completeness ──────────────────────────────────────
+    print('\nauthorisation completeness')
+    p_, k = fixtures(); put(p_, k)
+    nt.stage_score_2afc('P3')
+    g = json.loads(GP().read_text())
+    check('scoring records packet+key digests', 'packet_digest' in g and 'key_digest' in g)
+
+    tampered = p_.copy(); tampered.loc[0, 'your_answer'] = 'B'
+    nt.atomic_write_csv(tampered, pc)
+    ok, why = refuses(nt.stage_verbalize, 'P3')
+    check('refuses when the answer sheet changed after scoring', ok, why)
+    nt.atomic_write_csv(p_, pc)
+
+    g2 = dict(g, n=g['n'] - 1)
+    nt.atomic_write_json(g2, GP())
+    ok, why = refuses(nt.stage_verbalize, 'P3')
+    check('refuses when the graded n is not the locked population', ok, why)
+
+    g3 = dict(g, correct=nt.PILOT_2AFC_PASS - 1, status='GO')
+    nt.atomic_write_json(g3, GP())
+    ok, why = refuses(nt.stage_verbalize, 'P3')
+    check('refuses a hand-edited GO below the threshold', ok, why)
+
+    nt.atomic_write_json(g, GP())
+    nt.stage_score_2afc('P3', regrade=True, reason='transcription fix')
+    g4 = json.loads(GP().read_text())
+    check('a regrade preserves the superseded result', len(g4.get('history', [])) == 1,
+          f"history={len(g4.get('history', []))}")
+    check('a regrade records its reason', bool(g4.get('regrade_reason')))
 
     # ── 4. manifest locking ─────────────────────────────────────────────────
     print('\nmanifest locking')
     ok, why = refuses(nt.stage_plan, 8, True)     # even with --force
     check('plan refuses --force once downstream artifacts exist', ok, why)
-    for f in (nt.GO_JSON, nt.VERDICT_JSON, *nt.packet_paths('P3')):
+    for f in (GP(), nt.VERDICT_JSON, *nt.packet_paths('P3'), *nt.all_artifacts()):
         if f.exists():
             f.unlink()
     ok, why = refuses(nt.stage_plan, 8, False)

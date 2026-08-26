@@ -80,6 +80,7 @@ import difflib
 import argparse
 import platform
 import hashlib
+import inspect
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -102,7 +103,8 @@ PILOT_TXT    = Path('results/nla_transmission_pilot_f.txt')
 METRICS_CSV  = Path('results/nla_transmission_pilot_metrics_f.csv')
 PACKET_CSV   = Path('data/nla_transmission_2afc_packet_f.csv')
 KEY_CSV      = Path('results/nla_transmission_2afc_key_f.csv')   # + _{slice} suffix
-GO_JSON      = Path('results/nla_transmission_2afc_result_f.json')  # the GPU authorisation
+GO_JSON      = Path('results/nla_transmission_2afc_result_f.json')  # + _{slice}
+AUTHORISING_SLICES = ('P3', 'full')   # P1/P2 are controls; they never authorise
 
 PILOT_N      = 40          # 10 per within-pair angle quartile
 MAX_NEW      = 300
@@ -251,9 +253,7 @@ def stage_plan(n=PILOT_N, force=False):
     within-pair angle quartile so a NO-GO cannot be an artifact of having
     sampled only near-identical inputs, and so the verdict can be read by
     quartile (uniform insensitivity vs a threshold response)."""
-    downstream = [p for p in (PILOT_CSV, VERDICT_JSON, GO_JSON, METRICS_CSV,
-                              *packet_paths('P3'), *packet_paths('full'))
-                  if p.exists()]
+    downstream = [p for p in all_artifacts() if p.exists()]
     if downstream:
         raise SystemExit(
             'refusing to re-plan: downstream artifacts already exist —\n  '
@@ -308,11 +308,14 @@ def preflight():
     assert any(p.kind is inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()) \
         or {'temperature', 'max_new_tokens'} <= set(sig.parameters), \
         f'NLAClient.generate lacks temperature/max_new_tokens: {sig}'
-    inf_py = Path(__file__).resolve().parent.parent / 'nla_inference.py'
+    inf_py = Path(inspect.getfile(NLAClient))     # where it ACTUALLY came from
     prov = dict(injection_token_id=EXPECTED_INJECTION_TOKEN_ID,
                 injection_scale=float(sc.group(1)),
+                actor_dir=str(ACTOR_DIR.resolve()),
                 actor_meta_sha=file_digest(meta),
-                nla_inference_sha=(file_digest(inf_py) if inf_py.exists() else 'absent'),
+                nla_inference_path=str(inf_py),
+                nla_inference_sha=file_digest(inf_py),
+                sglang_url=SGLANG_URL,
                 python=platform.python_version(), temperature=0, max_new_tokens=MAX_NEW)
     for mod in ('torch', 'transformers', 'sglang'):
         try:
@@ -415,6 +418,11 @@ def stage_pilot():
             f'secret activation for {int(r.scenario_id)} does not match its manifest digest'
         assert sha(P[i].tobytes()) == r.act_sha_public, \
             f'public activation for {int(r.scenario_id)} does not match its manifest digest'
+        assert abs(cos_all[i] - r.cosine) < 1e-5, (
+            f'manifest cosine for {int(r.scenario_id)} does not match the npz')
+    qc = man.angle_quartile.value_counts().to_dict()
+    assert set(qc) == {1, 2, 3, 4} and len(set(qc.values())) == 1, (
+        f'manifest quartiles are not balanced: {qc}')
     man_digest = file_digest(MANIFEST)
     print(f'manifest verified against the npz (digest {man_digest})')
 
@@ -551,9 +559,26 @@ def packet_paths(which):
             KEY_CSV.with_name(f'{KEY_CSV.stem}_{which}.csv'))
 
 
+def go_path(which):
+    """One result file per slice, so a full-slice grade cannot overwrite P3."""
+    return GO_JSON.with_name(f'{GO_JSON.stem}_{which}.json')
+
+
+def all_artifacts():
+    """Everything a run can generate. Re-planning must refuse if ANY exists —
+    listing them by hand missed PILOT_TXT, FULL_CSV and the P1/P2 packets."""
+    out = [PILOT_CSV, FULL_CSV, VERDICT_JSON, METRICS_CSV, PILOT_TXT]
+    for w in SLICES:
+        out += list(packet_paths(w)) + [go_path(w)]
+    return out
+
+
 def stage_export_2afc(which='P3'):
     v = json.loads(VERDICT_JSON.read_text())
     assert v.get('status') == 'PILOT-COMPLETE', 'run --stage pilot first'
+    assert v.get('manifest_digest') == file_digest(MANIFEST), (
+        'the pilot verdict was produced against a different manifest — '
+        're-run --stage pilot before exporting')
     if v[which].get('status') in ('NO-GO', 'INVALID'):
         print(f'{which} branch is {v[which]["status"]} '
               f'(ceiling {v[which]["ceiling_2afc"]:.3f}). Not exporting — human '
@@ -605,12 +630,13 @@ def stage_export_2afc(which='P3'):
     print(f'Then: python scripts/nla_transmission_f.py --stage score-2afc --slice {which}')
 
 
-def stage_score_2afc(which='P3', regrade=False):
+def stage_score_2afc(which='P3', regrade=False, reason=''):
     from scipy.stats import binomtest
-    if GO_JSON.exists() and not regrade:
-        prev = json.loads(GO_JSON.read_text())
+    gp = go_path(which)
+    if gp.exists() and not regrade:
+        prev = json.loads(gp.read_text())
         raise SystemExit(
-            f'{GO_JSON} already records {prev.get("status")} '
+            f'{gp} already records {prev.get("status")} '
             f'({prev.get("correct")}/{prev.get("n")}, p={prev.get("p_value")}).\n'
             f'Re-scoring the same answers cannot change them; re-scoring DIFFERENT '
             f'answers after seeing a result is exactly what the pre-registration '
@@ -666,35 +692,61 @@ def stage_score_2afc(which='P3', regrade=False):
                n_identical=n_id, pass_threshold=PILOT_2AFC_PASS,
                min_interesting=MIN_INTERESTING_2AFC,
                manifest_digest=file_digest(MANIFEST),
+               packet_digest=file_digest(pcsv), key_digest=file_digest(kcsv),
                status='GO' if go else 'NO-GO')
-    atomic_write_json(res, GO_JSON)
+    # append-only: a correction never erases the grade it replaces
+    if gp.exists():
+        old = json.loads(gp.read_text())
+        hist = old.pop('history', [])
+        hist.append(dict(old, superseded=True))
+        res['history'] = hist
+        res['regrade_reason'] = reason or '(none given)'
+        print(f'  NOTE: superseding a previous {old.get("status")} at '
+              f'{old.get("correct")}/{old.get("n")} — both are kept in {gp}')
+    atomic_write_json(res, gp)
     print()
     if go:
-        print(f'  => GO (recorded in {GO_JSON}). --stage verbalize is now unlocked.')
+        print(f'  => GO (recorded in {gp}). --stage verbalize is now unlocked.')
     else:
         print(f'  => NO-GO. Scoped result: "greedy AV descriptions did not let a')
         print(f'     blinded reader distinguish these natural private/public')
         print(f'     activation pairs under the tested checkpoint and decoding')
-        print(f'     configuration." Recorded in {GO_JSON}; verbalize stays locked.')
+        print(f'     configuration." Recorded in {gp}; verbalize stays locked.')
 
 
-def stage_verbalize():
-    if not GO_JSON.exists():
+def stage_verbalize(which='P3'):
+    """The paid run. Every field of the authorisation is checked, because
+    'status == GO' alone would let a P1 control, a shrunken population, or an
+    edited answer sheet unlock 466 generations."""
+    gp = go_path(which)
+    if which not in AUTHORISING_SLICES:
         raise SystemExit(
-            'refusing to run: no recorded 2AFC result. A completed pilot is not '
-            'authorisation — the scientific gate is --stage score-2afc.')
-    g = json.loads(GO_JSON.read_text())
-    if g.get('status') != 'GO':
+            f'{which} is a control slice; only {AUTHORISING_SLICES} can authorise '
+            f'scaling up.')
+    if not gp.exists():
         raise SystemExit(
-            f'refusing to run: recorded 2AFC status is {g.get("status")} '
-            f'({g.get("correct")}/{g.get("n")}, p={g.get("p_value")}). '
-            f'Do not re-grade to obtain a GO.')
-    if g.get('manifest_digest') != file_digest(MANIFEST):
-        raise SystemExit(
-            'refusing to run: the manifest changed since the 2AFC was scored. '
-            'The recorded GO does not apply to this sample.')
-    print(f'authorised by {GO_JSON}: {g["slice"]} {g["correct"]}/{g["n"]} '
-          f'(p={g["p_value"]})')
+            f'refusing to run: no recorded 2AFC result at {gp}. A completed pilot '
+            f'is not authorisation — the scientific gate is --stage score-2afc.')
+    g = json.loads(gp.read_text())
+    checks = [
+        (g.get('status') == 'GO', f'recorded status is {g.get("status")}'),
+        (g.get('slice') == which, f'result is for slice {g.get("slice")}, not {which}'),
+        (g.get('n') == PILOT_N, f'graded n={g.get("n")}, expected {PILOT_N}'),
+        (g.get('correct', -1) >= PILOT_2AFC_PASS,
+         f'{g.get("correct")}/{g.get("n")} is below the {PILOT_2AFC_PASS} threshold'),
+        (g.get('manifest_digest') == file_digest(MANIFEST),
+         'the manifest changed since the 2AFC was scored'),
+    ]
+    pcsv, kcsv = packet_paths(which)
+    for f, fld, nm in ((pcsv, 'packet_digest', 'answer sheet'), (kcsv, 'key_digest', 'key')):
+        checks.append((f.exists() and g.get(fld) == file_digest(f),
+                       f'the {nm} changed after scoring ({f.name})'))
+    bad = [why for ok, why in checks if not ok]
+    if bad:
+        raise SystemExit('refusing to run:\n  ' + '\n  '.join(bad)
+                         + '\nDo not re-grade to obtain a GO.')
+    print(f'authorised by {gp}: {which} {g["correct"]}/{g["n"]} (p={g["p_value"]})')
+
     NLAClient, prov = preflight()
     ids, S, P, _ = load_acts()
     work = [(int(s), 'secret', S[i], 0) for i, s in enumerate(ids)] + \
@@ -711,6 +763,8 @@ if __name__ == '__main__':
                     choices=['plan', 'pilot', 'export-2afc', 'score-2afc', 'verbalize'])
     ap.add_argument('--n', type=int, default=PILOT_N)
     ap.add_argument('--slice', default='P3', choices=SLICES)
+    ap.add_argument('--reason', default='',
+                    help='score-2afc: why a regrade was necessary (kept in history)')
     ap.add_argument('--regrade', action='store_true',
                     help='score-2afc: overwrite a recorded result (transcription fixes only)')
     ap.add_argument('--force', action='store_true',
@@ -718,4 +772,4 @@ if __name__ == '__main__':
     a = ap.parse_args()
     {'plan': lambda: stage_plan(a.n, a.force), 'pilot': stage_pilot,
      'export-2afc': lambda: stage_export_2afc(a.slice),
-     'score-2afc': lambda: stage_score_2afc(a.slice, a.regrade), 'verbalize': stage_verbalize}[a.stage]()
+     'score-2afc': lambda: stage_score_2afc(a.slice, a.regrade, a.reason), 'verbalize': stage_verbalize}[a.stage]()
