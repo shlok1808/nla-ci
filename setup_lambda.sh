@@ -3,11 +3,21 @@
 #
 # Idempotent: safe to re-run on every new instance. Handles the two things that
 # bite on a fresh spin-up:
-#   1. `pip install sglang` drags in a torchvision built for the wrong torch ABI
-#      (image ships torch 2.11.0+cu130) -> `operator torchvision::nms does not
-#      exist` -> transformers fails to import Qwen2ForCausalLM. We pin the matched
-#      torchvision LAST so nothing re-clobbers it.
+#   1. A torchvision built against a different torch ABI than the one actually
+#      installed -> `operator torchvision::nms does not exist` -> transformers
+#      fails to import Qwen2ForCausalLM (image_utils imports torchvision.io).
+#      We do not need torchvision at all: every experiment here is text-only.
+#      So we REMOVE it instead of trying to match versions, and we remove BOTH
+#      copies — the pip one and the apt one under /usr/lib/python3/dist-packages,
+#      which shadows nothing and breaks everything if left behind. A missing
+#      torchvision is skipped cleanly by is_vision_available(); a broken one is
+#      an import-time crash.
 #   2. The repo does not vendor the ConfAIde benchmark; scripts need data/*.txt.
+#
+# Do NOT assume a torch version here. Observed on Lambda images: the base image
+# shipped torch 2.7.0+cu128, and `pip install sglang` silently upgraded it to
+# 2.13.0+cu130 *after* this script's sanity print — so any hardcoded torchvision
+# pin is matched to the wrong torch. (2026-08-25, cost ~20 min of a GPU session.)
 #
 # We never touch torch itself. Run from the repo root:
 #   bash setup_lambda.sh
@@ -17,7 +27,7 @@ set -euo pipefail
 PY="python"
 PIP="$PY -m pip"
 
-echo "==> torch sanity (expect 2.11.0+cu130; we never reinstall torch)"
+echo "==> torch sanity BEFORE (informational only — sglang may change this below)"
 $PY -c "import torch; print('    torch', torch.__version__, '| cuda', torch.version.cuda)"
 
 echo "==> 1/7 remove HF 'kernels' if present (breaks transformers kernel loading)"
@@ -48,20 +58,37 @@ for t in tier_1 tier_2a tier_2b tier_3 tier_4; do
   fi
 done
 
-echo "==> 6/7 torchvision matched to torch 2.11 / cu130 (LAST: sglang installs a mismatched one)"
-$PIP install --force-reinstall --no-deps "torchvision==0.26.0" \
-  --index-url https://download.pytorch.org/whl/cu130
+echo "==> 6/7 remove torchvision entirely (LAST: sglang may have re-installed one)"
+echo "    every experiment here is text-only; a torchvision built against a"
+echo "    different torch ABI is an import-time crash, a missing one is skipped."
+$PY -c "import torch; print('    torch is actually', torch.__version__, '(post-sglang)')"
+# pip-installed copy (may live in ~/.local or site-packages)
+while $PIP show torchvision >/dev/null 2>&1; do
+  $PIP uninstall -y torchvision >/dev/null 2>&1 || break
+  echo "    removed a pip torchvision"
+done
+# apt-installed copy — the one that bites, because uninstalling the pip copy
+# just uncovers it and the traceback looks identical
+for d in /usr/lib/python3/dist-packages/torchvision /usr/lib/python3*/dist-packages/torchvision; do
+  if [ -d "$d" ]; then
+    sudo mv "$d" "$d.disabled.$(date +%s)"
+    echo "    disabled system torchvision at $d"
+  fi
+done
+$PY -c "
+import importlib.util as u
+print('    torchvision importable:', u.find_spec('torchvision') is not None, '(want False)')"
 
-echo "==> 7/7 verify (torchvision::nms registers + Qwen2 import path is clean)"
+echo "==> 7/7 verify (Qwen2 import path is clean)"
 $PY - <<'EOF'
-import torch, torchvision
-from torchvision.ops import nms          # triggers the C++ op that was missing
-from transformers.models.qwen2 import Qwen2ForCausalLM
-print("    OK: torch", torch.__version__, "| torchvision", torchvision.__version__)
-print("    OK: torchvision::nms registered, Qwen2ForCausalLM importable")
+import torch, transformers
+from transformers.models.qwen2 import Qwen2ForCausalLM   # the import that breaks
+print("    OK: torch", torch.__version__, "| transformers", transformers.__version__)
+print("    OK: cuda available:", torch.cuda.is_available())
+print("    OK: Qwen2ForCausalLM importable")
 EOF
 
 echo
-echo "==> setup complete. next:"
-echo "    tmux new -s sweep   # detach with Ctrl+B D"
-echo "    python scripts/position_sweep_f.py"
+echo "==> setup complete. next (see docs/RUNBOOK.md for the full order):"
+echo "    tmux new -s sessA   # detach with Ctrl+B D"
+echo "    python scripts/relative_position_sweep_f.py 2>&1 | tee ~/e2b.log"
