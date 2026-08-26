@@ -19,9 +19,12 @@ venv/
 
 # Large activation stores (stay on Lambda; commit the derived CSVs/plots instead)
 results/position_sweep_acts_f.npz
+results/relative_position_acts_f.npz
 results/forced_prefix_acts_f.npz
 results/minimal_pairs_acts_f.npz
 results/eval_awareness_acts_f.npz
+# half-written atomic checkpoints, if a run is killed mid-save
+results/*.tmp.npz
 
 # Deterministically regenerable from a committed script — rebuild, don't vendor.
 # (Contrast: data/minimal_pairs_f.csv IS vendored; it is paid LLM output.)
