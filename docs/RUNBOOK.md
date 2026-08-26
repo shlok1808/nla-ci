@@ -11,7 +11,12 @@ Two things are live:
 
 ---
 
-# PART A — the GPU session (do this first)
+> **STATUS 2026-08-26 — Part A is DONE.** All four experiments ran and all four
+> landed on their pre-registered outcomes; see `docs/logs/session_13.md` and
+> `results/figures/`. Part A is kept below as the reproduction recipe. The live
+> queue is **Part B** plus the E-NLA session at the end of it.
+
+# PART A — the GPU session (COMPLETE — kept as the reproduction recipe)
 
 Four experiments, one A100 spin-up, ~2h, ~$4. All scripts are audited and fixed
 as of session 12. Order below is deliberate: the gates come first so a failure
