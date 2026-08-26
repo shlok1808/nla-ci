@@ -19,6 +19,8 @@ map; the runbook is what to actually type.
 - `docs/LIMITATIONS.md` — **L1–L15** methodological caveats. Read before trusting any result.
 - `docs/PREREGISTRATION.md` — dated, locked predictions + decision rules for every
   remaining experiment. Read before running anything; do not edit past entries.
+- `docs/REFERENCES.md` — every external citation, grouped by the role it plays in the
+  paper. Start here when writing related-work or limitations prose.
 - `docs/E3_CLAIM_LANGUAGE.md` — permitted/forbidden claim language for minimal pairs,
   fixed in advance of GATE 2.
 - `REPORT.md` (repo root) — independent research audit, 2026-07-02. Verifies every headline
@@ -212,6 +214,8 @@ minimal-pairs, *without* leak labels → non-circular).
   confound flag **will fire by design** and does not block `--stage project`.
 - **L14** tier-4 label bug live in the bf16 CSV (ID 495 is a confirmed judge hallucination).
 - **L15** the position sweep covers only the first 64 of a median-111-token response.
+- **L17** the NLA's reconstruction objective does not penalise false claims — description
+  evidence is weaker than the reconstruction score implies (verbalizer faithfulness).
 - **L16** story-parser fork: 12 tier-3 stories diverge across pipeline stages (9 in the
   valid minimal pairs) — cross-check excludes them; project reports a with/without sensitivity.
 

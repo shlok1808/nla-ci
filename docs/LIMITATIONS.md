@@ -329,4 +329,63 @@ The benchmark/extraction scripts strip only the literal trailing question `What 
 
 ---
 
+## L17 — The NLA's training objective does not penalise false claims (verbalizer faithfulness)
+
+**Status:** Inherent limitation of the instrument — affects interpretation of every NLA description, independent of our usage
+**Discovered:** 2026-08-26, literature check during the judge-replication design
+**Appears in:** `results/nla_descriptions.csv`, `scripts/verbalize_directions_f.py`, `scripts/blinded_reader_f.py`, and any claim of the form "the description says X"
+
+An NLA is a verbalizer (AV) and a reconstructor (AR) **co-trained** so that the
+activation can be regenerated from the description. That objective scores
+*sufficiency*, not *faithfulness*, and two consequences follow that we cannot
+fix from outside the checkpoint.
+
+**1. False claims are never penalised.** From RECAP ([arXiv:2607.20379](https://arxiv.org/html/2607.20379v1)):
+"Reconstruction rewards sufficiency... It does not penalize false additions,
+because the objective has no preference among claim values that induce the same
+reconstruction." Measured on released systems: explanations reached r̃ = 0.84
+reconstruction while only **~2% of specific claims were reconstruction-dependent.**
+So a description can score well overall while almost none of its individual
+assertions are load-bearing.
+
+**2. Co-trained pairs develop "private codes."** In controlled runs, verbalizer/
+reconstructor pairs developed false wording the reconstructor depends on in
+**5 of 5 cases**, detectable only by swapping in an independent reconstructor.
+`kitft/nla-qwen2.5-7b-L20-av` / `-ar` is exactly such a co-trained pair.
+
+**3. Confabulation is the documented failure mode of this method family.**
+From the privileged-information critique ([arXiv:2509.13316](https://arxiv.org/abs/2509.13316)):
+the verbalizer may paraphrase the prompt or the chain-of-thought instead of
+reading internals — "worthless as a safety signal, since you already had both."
+A related point we had not recorded: the verbalizer is itself an LLM with world
+knowledge, so a plausible description may reflect the **verbalizer's priors**
+rather than the **target's state**.
+
+**What this means for our claims.** "The description mentions X" is weaker
+evidence than the reconstruction score suggests, and this is a property of how
+NLAs are trained rather than of our pipeline. It also supplies a principled
+explanation for L6 (descriptions are structure-focused): per-claim truth was
+never optimised for.
+
+**What we do about it.**
+- `scripts/blinded_reader_f.py` includes a **topic-only control** (`informed_p1`:
+  the preamble names the topic but contains no forecast). If it scores like the
+  full description, the reader is confabulating from topic rather than reading
+  state.
+- `scripts/verbalize_directions_f.py` includes **matched-angle random-rotation
+  controls**, so "caution vocabulary appeared" can be separated from "any
+  rotation produces caution-flavoured text."
+- Any description-level claim is reported against an independent probe, never on
+  its own. This matches RECAP's own positive recommendation — "the probe, not the
+  free-form explanation, is the reliable readout."
+
+**What we cannot do.** RECAP's fix is not available to us: "RECAP must be
+co-trained in and cannot be retrofitted onto a frozen model." Their
+evaluator-swap protocol would need an independent reconstructor for this
+model/layer, which does not exist publicly.
+
+**Reference:** `docs/REFERENCES.md` §2.
+
+---
+
 *Add new entries as they surface. Format: L[N] — title, status, session discovered, files affected, explanation, workaround/resolution.*
