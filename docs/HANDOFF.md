@@ -45,7 +45,9 @@ tiers (Wang used only tier 3); (3) characterizing the privacy-awareness gap in w
 
 Subject model: `Qwen2.5-7B-Instruct` (bf16). NLA checkpoints: `kitft/nla-qwen2.5-7b-L20-av`
 (verbalizer) + `-ar` (reconstructor). Extraction = last-token residual at layer 20.
-Infra: Lambda A100 80GB for GPU steps; analysis is local.
+Infra: Lambda for GPU steps (sessions to date: **A100-SXM4-40GB**, verified session 13 —
+earlier "80GB" notes were wrong); analysis is local. Generation, not memory, is the
+bottleneck for NLA runs, so prefer an H100 if available.
 
 ---
 
