@@ -183,6 +183,7 @@ def stage_judge(model, prompt_name, base_url=None, dry_run=False):
     rows = []
     if OUT_CSV.exists():
         prev = pd.read_csv(OUT_CSV)
+        prev = prev.drop_duplicates(['arm', 'scenario_id'], keep='last')
         rows = prev.to_dict('records')
         done = set(prev[prev.arm == arm].scenario_id.astype(int))
         if done:
@@ -241,6 +242,11 @@ def stage_score():
     if not OUT_CSV.exists():
         print(f'{OUT_CSV} missing — run --stage judge first.'); return
     d = pd.read_csv(OUT_CSV)
+    dup = d.duplicated(['arm', 'scenario_id']).sum()
+    if dup:
+        print(f'WARNING: {dup} duplicate (arm, scenario_id) rows — keeping the last of '
+              f'each. Delete {OUT_CSV} and re-run if this is unexpected.')
+        d = d.drop_duplicates(['arm', 'scenario_id'], keep='last')
     b = pd.read_csv(BENCHMARK)
     base = b[b.tier == 'tier_3'].set_index('scenario_id')['label']
 
