@@ -16,7 +16,7 @@ map; the runbook is what to actually type.
   (2026-08-25 pre-flight audit + fixes: L16 parser fork, GATE-2 enforcement, eval-awareness
   prompt rebuild, `verbalize_directions_f.py` supersedes `alpha_sweep_f.py`, prereg amendment A1)
   — it is the most recent state and supersedes older logs where they conflict.
-- `docs/LIMITATIONS.md` — **L1–L15** methodological caveats. Read before trusting any result.
+- `docs/LIMITATIONS.md` — **L1–L17** methodological caveats. Read before trusting any result.
 - `docs/PREREGISTRATION.md` — dated, locked predictions + decision rules for every
   remaining experiment. Read before running anything; do not edit past entries.
 - `docs/REFERENCES.md` — every external citation, grouped by the role it plays in the
