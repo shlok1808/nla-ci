@@ -76,6 +76,18 @@ priors rather than the *target's* state. Motivates the `informed_p1`
 Explains activations from heterogeneous donor models with a shared decoder.
 Relevant to the cross-family concern behind our reader-model choice.
 
+**Nakka et al. (2025), PII disclosure and refusal probing**
+[arXiv:2507.02332](https://arxiv.org/abs/2507.02332) — **added 2026-08-26**
+Probes attention heads predictive of refusal on **public figures'** sensitive
+attributes, then steers those heads to bypass refusal (reports jailbreaking
+disclosure rates, not probe AUCs). Adjacent prior art and a must-cite: it
+establishes that privacy refusal behaviour is activation-predictable. It does
+**not** occupy our ground — third-party confidences between fictional
+characters, residual stream rather than attention heads, CI-preserving
+deflection with zero hard refusals (L5), no steering, plus the verbalization
+channel. Cite it when stating the novelty claim so a reviewer does not think we
+missed it.
+
 ---
 
 ## 3. Adjacent readout methods (the ladder we position within)

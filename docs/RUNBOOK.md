@@ -11,6 +11,14 @@ Two things are live:
 
 ---
 
+> ⛔ **BLOCKED 2026-08-26 — do not run `judge_replication_f.py --stage judge` or
+> `blinded_reader_f.py --stage read` until the fix list in
+> `docs/logs/session_14.md` §2 is done.** An independent design review found five
+> implementation defects, all verified: failed calls counted as complete,
+> unvalidated JSON booleans, a self-contradicting prompt variant, a hardcoded
+> baseline where a paired test was promised, and a transcript that blanks on
+> resume. Three were introduced in sessions 12–13.
+>
 > **STATUS 2026-08-26 — Part A is DONE.** All four experiments ran and all four
 > landed on their pre-registered outcomes; see `docs/logs/session_13.md` and
 > `results/figures/`. Part A is kept below as the reproduction recipe. The live
