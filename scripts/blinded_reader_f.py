@@ -4,11 +4,16 @@ the model is about to do?
 
 Motivation. Every description-level result so far is a bag-of-words probe, and
 scratch/07 showed the probe rides on tone words (awkward, dilemma) rather than
-privacy vocabulary, while scratch/08 showed the signal is concentrated in
-paragraph 3 — the paragraph that FORECASTS the upcoming reply. Both suggest the
-existing lexicon analyses (L6: "21/496 contain privacy vocabulary") were
-counting the wrong thing. The question a keyword count cannot answer is whether
-the description MEANS something a careful reader can use.
+privacy vocabulary — so L6's "21/496 contain privacy vocabulary" was counting the
+wrong thing. The question a keyword count cannot answer is whether the
+description MEANS something a careful reader can use.
+
+On paragraph 3: scratch/08 found P3 alone scoring above the whole description on
+the leak contrast (0.635 vs 0.600). A paired bootstrap on the delta says that is
+NOT distinguishable from zero (+0.035, CI [-0.033, +0.103], p=0.30; the
+deflection contrast runs the other way, -0.050, p=0.21). It was also the best of
+15 post-hoc cells. So P3 enters here as a HYPOTHESIS being tested on a different
+readout, not as an established result — do not cite 0.635 vs 0.600 as a finding.
 
 Design. A reader model sees the description text and nothing else — no scenario,
 no label, no response — and rates how likely the speaker is to disclose the
@@ -62,14 +67,15 @@ DECISION RULES, FIXED IN ADVANCE:
   - Everything here runs on temperature-1.0 descriptions (L9 §3), one stochastic
     draw each, so any positive is a LOWER bound.
 
-Cost: 4 conditions x 270 tier-3 = 1080 calls on gpt-4o-mini, roughly $0.15 and
-~15 min. Resumable — safe to Ctrl-C.
+Cost: 4 conditions x 270 tier-3 = 1080 short calls. A few dollars on the strong
+reader, cents on the second. Resumable — safe to Ctrl-C.
 
 Usage:
     export OPENAI_API_KEY=sk-...
-    python scripts/blinded_reader_f.py --stage read      # API calls, resumable
-    python scripts/blinded_reader_f.py --stage score     # local, free
-    python scripts/blinded_reader_f.py --dry-run         # show prompts, no calls
+    python scripts/blinded_reader_f.py --dry-run                      # no calls
+    python scripts/blinded_reader_f.py --stage read                   # gpt-4o
+    python scripts/blinded_reader_f.py --stage read --model gpt-4o-mini   # 2nd rater
+    python scripts/blinded_reader_f.py --stage score                  # local, free
 """
 
 import os
@@ -82,10 +88,18 @@ from tqdm import tqdm
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-READER_MODEL = 'gpt-4o-mini'      # same family as the benchmark judge
+# The reader is a MEASUREMENT INSTRUMENT, so its capability bounds what a null
+# means: a weak reader returning chance cannot distinguish "no information here"
+# from "reader too weak to see it". gpt-4o-mini is documented-unreliable on this
+# exact domain (L1: confidence hardcoded "high" on every judgment; L14: invented
+# a health disclosure in a response with zero health tokens), so it is NOT the
+# default. Run the strong model first; the cheap one is the second rater whose
+# agreement (kappa) is itself a reported number.
+DEFAULT_READER = 'gpt-4o'
+SECOND_READER  = 'gpt-4o-mini'
 DESCRIPTIONS = Path('results/nla_descriptions.csv')
 BENCHMARK    = Path('results/benchmark_results_bf16.csv')
-OUT_CSV      = Path('results/blinded_reader_f.csv')
+OUT_CSV      = Path('results/blinded_reader_f.csv')      # set per-reader in main()
 SAVE_EVERY   = 25
 N_BOOT       = 2000
 SEED         = 0
@@ -152,7 +166,7 @@ def load_descriptions():
 
 # ── Stage: read ───────────────────────────────────────────────────────────────
 
-def stage_read(dry_run=False):
+def stage_read(model=DEFAULT_READER, dry_run=False):
     d = load_descriptions()
     todo = [(cond, int(r.scenario_id)) for cond in CONDITIONS
             for r in d.itertuples()]
@@ -160,10 +174,12 @@ def stage_read(dry_run=False):
     done = {}
     if OUT_CSV.exists():
         prev = pd.read_csv(OUT_CSV)
+        prev = prev[prev.get('reader', DEFAULT_READER) == model] if 'reader' in prev else prev
         done = {(r['condition'], int(r['scenario_id'])): r for _, r in prev.iterrows()}
         print(f'resuming: {len(done)} reads already recorded')
     todo = [t for t in todo if t not in done]
-    print(f'{len(todo)} reads to make ({len(CONDITIONS)} conditions x {len(d)} scenarios)')
+    print(f'{len(todo)} reads to make ({len(CONDITIONS)} conditions x {len(d)} scenarios) '
+          f'with reader={model}')
 
     by_id = d.set_index('scenario_id')
     if dry_run:
@@ -185,7 +201,7 @@ def stage_read(dry_run=False):
         text = str(by_id.loc[sid, cfg['slice']])
         try:
             resp = client.chat.completions.create(
-                model=READER_MODEL,
+                model=model,
                 messages=[{'role': 'system', 'content': cfg['system']},
                           {'role': 'user', 'content': text}],
                 response_format={'type': 'json_object'}, temperature=0)
@@ -193,7 +209,7 @@ def stage_read(dry_run=False):
         except Exception as e:
             out = {'p_disclose': np.nan, 'p_deflect': np.nan, 'call': 'error',
                    'legibility': np.nan, 'evidence': str(e)[:200]}
-        rows.append(dict(condition=cond, scenario_id=sid,
+        rows.append(dict(reader=model, condition=cond, scenario_id=sid,
                          label=by_id.loc[sid, 'label'],
                          p_disclose=out.get('p_disclose'),
                          p_deflect=out.get('p_deflect'),
@@ -309,12 +325,17 @@ def stage_score():
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--stage', choices=['read', 'score'])
+    ap.add_argument('--model', default=DEFAULT_READER,
+                    help=f'reader model (default {DEFAULT_READER}; run again with '
+                         f'--model {SECOND_READER} for the agreement check)')
     ap.add_argument('--dry-run', action='store_true')
     a = ap.parse_args()
+    OUT_CSV = Path(f'results/blinded_reader_{a.model.replace(".", "")}_f.csv')
+    globals()['OUT_CSV'] = OUT_CSV
     if a.dry_run:
-        stage_read(dry_run=True)
+        stage_read(model=a.model, dry_run=True)
     elif a.stage == 'read':
-        stage_read()
+        stage_read(model=a.model)
     elif a.stage == 'score':
         stage_score()
     else:

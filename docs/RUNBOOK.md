@@ -228,10 +228,13 @@ leak/deflect probe should be able to read it. Everyone (including every prior
 session) read "Final token ..." as more format-talk and stopped there — which is
 how L6 was written.
 
-⚠️ **This is post-hoc.** 5 slices × 3 contrasts = 15 cells and this is the best
-one. That's the same trap as "position 42" (L11). Treat it as a **hypothesis to
-test on the clean temp-0 reads**, not as a result. Write the prediction down
-first, then test it.
+⚠️ **This is post-hoc AND not significant.** 5 slices × 3 contrasts = 15 cells
+and this is the best one — the same trap as "position 42" (L11). A paired
+bootstrap on the delta (2026-08-26) settles it: **+0.035, CI [-0.033, +0.103],
+p=0.30** on leak, and **-0.050, p=0.21** on deflection, i.e. the deflection
+contrast runs the *other* way. Two strikes. Treat P3 as a **hypothesis to test on
+an independent readout**, never as a result, and do not cite 0.635 vs 0.600 as a
+number that means something.
 
 Also relevant: `scratch/07` showed the description-level signal rides on tone
 words (*awkward, dilemma* vs *supportive, understand where you're coming from*)
@@ -280,9 +283,14 @@ So the informed condition **cannot independently confirm that hypothesis**. That
 is what `naive_full` is for. If only the informed condition works, the honest
 claim is "a reader told what to look for can extract it; a cold reader cannot."
 
-**If the cheap reader comes back at chance,** re-run once with a stronger model
-before concluding the channel is unreadable. "A weak reader failed" and "the
-information isn't there" are different claims.
+**Reader choice matters — the reader is the instrument.** The default is
+`gpt-4o`, not `gpt-4o-mini`: a weak reader returning chance cannot distinguish
+"no information here" from "reader too weak to see it", so a null from a sloppy
+reader is uninformative. gpt-4o-mini is documented-unreliable on this exact
+domain (L1: `confidence` hardcoded "high" on every judgment; L14: invented a
+health disclosure in a response containing zero health tokens). Run the strong
+reader first, then `--model gpt-4o-mini` as a second rater — their agreement is
+itself a reported number.
 
 ## Open ideas not yet built
 
