@@ -11,6 +11,16 @@ Two things are live:
 
 ---
 
+> ▶ **NEXT (2026-08-26): the NLA transmission pilot.** One GPU spin-up, ~5 min
+> of generation, and it decides whether the whole NLA thread is alive:
+> `python scripts/nla_transmission_f.py --stage pilot`
+> Secret and public activations differ by a median of only **4.5 degrees**, and
+> L8 records that a ~5-degree rotation produced *identical* descriptions in
+> session 04. If the AV cannot resolve the manipulation, every downstream
+> readout is dead by construction, so this runs before anything else. Go/no-go
+> thresholds are fixed in the script docstring. A NO-GO is a publishable
+> negative, not a failure — do not retune to manufacture a GO.
+>
 > ⛔ **BLOCKED 2026-08-26 — do not run `judge_replication_f.py --stage judge` or
 > `blinded_reader_f.py --stage read` until the fix list in
 > `docs/logs/session_14.md` §2 is done.** An independent design review found five
