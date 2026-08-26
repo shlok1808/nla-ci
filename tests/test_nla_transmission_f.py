@@ -90,7 +90,8 @@ def main():
     (tmp / 'results').mkdir(parents=True); (tmp / 'data').mkdir()
     ang, cos = nt.pair_angles(S, P)
     man = pd.DataFrame(dict(scenario_id=ids, angle_deg=ang.round(4),
-                            cosine=cos.round(6), angle_quartile=1,
+                            cosine=cos.round(6),
+                            angle_quartile=[1, 1, 2, 2, 3, 3, 4, 4],
                             act_sha_secret=[nt.sha(x.tobytes()) for x in S],
                             act_sha_public=[nt.sha(x.tobytes()) for x in P]))
     nt.MANIFEST = tmp / 'results/man.csv'
