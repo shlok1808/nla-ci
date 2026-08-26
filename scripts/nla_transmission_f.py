@@ -79,6 +79,7 @@ import json
 import difflib
 import argparse
 import platform
+import hashlib
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -100,7 +101,8 @@ VERDICT_JSON = Path('results/nla_transmission_pilot_verdict_f.json')
 PILOT_TXT    = Path('results/nla_transmission_pilot_f.txt')
 METRICS_CSV  = Path('results/nla_transmission_pilot_metrics_f.csv')
 PACKET_CSV   = Path('data/nla_transmission_2afc_packet_f.csv')
-KEY_CSV      = Path('results/nla_transmission_2afc_key_f.csv')
+KEY_CSV      = Path('results/nla_transmission_2afc_key_f.csv')   # + _{slice} suffix
+GO_JSON      = Path('results/nla_transmission_2afc_result_f.json')  # the GPU authorisation
 
 PILOT_N      = 40          # 10 per within-pair angle quartile
 MAX_NEW      = 300
@@ -189,6 +191,25 @@ def word_diff(a, b, ctx=3):
     return ' '.join(out)
 
 
+def sha(b):
+    """Stable across processes. Python's hash() is randomized per interpreter
+    (PYTHONHASHSEED) and produced different values for identical bytes in
+    consecutive runs — useless as a checksum."""
+    return hashlib.sha256(bytes(b)).hexdigest()[:32]
+
+
+def file_digest(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:32]
+
+
+def atomic_write_json(obj, path):
+    tmp = path.with_suffix(path.suffix + '.tmp')
+    tmp.write_text(json.dumps(obj, indent=2, sort_keys=True))
+    with open(tmp, 'rb') as f:
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
 def atomic_write_csv(df, path):
     tmp = path.with_suffix(path.suffix + '.tmp')
     df.to_csv(tmp, index=False)
@@ -225,11 +246,16 @@ def pair_angles(S, P):
 
 # ── Stage: plan ───────────────────────────────────────────────────────────────
 
-def stage_plan(n=PILOT_N):
+def stage_plan(n=PILOT_N, force=False):
     """Lock the pilot sample BEFORE any description exists. Stratified by
     within-pair angle quartile so a NO-GO cannot be an artifact of having
     sampled only near-identical inputs, and so the verdict can be read by
     quartile (uniform insensitivity vs a threshold response)."""
+    if MANIFEST.exists() and not force:
+        raise SystemExit(
+            f'{MANIFEST} already exists (digest {file_digest(MANIFEST)}).\n'
+            f'Re-planning after seeing any output would un-lock the sample. '
+            f'Pass --force only if no description has been generated.')
     ids, S, P, pairs = load_acts()
     ang, cos = pair_angles(S, P)
     q = pd.qcut(ang, 4, labels=[1, 2, 3, 4])
@@ -243,11 +269,11 @@ def stage_plan(n=PILOT_N):
     man = pd.DataFrame(dict(
         scenario_id=ids[sel], angle_deg=ang[sel].round(4), cosine=cos[sel].round(6),
         angle_quartile=[int(q[i]) for i in sel],
-        act_checksum_secret=[int(abs(hash(S[i].tobytes())) % 10**12) for i in sel],
-        act_checksum_public=[int(abs(hash(P[i].tobytes())) % 10**12) for i in sel]))
+        act_sha_secret=[sha(S[i].tobytes()) for i in sel],
+        act_sha_public=[sha(P[i].tobytes()) for i in sel]))
     MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_csv(man, MANIFEST)
-    print(f'locked {len(man)} pairs -> {MANIFEST}')
+    print(f'locked {len(man)} pairs -> {MANIFEST}  (digest {file_digest(MANIFEST)})')
     print(man.groupby('angle_quartile')['angle_deg']
           .agg(['count', 'min', 'median', 'max']).round(2).to_string())
     print(f'\nfull-population angle: median {np.median(ang):.2f} deg, '
@@ -358,9 +384,27 @@ def stage_pilot():
     assert MANIFEST.exists(), 'run --stage plan first (it locks the sample)'
     man = pd.read_csv(MANIFEST)
     ids_m = set(man.scenario_id.astype(int))
-    NLAClient, prov = preflight()
     ids, S, P, pairs = load_acts()
     idx = {int(s): i for i, s in enumerate(ids)}
+
+    # the manifest is the pre-registration; verify it still describes this npz
+    assert len(man) == len(ids_m) == PILOT_N, f'manifest is not {PILOT_N} unique ids'
+    assert ids_m <= set(int(i) for i in ids), 'manifest holds ids absent from the npz'
+    ang_all, cos_all = pair_angles(S, P)
+    for _, r in man.iterrows():
+        i = idx[int(r.scenario_id)]
+        assert abs(ang_all[i] - r.angle_deg) < 1e-3, (
+            f'manifest angle for {int(r.scenario_id)} does not match the npz — '
+            f'{r.angle_deg} vs {ang_all[i]:.4f}. The activations changed under it.')
+        assert sha(S[i].tobytes()) == r.act_sha_secret, \
+            f'secret activation for {int(r.scenario_id)} does not match its manifest digest'
+        assert sha(P[i].tobytes()) == r.act_sha_public, \
+            f'public activation for {int(r.scenario_id)} does not match its manifest digest'
+    man_digest = file_digest(MANIFEST)
+    print(f'manifest verified against the npz (digest {man_digest})')
+
+    NLAClient, prov = preflight()
+    prov['manifest_digest'] = man_digest
 
     work = []
     for sid in man.scenario_id.astype(int):
@@ -389,19 +433,19 @@ def stage_pilot():
     n_expected = len(man)
 
     verdict = dict(n_expected=n_expected, n_complete=int(len(complete)),
-                   nondeterministic=nondet)
+                   nondeterministic=nondet, manifest_digest=man_digest)
     print('\n' + '=' * 78)
     if nondet:
         verdict['status'] = 'INVALID'
         print(f'INVALID — greedy decoding was not deterministic for {len(nondet)} '
               f'activations: {nondet}')
         print('Every similarity metric below would be measuring decoder noise.')
-        VERDICT_JSON.write_text(json.dumps(verdict, indent=2)); return
+        atomic_write_json(verdict, VERDICT_JSON); return
     if len(complete) < n_expected:
         verdict['status'] = 'INVALID'
         print(f'INVALID — {len(complete)}/{n_expected} pairs complete. A verdict '
               f'from a partial subset is not a result; re-run to retry failures.')
-        VERDICT_JSON.write_text(json.dumps(verdict, indent=2)); return
+        atomic_write_json(verdict, VERDICT_JSON); return
     print(f'pilot valid: {len(complete)}/{n_expected} pairs, greedy decoding '
           f'deterministic on {len(rep)} repeats')
     print('=' * 78)
@@ -472,76 +516,142 @@ def stage_pilot():
     print('the AV echoing the rewrite\'s own changed words (see edit-vocab column).')
     print('The scientific gate is the blinded 2AFC: --stage export-2afc')
     print(f'\nside-by-side diffs: {PILOT_TXT}')
+    # a 2- or 4-paragraph description makes P3 unrecoverable ('' by slicing),
+    # which would silently look like an identical pair
+    n_bad = int((~M.both_3para).sum())
+    if n_bad:
+        verdict['P3']['status'] = 'INVALID'
+        verdict['P3']['reason'] = f'{n_bad}/{len(M)} pairs lack 3 parsed paragraphs'
+        print(f'\n  !! P3 branch INVALID: {n_bad}/{len(M)} pairs did not parse into 3 '
+              f'paragraphs, so their P3 is empty and would read as identical.')
     verdict['status'] = 'PILOT-COMPLETE'
-    VERDICT_JSON.write_text(json.dumps(verdict, indent=2))
+    atomic_write_json(verdict, VERDICT_JSON)
     atomic_write_csv(M, METRICS_CSV)
 
 
 # ── Stage: export / score the blinded 2AFC ───────────────────────────────────
 
+def packet_paths(which):
+    return (PACKET_CSV.with_name(f'{PACKET_CSV.stem}_{which}.csv'),
+            KEY_CSV.with_name(f'{KEY_CSV.stem}_{which}.csv'))
+
+
 def stage_export_2afc(which='P3'):
     v = json.loads(VERDICT_JSON.read_text())
     assert v.get('status') == 'PILOT-COMPLETE', 'run --stage pilot first'
-    if v[which]['status'] == 'NO-GO':
-        print(f'{which} branch is NO-GO (ceiling {v[which]["ceiling_2afc"]:.3f}). '
-              f'Not exporting — human time cannot change this.')
+    if v[which].get('status') in ('NO-GO', 'INVALID'):
+        print(f'{which} branch is {v[which]["status"]} '
+              f'(ceiling {v[which]["ceiling_2afc"]:.3f}). Not exporting — human '
+              f'judgement cannot change this.')
         return
+    man = pd.read_csv(MANIFEST)
     df = pd.read_csv(PILOT_CSV)
     df = df[(df.repeat == 0) & [text_valid(d, e) for d, e in zip(df.description, df.error)]]
     piv = df.pivot_table(index='scenario_id', columns='variant',
                          values='description', aggfunc='first').dropna()
+    piv = piv[piv.index.isin(man.scenario_id.astype(int))]
+    assert len(piv) == len(man), (
+        f'{len(piv)}/{len(man)} manifest pairs available — export the locked '
+        f'population or not at all')
+
+    # EVERY locked pair is exported, including identical ones. Dropping them
+    # would silently replace the pre-registered n=40 population with an
+    # easier subset, and the 26/40 rule would no longer mean what it says.
     rng = np.random.default_rng(SEED + 1)
+    order = rng.permutation(len(piv))
+    sides = np.array(['A'] * (len(piv) // 2) + ['B'] * (len(piv) - len(piv) // 2))
+    rng.shuffle(sides)                        # exact A/B balance
     pk, key = [], []
-    for i, (sid, r) in enumerate(piv.iterrows()):
-        s, p = slice_text(r['secret'], which), slice_text(r['public'], which)
-        if norm_text(s) == norm_text(p):
-            continue                      # identical: nothing to judge
-        secret_left = bool(rng.integers(2))
-        pk.append(dict(item=len(pk) + 1, A=s if secret_left else p,
-                       B=p if secret_left else s, your_answer=''))
-        key.append(dict(item=len(pk), scenario_id=int(sid),
-                        secret_side='A' if secret_left else 'B'))
-    PACKET_CSV.parent.mkdir(parents=True, exist_ok=True)
-    atomic_write_csv(pd.DataFrame(pk), PACKET_CSV)
-    atomic_write_csv(pd.DataFrame(key), KEY_CSV)
-    print(f'wrote {len(pk)} blinded items -> {PACKET_CSV}')
-    print(f'answer key (do not open) -> {KEY_CSV}')
-    print('\nFor each item, one description came from the activation where the')
-    print('information was CONFIDENTIAL and one where it was COMMON KNOWLEDGE.')
-    print('Fill `your_answer` with A or B. Do not skip items; guess if unsure.')
-    print(f'Then: python scripts/nla_transmission_f.py --stage score-2afc')
+    for item, (pos, side) in enumerate(zip(order, sides), 1):
+        sid = piv.index[pos]
+        s_txt = slice_text(piv.iloc[pos]['secret'], which)
+        p_txt = slice_text(piv.iloc[pos]['public'], which)
+        pk.append(dict(item=item, A=s_txt if side == 'A' else p_txt,
+                       B=p_txt if side == 'A' else s_txt, your_answer=''))
+        key.append(dict(item=item, scenario_id=int(sid), secret_side=side,
+                        identical=(norm_text(s_txt) == norm_text(p_txt))))
+    pcsv, kcsv = packet_paths(which)
+    pcsv.parent.mkdir(parents=True, exist_ok=True)
+    atomic_write_csv(pd.DataFrame(pk), pcsv)
+    atomic_write_csv(pd.DataFrame(key), kcsv)
+    n_id = sum(k['identical'] for k in key)
+    print(f'wrote {len(pk)} blinded items ({which}) -> {pcsv}')
+    print(f'  {n_id} of them are identical pairs — kept deliberately; guessing on '
+          f'those is what the {MIN_INTERESTING_2AFC} ceiling already accounts for')
+    print(f'  A/B balance: {sum(s=="A" for s in sides)}/{sum(s=="B" for s in sides)}')
+    print(f'answer key (do not open) -> {kcsv}')
+    print('\nOne description came from the activation where the information was')
+    print('CONFIDENTIAL, one where it was COMMON KNOWLEDGE. Put A or B in')
+    print(f'`your_answer` for EVERY item — guess when unsure; a skipped item is')
+    print(f'not neutral, it silently shrinks the population.')
+    print(f'Then: python scripts/nla_transmission_f.py --stage score-2afc --slice {which}')
 
 
-def stage_score_2afc():
+def stage_score_2afc(which='P3'):
     from scipy.stats import binomtest
-    pk = pd.read_csv(PACKET_CSV); key = pd.read_csv(KEY_CSV)
+    pcsv, kcsv = packet_paths(which)
+    pk, key = pd.read_csv(pcsv), pd.read_csv(kcsv)
+    n_locked = len(key)
+
+    # integrity: the graded population must BE the locked population
+    assert len(pk) == n_locked, f'packet has {len(pk)} items, key has {n_locked}'
+    assert pk.item.is_unique and key.item.is_unique, 'duplicate item numbers'
+    assert set(pk.item) == set(key.item), 'packet and key items disagree'
     m = pk.merge(key, on='item')
-    ans = m[m.your_answer.astype(str).str.upper().isin(['A', 'B'])]
-    if not len(ans):
-        print(f'no answers filled in {PACKET_CSV}'); return
-    correct = (ans.your_answer.str.upper() == ans.secret_side).sum()
-    n = len(ans)
-    bt = binomtest(int(correct), n, 0.5, alternative='greater')
+    ansd = m.your_answer.astype(str).str.strip().str.upper()
+    bad = ~ansd.isin(['A', 'B'])
+    if bad.any():
+        raise SystemExit(
+            f'{int(bad.sum())}/{n_locked} items are unanswered or invalid '
+            f'(items {list(m.item[bad])[:10]}).\nEvery locked item must be graded — '
+            f'dropping items replaces the pre-registered population with an easier '
+            f'subset and invalidates the {PILOT_2AFC_PASS}/{n_locked} rule.')
+
+    correct = int((ansd == m.secret_side).sum())
+    n = n_locked
+    bt = binomtest(correct, n, 0.5, alternative='greater')
     lo, hi = bt.proportion_ci(0.95)
-    print(f'blinded 2AFC: {correct}/{n} = {correct/n:.3f}')
+    n_id = int(m.identical.sum())
+    print(f'blinded 2AFC ({which}): {correct}/{n} = {correct/n:.3f}')
     print(f'  95% CI [{lo:.3f}, {hi:.3f}]   one-sided exact binomial p={bt.pvalue:.4f}')
-    print(f'  unanswered: {len(m)-n}')
-    if bt.pvalue < 0.05 and correct / n >= MIN_INTERESTING_2AFC:
-        print(f'\n  => GO. Privacy status is distinguishable from the descriptions '
-              f'alone.\n     Proceed to --stage verbalize (all 233 pairs).')
-    elif bt.pvalue < 0.05:
-        print(f'\n  => SIGNIFICANT BUT SMALL (below the pre-registered {MIN_INTERESTING_2AFC} '
-              f'floor).\n     Report the effect; do not scale up on this alone.')
+    print(f'  identical pairs included: {n_id} (ceiling {1 - n_id/(2*n):.3f})')
+    print(f'  pre-registered pass: {PILOT_2AFC_PASS}/{n}')
+
+    go = (correct >= PILOT_2AFC_PASS) and (correct / n >= MIN_INTERESTING_2AFC)
+    res = dict(slice=which, n=n, correct=correct, accuracy=round(correct / n, 4),
+               p_value=round(bt.pvalue, 6), ci=[round(lo, 4), round(hi, 4)],
+               n_identical=n_id, pass_threshold=PILOT_2AFC_PASS,
+               min_interesting=MIN_INTERESTING_2AFC,
+               manifest_digest=file_digest(MANIFEST),
+               status='GO' if go else 'NO-GO')
+    atomic_write_json(res, GO_JSON)
+    print()
+    if go:
+        print(f'  => GO (recorded in {GO_JSON}). --stage verbalize is now unlocked.')
     else:
-        print(f'\n  => NO-GO. Scoped result: "greedy AV descriptions did not let a '
-              f'blinded\n     reader distinguish these natural private/public activation '
-              f'pairs\n     under the tested checkpoint and decoding configuration."')
+        print(f'  => NO-GO. Scoped result: "greedy AV descriptions did not let a')
+        print(f'     blinded reader distinguish these natural private/public')
+        print(f'     activation pairs under the tested checkpoint and decoding')
+        print(f'     configuration." Recorded in {GO_JSON}; verbalize stays locked.')
 
 
 def stage_verbalize():
-    v = json.loads(VERDICT_JSON.read_text()) if VERDICT_JSON.exists() else {}
-    assert v.get('status') == 'PILOT-COMPLETE', (
-        'refusing to run: no completed pilot verdict. Run --stage pilot first.')
+    if not GO_JSON.exists():
+        raise SystemExit(
+            'refusing to run: no recorded 2AFC result. A completed pilot is not '
+            'authorisation — the scientific gate is --stage score-2afc.')
+    g = json.loads(GO_JSON.read_text())
+    if g.get('status') != 'GO':
+        raise SystemExit(
+            f'refusing to run: recorded 2AFC status is {g.get("status")} '
+            f'({g.get("correct")}/{g.get("n")}, p={g.get("p_value")}). '
+            f'Do not re-grade to obtain a GO.')
+    if g.get('manifest_digest') != file_digest(MANIFEST):
+        raise SystemExit(
+            'refusing to run: the manifest changed since the 2AFC was scored. '
+            'The recorded GO does not apply to this sample.')
+    print(f'authorised by {GO_JSON}: {g["slice"]} {g["correct"]}/{g["n"]} '
+          f'(p={g["p_value"]})')
     NLAClient, prov = preflight()
     ids, S, P, _ = load_acts()
     work = [(int(s), 'secret', S[i], 0) for i, s in enumerate(ids)] + \
@@ -558,7 +668,9 @@ if __name__ == '__main__':
                     choices=['plan', 'pilot', 'export-2afc', 'score-2afc', 'verbalize'])
     ap.add_argument('--n', type=int, default=PILOT_N)
     ap.add_argument('--slice', default='P3', choices=SLICES)
+    ap.add_argument('--force', action='store_true',
+                    help='plan: overwrite an existing locked manifest')
     a = ap.parse_args()
-    {'plan': lambda: stage_plan(a.n), 'pilot': stage_pilot,
+    {'plan': lambda: stage_plan(a.n, a.force), 'pilot': stage_pilot,
      'export-2afc': lambda: stage_export_2afc(a.slice),
-     'score-2afc': stage_score_2afc, 'verbalize': stage_verbalize}[a.stage]()
+     'score-2afc': lambda: stage_score_2afc(a.slice), 'verbalize': stage_verbalize}[a.stage]()
