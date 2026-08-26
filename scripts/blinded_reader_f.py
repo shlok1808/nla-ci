@@ -96,7 +96,36 @@ from tqdm import tqdm
 # default. Run the strong model first; the cheap one is the second rater whose
 # agreement (kappa) is itself a reported number.
 DEFAULT_READER = 'gpt-4o'
-SECOND_READER  = 'gpt-4o-mini'
+SECOND_READER  = 'deepseek-chat'
+
+# Any OpenAI-compatible endpoint works — matched on model-name prefix. The
+# second rater should come from a DIFFERENT LAB than the verbalizer: the
+# descriptions were written by kitft/nla-qwen2.5-7b-L20-av, a Qwen2.5-7B
+# fine-tune, so a Qwen reader shares training data, tokenizer, and phrasing
+# habits with the writer. It might decode the text well for family-resemblance
+# reasons rather than because the content is legible — which is precisely the
+# thing this experiment is trying to measure. Do not use a Qwen reader.
+# Override any of these with --base-url if an endpoint has moved.
+PROVIDERS = {
+    'deepseek': ('https://api.deepseek.com', 'DEEPSEEK_API_KEY'),
+    'glm':      ('https://open.bigmodel.cn/api/paas/v4', 'ZHIPU_API_KEY'),
+    'gemini':   ('https://generativelanguage.googleapis.com/v1beta/openai/',
+                 'GEMINI_API_KEY'),
+}
+
+
+def make_client(model, base_url=None):
+    """OpenAI client pointed at whichever provider owns this model name."""
+    from openai import OpenAI
+    for prefix, (url, env) in PROVIDERS.items():
+        if model.startswith(prefix):
+            key = os.environ.get(env)
+            if not key:
+                raise SystemExit(f'{model} needs {env} set (or pass --base-url '
+                                 f'and reuse OPENAI_API_KEY)')
+            return OpenAI(api_key=key, base_url=base_url or url)
+    return OpenAI(api_key=os.environ['OPENAI_API_KEY'],
+                  **({'base_url': base_url} if base_url else {}))
 DESCRIPTIONS = Path('results/nla_descriptions.csv')
 BENCHMARK    = Path('results/benchmark_results_bf16.csv')
 OUT_CSV      = Path('results/blinded_reader_f.csv')      # set per-reader in main()
@@ -166,7 +195,7 @@ def load_descriptions():
 
 # ── Stage: read ───────────────────────────────────────────────────────────────
 
-def stage_read(model=DEFAULT_READER, dry_run=False):
+def stage_read(model=DEFAULT_READER, base_url=None, dry_run=False):
     d = load_descriptions()
     todo = [(cond, int(r.scenario_id)) for cond in CONDITIONS
             for r in d.itertuples()]
@@ -192,8 +221,7 @@ def stage_read(model=DEFAULT_READER, dry_run=False):
         print('\n[dry-run] no API calls made.')
         return
 
-    from openai import OpenAI
-    client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+    client = make_client(model, base_url)
     rows = [dict(r) for r in done.values()]
 
     for i, (cond, sid) in enumerate(tqdm(todo, desc='Blinded reads'), 1):
@@ -247,6 +275,10 @@ def _boot_ci(y, s, n_boot=N_BOOT, seed=SEED):
 
 
 def stage_score():
+    # score every reader file present, then report cross-reader agreement
+    files = sorted(Path('results').glob('blinded_reader_*_f.csv'))
+    if len(files) > 1:
+        print(f'reader files found: {[f.name for f in files]}')
     df = pd.read_csv(OUT_CSV)
     df['legibility'] = pd.to_numeric(df['legibility'], errors='coerce')
     for c in ('p_disclose', 'p_deflect'):
@@ -328,14 +360,16 @@ if __name__ == '__main__':
     ap.add_argument('--model', default=DEFAULT_READER,
                     help=f'reader model (default {DEFAULT_READER}; run again with '
                          f'--model {SECOND_READER} for the agreement check)')
+    ap.add_argument('--base-url', default=None,
+                    help='override the provider endpoint for --model')
     ap.add_argument('--dry-run', action='store_true')
     a = ap.parse_args()
     OUT_CSV = Path(f'results/blinded_reader_{a.model.replace(".", "")}_f.csv')
     globals()['OUT_CSV'] = OUT_CSV
     if a.dry_run:
-        stage_read(model=a.model, dry_run=True)
+        stage_read(model=a.model, base_url=a.base_url, dry_run=True)
     elif a.stage == 'read':
-        stage_read(model=a.model)
+        stage_read(model=a.model, base_url=a.base_url)
     elif a.stage == 'score':
         stage_score()
     else:
