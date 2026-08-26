@@ -98,6 +98,7 @@ PILOT_CSV    = Path('results/nla_transmission_pilot_desc_f.csv')   # pilot only
 FULL_CSV     = Path('results/nla_transmission_full_desc_f.csv')    # full run only
 VERDICT_JSON = Path('results/nla_transmission_pilot_verdict_f.json')
 PILOT_TXT    = Path('results/nla_transmission_pilot_f.txt')
+METRICS_CSV  = Path('results/nla_transmission_pilot_metrics_f.csv')
 PACKET_CSV   = Path('data/nla_transmission_2afc_packet_f.csv')
 KEY_CSV      = Path('results/nla_transmission_2afc_key_f.csv')
 
@@ -473,7 +474,7 @@ def stage_pilot():
     print(f'\nside-by-side diffs: {PILOT_TXT}')
     verdict['status'] = 'PILOT-COMPLETE'
     VERDICT_JSON.write_text(json.dumps(verdict, indent=2))
-    atomic_write_csv(M, Path('results/nla_transmission_pilot_metrics_f.csv'))
+    atomic_write_csv(M, METRICS_CSV)
 
 
 # ── Stage: export / score the blinded 2AFC ───────────────────────────────────
