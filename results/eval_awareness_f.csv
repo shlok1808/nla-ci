@@ -1,0 +1,2 @@
+n_scenarios,frac_pos_cosine,cos_eval_deflect,deflect_auc_before,deflect_auc_after,deflect_auc_after_span3,span3_frame_var,deflect_auc_random_erase,leak_auc_before,leak_auc_after,verdict
+270,1.0,-0.0880577489733696,0.8898385565052231,0.8905508072174738,0.8915004748338082,0.8753334879875183,0.8898148148148148,0.6509215670629539,0.649964094789755,SURVIVES — T2 substantially closed (explicit variety only)

@@ -46,6 +46,7 @@ Outputs:
 
 import os
 import sys
+import argparse
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -64,6 +65,11 @@ from position_sweep_f import (  # noqa: E402
 FRACTIONS  = [0.10, 0.25, 0.50, 0.75, 0.90]   # of the response, in tokens
 SAVE_EVERY = 25
 
+# --fine: exploratory 5%-resolution grid (see EXPLORATORY note in main()). The
+# default grid above is the PRE-REGISTERED one (prereg §3) and its outputs must
+# never be overwritten by a fine run — hence the separate filenames below.
+FINE_FRACTIONS = [round(0.05 * i, 2) for i in range(1, 20)]   # 5%..95%
+
 # Column order in the stored array: k0, then the fractions, then the final token.
 POS_NAMES = ['k0'] + [f'{int(f * 100)}%' for f in FRACTIONS] + ['last']
 N_POS = len(POS_NAMES)
@@ -72,6 +78,17 @@ ACTS_PATH = Path('results/relative_position_acts_f.npz')
 AUCS_PATH = Path('results/relative_position_aucs_f.csv')
 PLOT_PATH = Path('results/relative_position_f.png')
 REF_ACTS  = Path('results/activations_layer20.npz')
+
+
+def use_fine_grid():
+    """Switch the module to the exploratory 5% grid, with separate outputs."""
+    global FRACTIONS, POS_NAMES, N_POS, ACTS_PATH, AUCS_PATH, PLOT_PATH
+    FRACTIONS = FINE_FRACTIONS
+    POS_NAMES = ['k0'] + [f'{int(f * 100)}%' for f in FRACTIONS] + ['last']
+    N_POS = len(POS_NAMES)
+    ACTS_PATH = Path('results/relative_position_fine_acts_f.npz')
+    AUCS_PATH = Path('results/relative_position_fine_aucs_f.csv')
+    PLOT_PATH = Path('results/relative_position_fine_f.png')
 
 
 def _save(all_ids, all_acts, all_rlen):
@@ -224,8 +241,19 @@ def main():
     print(f'wrote {AUCS_PATH}')
 
     # ── Decision rule (prereg §3) ────────────────────────────────────────────
+    fine = (FRACTIONS is FINE_FRACTIONS)
     print('\n' + '=' * 72)
-    print('E2b VERDICT (docs/PREREGISTRATION.md §3)')
+    if fine:
+        print('E2b FINE GRID — EXPLORATORY, NOT THE PRE-REGISTERED RESULT')
+        print('=' * 72)
+        print('The confirmatory claim stays anchored to the 6-position grid in')
+        print('results/relative_position_aucs_f.csv (prereg §3). This grid has')
+        print(f'{5 * N_POS * 3} cells; the maximum of that many correlated AUCs is')
+        print('upward-biased by construction (cf. L11, "position 42"). Read the')
+        print('SHAPE of these curves. Do NOT report a max from this grid as a')
+        print('headline number.')
+    else:
+        print('E2b VERDICT (docs/PREREGISTRATION.md §3)')
     print('=' * 72)
     leak = aucs[aucs['target'].isin(['leaked_vs_not', 'leaked_vs_approp'])]
     for tgt, g in leak.groupby('target'):
@@ -240,7 +268,20 @@ def main():
     n_cells = len(leak)
     print(f'leak cells >= 0.80: {int((leak["auc"] >= 0.80).sum())}/{n_cells}')
 
-    if mx < 0.80:
+    if fine:
+        # shape readout — the only reason this grid exists
+        print('\n--- shape (layer 20, canonical contrast) ---')
+        g20 = aucs[(aucs['layer'] == 20) & (aucs['target'] == 'leaked_vs_approp')]
+        g20 = g20.set_index('pos_name').reindex([p for p in POS_NAMES])['auc']
+        peak = g20.iloc[1:-1].idxmax()
+        print(g20.round(3).to_string())
+        print(f'\n  interior peak at {peak} (excluding k0/last)')
+        print(f'  k0 {g20["k0"]:.3f} -> peak {g20[peak]:.3f} -> 90% {g20["90%"]:.3f} '
+              f'-> last {g20["last"]:.3f}')
+        print('  end-spike = last minus 90%: '
+              f'{g20["last"] - g20["90%"]:+.3f}')
+        print('\nRead this as a curve, not as a maximum.')
+    elif mx < 0.80:
         print('\n=> STILL <0.80 END-TO-END. L15 qualifier retires; the headline')
         print('   upgrades to "leak decodability never exceeds ~0.8 anywhere in')
         print('   the response." Report alongside the transcript caveat.')
@@ -290,4 +331,15 @@ def main():
 
 
 if __name__ == '__main__':
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--fine', action='store_true',
+                    help='EXPLORATORY 5%%-resolution grid (19 fractions + k0 + '
+                         'last). Writes to results/relative_position_fine_* so '
+                         'the pre-registered 6-position result is never '
+                         'overwritten. Read for shape; the confirmatory claim '
+                         'stays on the default grid.')
+    if ap.parse_args().fine:
+        use_fine_grid()
+        print(f'FINE GRID: {N_POS} positions {POS_NAMES}')
+        print(f'outputs -> {ACTS_PATH}, {AUCS_PATH}\n')
     main()

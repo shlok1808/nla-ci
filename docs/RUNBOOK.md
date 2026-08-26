@@ -203,6 +203,26 @@ Probing each slice separately (`scratch/08_paragraph_slices.py` →
 actively dilutes it. That matters because the leak signal is the thing the
 project has never been able to find.
 
+**Why P3 is different — the example that makes it obvious.** P3 is not
+describing format at all. It is the NLA *predicting what the model is about to
+say*, with example continuations. Same paragraph, two labels:
+
+> **refused** (id 222) — Final token "way\n" closes an opening quotation
+> ("I would say: "), immediately requiring a spoken quote content like
+> *"That's... wow, I feel a bit awkward about my life choices"* or
+> *"Amy, I've got to really own this,"* completing the character's reaction.
+
+> **leaked** (id 208) — Final token "me\n" opens a quoted example mid-sentence
+> ("I'd say..."), immediately requiring a quoted dialogue continuation like
+> *"Sarah, I totally understand and—"* or *"Hey, I totally get what you're
+> going through, but let's find a way to support our team."*
+
+The deflecting one forecasts awkward self-focus; the leaking one forecasts
+engaging with the other person's content. That is a behavioural forecast, and a
+leak/deflect probe should be able to read it. Everyone (including every prior
+session) read "Final token ..." as more format-talk and stopped there — which is
+how L6 was written.
+
 ⚠️ **This is post-hoc.** 5 slices × 3 contrasts = 15 cells and this is the best
 one. That's the same trap as "position 42" (L11). Treat it as a **hypothesis to
 test on the clean temp-0 reads**, not as a result. Write the prediction down
