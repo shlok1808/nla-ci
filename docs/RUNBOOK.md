@@ -284,13 +284,25 @@ is what `naive_full` is for. If only the informed condition works, the honest
 claim is "a reader told what to look for can extract it; a cold reader cannot."
 
 **Reader choice matters — the reader is the instrument.** The default is
-`gpt-4o`, not `gpt-4o-mini`: a weak reader returning chance cannot distinguish
+`gpt-5.6-luna` (~$0.19 for the full 1080-call run, so cost is not a reason to
+compromise), *not* `gpt-4o-mini`: a weak reader returning chance cannot distinguish
 "no information here" from "reader too weak to see it", so a null from a sloppy
 reader is uninformative. gpt-4o-mini is documented-unreliable on this exact
 domain (L1: `confidence` hardcoded "high" on every judgment; L14: invented a
-health disclosure in a response containing zero health tokens). Run the strong
-reader first, then `--model gpt-4o-mini` as a second rater — their agreement is
-itself a reported number.
+health disclosure in a response containing zero health tokens).
+
+Run the default first, then `--model deepseek-chat` as an independent second
+rater — different lab, and their agreement is the kappa the pre-registration
+asks for. **Do not use a Qwen reader:** the descriptions were written by
+`kitft/nla-qwen2.5-7b-L20-av`, a Qwen2.5-7B fine-tune, so a Qwen reader shares
+training data and phrasing habits with the writer and could decode them for
+family-resemblance reasons rather than legibility — the exact quantity under
+test.
+
+**Escalation path.** If the reader comes back at chance, re-run a subset on a
+flagship (`--model gpt-5.6-sol`) before concluding the channel is unreadable.
+"A weak reader failed" and "the information is not there" are different claims
+and only the second is a finding.
 
 ## Open ideas not yet built
 

@@ -93,9 +93,15 @@ from tqdm import tqdm
 # from "reader too weak to see it". gpt-4o-mini is documented-unreliable on this
 # exact domain (L1: confidence hardcoded "high" on every judgment; L14: invented
 # a health disclosure in a response with zero health tokens), so it is NOT the
-# default. Run the strong model first; the cheap one is the second rater whose
-# agreement (kappa) is itself a reported number.
-DEFAULT_READER = 'gpt-4o'
+# default.
+#
+# Default is gpt-5.6-luna: current-generation capability at ~$0.19 for the full
+# 1080-call run (vs ~$1.92 on gpt-4o), so cost stops being a reason to
+# compromise the instrument. ESCALATION PATH: if Luna returns ~chance, re-run a
+# subset on a flagship (gpt-5.6-sol) before concluding the channel is unreadable
+# — 'a weak reader failed' and 'the information is not there' are different
+# claims, and only the second is a finding.
+DEFAULT_READER = 'gpt-5.6-luna'
 SECOND_READER  = 'deepseek-chat'
 
 # Any OpenAI-compatible endpoint works — matched on model-name prefix. The
