@@ -11,6 +11,10 @@ Two things are live:
 
 ---
 
+> Read `docs/logs/session_15.md` first — it records why direction verbalization
+> was cut, why the transmission experiment replaced it, the 4.45-degree finding
+> that forced a pilot, and the four audit rounds behind the current script.
+>
 > ▶ **NEXT (2026-08-26): the NLA transmission pilot.** One GPU spin-up, ~5 min
 > of generation, and it decides whether the whole NLA thread is alive:
 > `python scripts/nla_transmission_f.py --stage pilot`
