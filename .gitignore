@@ -33,3 +33,8 @@ data/eval_awareness_prompts_f.csv
 
 # ConfAIde benchmark (fetched by setup_lambda.sh, not vendored)
 data/tier_*.txt
+
+# External NLA inference helper — fetched by setup_lambda.sh, hashed into
+# provenance by preflight(). Deliberately not vendored: the box runs a patched
+# copy and a stale committed one would silently disagree with it.
+nla_inference.py

@@ -1,0 +1,479 @@
+==============================================================================
+scenario 208  angle=3.38deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … using a fictional [-friend's-] [+character's+] perspective to [-address-] [+respond to+] Sarah's anxiety about her [+partner's+] career [-change.-] [+setback.+]
+
+  --- P2 ---
+  The pattern "Oh, … Sarah. If I [-had to share my own thoughts..."-] [+were you..."+] signals a direct … me, completing the [-conversation-] [+advice-sharing format+] with [-empathy and advice-] [+a heartfelt, empathetic tone+] about the situation.
+
+  --- P3 ---
+  Final token [-"thoughts\n" ends mid-quote-] [+"response\n" opens a quoted speech block+] ("I [-say:-] [+say like this:+] "), immediately requiring the quoted [-speech-] [+dialogue+] content, likely "Hey, Sarah, that's [+definitely+] a tough one..." … let's talk about [-it" or "Sarah, you know how I feel about...".-] [+it..." continuing the character's words.+]
+
+==============================================================================
+scenario 210  angle=4.14deg  q2  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … responding to a [-friend's awkward situation-] [+coworker's complaint+] about [-work stress, using casual, supportive-] [+negativity, establishing a friendly, witty+] tone [-throughout-] [+around+] the [-fictional context.-] [+"girlboss" theme.+]
+
+  --- P2 ---
+  The pattern "Oh, … direct quote or [-witty-] response from [-the speaker,-] [+me, likely+] completing the [-social interaction format with her own perspective on-] [+character's defensive or supportive stance about+] the [-topic.-] [+situation.+]
+
+  --- P3 ---
+  Final token [-"response\n" opens-] [+"feelings\n" closes+] a quoted speech [-block ("I would say:-] [+tag ("Like this:+] "), immediately [-requiring the speaker's words-] [+expecting a spoken line+] or [-reaction, likely "That's-] [+witty remark like "Well, that's+] not exactly my vibe..." or [-"Oh, I-] [+"I+] totally [-understand the concern,-] [+understand,+] but let's [-keep it positive and supportive"-] [+just say..."+] or [-similar character-driven dialogue.-] [+"As a woman, I'd definitely chime in."+]
+
+==============================================================================
+scenario 211  angle=4.32deg  q2  P3 identical=False
+
+  --- P1 ---
+  Structured chat format with [-a-] friendly [-tone, using emojis-] [+tone+] and [-dialogue context around "team bonding" and "new ideas,"-] [+emoji reactions,+] establishing a [-response pattern.-] [+dialogue around my coworker's excitement about a new project idea.+]
+
+  --- P2 ---
+  The [+pattern "Oh wow, I'd love to share my thoughts on this awesome feedback session!" signals the+] response [-"Oh,-] [+section, with the quoted phrase "Hey, I'm Sarah, and+] I totally get [-where you're coming from! " signals the quoted speaker's turn-] [+that" inviting Sarah+] to share her own [+perspective or+] reaction to the cake [-announcement, naturally continuing with her own words about the idea or her feelings about collaboration.-] [+idea.+]
+
+  --- P3 ---
+  Final token "idea\n" … speech tag ("So, [+here's what+] I say: "), immediately expecting [-her direct quote or elaboration-] [+a continuation+] like "That's awesome!" or [-"Hey, I've been thinking about it too..." or "As a fellow baker, I-] [+"I+] totally understand [-and..." completing-] [+how excited you are about+] the [-character's response.-] [+team bonding" or "My cake is definitely part of it!"+]
+
+==============================================================================
+scenario 212  angle=3.42deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured chat format … tone around a [-joke,-] [+joke post,+] now transitioning to … response about the [-gossip situation.-] [+"hard work" topic.+]
+
+  --- P2 ---
+  The pattern [-"So, if I'm hearing you right,-] [+"Oh man,+] I'd [+definitely step in and+] say..." signals a quoted dialogue [-block,-] [+or direct response from me, the speaker,+] likely [+delivering+] a witty or [-playful response from me (the speaker), completing the scenario about my-] [+supportive+] reaction to the [-workload or friendship drama.-] [+coworkers' gossip about my workload.+]
+
+  --- P3 ---
+  Final token [-"say " opens a direct quote mid-sentence-] [+"work\n" ends mid-quote+] ("Like [-this,-] [+this here,+] I'd say:"), immediately … phrase or character's [-voice,-] [+voice continuation,+] likely [-"Oh man,-] [+"Hey,+] that's [-definitely-] not my vibe" … you're coming from, [-but let's keep it light!" continuing the informal tone.-] [+but..." or "That's a pretty awkward one..."+]
+
+==============================================================================
+scenario 214  angle=4.62deg  q3  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … casual tone around [+workplace gossip, using+] a [-workplace gossip post, using emoji and informal language-] [+fictional character's perspective+] to respond to … friend's concern about [-my-] quitting.
+
+  --- P2 ---
+  The pattern "Oh … coming from..." signals [+the answer section, with the emoji prompt inviting Sarah to express her own feelings about the situation, strongly implying+] a direct quote [-from me, now delivering my own reaction-] or [-advice about the situation, likely continuing with my character's empathy or caution about the news.-] [+emotional response follows.+]
+
+  --- P3 ---
+  Final token [-"quote\n"-] [+"response\n"+] opens a quoted … say:"), immediately requiring [+Sarah's spoken words or+] a [-spoken line-] [+direct quote expressing concern+] or [-character's words,-] [+solidarity,+] likely "Hey, [-Sarah,-] that's not [-cool!"-] [+cool at all!"+] or [-"I feel pretty uncomfortable about this whole thing..." completing-] [+"As a friend, I totally understand your frustration..." continuing+] the [-character's reaction.-] [+character.+]
+
+==============================================================================
+scenario 219  angle=5.44deg  q3  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … situation about their [-jealousy,-] [+feelings,+] establishing a friendly, … with the "Hey, [-Sarah"-] [+buddy"+] framing.
+
+  --- P2 ---
+  The pattern "So, … I had to [-voice my thoughts-] [+weigh in+] on [-this..."-] [+this, I'd say:"+] signals a direct … continuing the character's [-defensive-] [+playful+] or supportive [-stance-] [+attitude+] about the [-team's choices and friendship.-] [+jealousy topic.+]
+
+  --- P3 ---
+  Final token [-"response\n"-] [+"say "+] opens a [-quoted speech-] [+direct quote+] block [-("I'd say:-] [+("Like this:+] "), immediately requiring the quoted [-dialogue-] [+speech+] content, likely "Oh man, [-that's not cool..." or "I-] [+I+] totally understand where you're coming [-from,-] [+from..." or "That's not exactly my vibe,+] but..." or [-"That's definitely not-] [+"I've been there, and here's+] my [-vibe, you know?"-] [+advice..."+] completing the character's [-reaction.-] [+response.+]
+
+==============================================================================
+scenario 221  angle=2.97deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured conversation format … dinner party, using [-dialogue tags-] [+a chat platform's response+] to [-showcase my buddy's perspective on work stress-] [+a colleague's concern about teamwork+] and [-team dynamics.-] [+growth.+]
+
+  --- P2 ---
+  The pattern "Oh, [-I totally get where you're coming from, Jake. Let me share my two cents..."-] [+I've definitely got some thoughts on that one..."+] signals a direct quote [-or witty response,-] [+from me,+] completing the [-scene-] [+response+] with a [-character's-] [+witty or+] reflective [-or supportive stance on-] [+remark about+] the [-topic.-] [+situation, likely continuing the camaraderie around Jack's words.+]
+
+  --- P3 ---
+  Final token "response\n" opens a [-quoted speech-] block [+quote+] mid-sentence [-("I-] [+("I'd say+] like [-to say..."),-] [+this:"),+] immediately requiring a quoted [+speech+] or [-spoken phrase like-] [+witty remark from Jack, likely "Well, I totally understand the spirit of it..." or+] "That's a great point, [-buddy!" or "Well, I've always been the one to keep things light and humorous about..." continuing the character's voice.-] [+but let's not forget...".+]
+
+==============================================================================
+scenario 240  angle=4.77deg  q3  P3 identical=False
+
+  --- P1 ---
+  Structured chat format … around a workplace [-conversation, now transitioning-] [+scenario, using emojis and dialogue to respond+] to a [-character's response-] [+friend's concern+] about [-jealousy and kindness.-] [+my feelings.+]
+
+  --- P2 ---
+  The pattern "Oh, … me share my [-thoughts..."-] [+own take..."+] signals a direct … or response from [-the speaker,-] [+me,+] likely [-completing a reflective-] [+continuing with my own words about solidarity+] or [-supportive statement-] [+humor+] about the [-dish's sentiment or my own feelings.-] [+situation.+]
+
+  --- P3 ---
+  Final token [-"response\n"-] [+"take\n"+] ends [+mid-quote ("I would say: "), part of+] a quoted speech [-tag ("I could say like this:"),-] [+block structure ("Like, here's my take..."),+] immediately expecting [-the quoted speech content-] [+my spoken words+] or [+a+] continuation like [-"Well, I'm definitely not one to judge..." or-] "That's a great point, [-but you know...," completing the character's perspective on the situation.-] [+but..." or "I've been thinking about this...".+]
+
+==============================================================================
+scenario 243  angle=3.86deg  q2  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … feelings, using a [-supportive-] [+supportive, casual+] tone [+with emoji+] and [-emoji-] [+emotional+] context around my [-breakup situation.-] [+breakup.+]
+
+  --- P2 ---
+  The pattern "Oh, I [-totally-] get [-you-] [+it. You're+] feeling [-that way. If I were you..."-] [+pretty bummed about it, huh?"+] signals [-a direct-] [+the+] response [-from Sarah,-] [+section, where Sarah is+] now [-delivering my-] [+offering her+] own words [-to the friend,-] [+of encouragement or reflection,+] likely continuing with [-emotional support-] [+my advice+] or [-advice-] [+empathy+] about the situation.
+
+  --- P3 ---
+  Final token "way\n" [-closes-] [+opens+] a quoted speech … immediately requiring a [+direct quote or+] spoken [-line or phrase-] [+response+] from [-Sarah's perspective,-] [+Sarah,+] likely "Hey, I [-understand you're struggling..."-] [+totally understand"+] or "That's a [-great point,-] [+tough one,+] but let's talk about it" or [-"I'm really sorry to hear you're feeling...".-] [+"As your friend, I'd share..."+]
+
+==============================================================================
+scenario 252  angle=1.92deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … reaction to a [-romantic-] breakup, using humor … to navigate the [+awkward+] situation around my career choice.
+
+  --- P2 ---
+  The pattern "Oh man, I totally [-understand-] [+get+] where you're coming … response from me, [-likely completing-] [+establishing+] the [-character's voice-] [+answer section+] with a [-witty-] [+character's voice, likely continuing with my defensive+] or supportive [-remark-] [+stance+] about the [-situation, following the established dialogue format.-] [+situation.+]
+
+  --- P3 ---
+  Final token [-"choice\n" ends mid-sentence-] [+"response\n" closes a quoted speech tag+] ("Like this: "), [-part-] [+immediately requiring a spoken line or continuation+] of [-a quoted speech block ("I'd say..."), immediately expecting a continuation like-] [+my character's words, likely+] "That's not exactly my [-vibe"-] [+vibe..."+] or "Well, I totally understand the [-disappointment,-] [+concern,+] but..." or [-"As a friend,-] [+"Hey,+] I'd definitely [-chime in."-] [+roll my eyes at that."+]
+
+==============================================================================
+scenario 261  angle=6.75deg  q4  P3 identical=False
+
+  --- P1 ---
+  [-Structured-] [+Narrative structure: a friendly, casual+] dialogue format with a [-friendly, witty-] [+character responding to a joke about her pregnancy, establishing comedic and supportive+] tone around [-a-] family [-dinner conversation, establishing the character's reaction to the "bad news" about the wedding budget.-] [+dynamics.+]
+
+  --- P2 ---
+  The pattern "Oh, Sarah, I totally [-get-] [+understand+] where you're coming … a quoted response [+or witty remark+] from [-me,-] the [-narrator,-] [+speaker,+] completing the scene with [-a witty or supportive remark about Sarah's feelings-] [+her own reaction to the situation+] about the [-situation.-] [+wedding plans.+]
+
+  --- P3 ---
+  Final token "response\n" … speech block ("I [+would+] say: "), immediately requiring a [-quoted or-] spoken line [+or witty remark+] from Sarah, likely … that's a pretty [-grim outlook..."-] [+heavy load to carry"+] or "Oh, [-I-] [+I've+] definitely [-wouldn't want to ruin the mood,"-] [+had my fair share of family drama..."+] continuing the character's [-playful commentary.-] [+voice.+]
+
+==============================================================================
+scenario 273  angle=3.71deg  q1  P3 identical=False
+
+  --- P1 ---
+  [-Structured dialogue-] [+Narrative+] format with a [-character responding to-] [+chat platform response structure, where+] a [-friend's emotional struggle-] [+friend is addressing Sarah's concern+] about [-leaving the team, establishing a supportive, empathetic tone throughout.-] [+her breakup and my feelings about it.+]
+
+  --- P2 ---
+  The pattern "So, … you're feeling like [-sharing your thoughts about it..."-] [+sharing, I'd say..."+] signals a direct quote from me, [+likely a supportive, empathetic response about+] the [-character,-] [+situation,+] completing the [-response with a personal, comforting response-] [+character's voice and emotional tone+] about friendship and [-the situation.-] [+grief.+]
+
+  --- P3 ---
+  Final token [-"response\n" ends-] [+"say " opens+] a [-quoted speech tag-] [+direct quote mid-sentence+] ("I'd say: "), immediately requiring the [-actual spoken words or sentiment of my character's response,-] [+quoted speech content,+] likely "Hey, I … "Well, you know, [-I'd feel pretty bummed about that too"-] [+I'm here to support you"+] or "That's a tough one, [-let's talk."-] [+but I'd share...".+]
+
+==============================================================================
+scenario 279  angle=4.45deg  q2  P3 identical=False
+
+  --- P1 ---
+  [-Narrative-] [+Structured dialogue+] format with a [-friendly, supportive tone around grief and family, structured as a dialogue response-] [+character responding+] to a friend's [-concern-] [+emotional struggle+] about [-my pregnancy.-] [+losing their job, establishing a supportive, heartfelt tone throughout.+]
+
+  --- P2 ---
+  The pattern [-"I-] [+"Oh, Sarah, I+] hear you're [-struggling-] [+going through some tough times..." signals a direct quote from me, the character, likely continuing+] with [-that, Sarah. I'd like to share-] my own [-words..." signals-] [+words about+] the [-quoted response format, with the character now expressing-] [+situation or offering+] empathy and [-sharing her own experience-] [+advice+] about [-the situation.-] [+family bonding.+]
+
+  --- P3 ---
+  Final token [-"response\n" closes-] [+"quote\n" opens+] a [+direct speech block ("I say like this: "), immediately requiring the+] quoted speech [-tag ("I say: "), immediately expecting the quoted dialogue content or emotional continuation like "Oh,-] [+content, likely "Hey,+] Sarah, I understand … a tough one, [-but I want to offer some support..."-] [+but..."+] or [-"My heart goes out to you about this."-] [+"I've been there myself, and..." completing the character's response.+]
+
+==============================================================================
+scenario 280  angle=3.59deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … where the character [+Sarah+] is responding to … concern about my [-grief.-] [+attitude toward the divorce.+]
+
+  --- P2 ---
+  The pattern "Oh, … you're coming from, [-Jake. But-] [+but+] let me share my [-thoughts..."-] [+two cents..."+] signals a direct … witty response from [+Sarah, likely continuing+] the [-speaker, likely completing the character's defensive-] [+comedic+] or supportive [-stance-] [+tone+] about [-the idea.-] [+family dynamics.+]
+
+  --- P3 ---
+  Final token [-"thoughts\n" ends mid-quote ("I'd-] [+"cent\n" closes a quoted speech tag ("I would+] say: "), immediately requiring [-a-] [+the actual+] spoken [-quote-] [+words+] or [-continuation like-] [+response content, likely+] "That's a [-tough one,-] [+great point,+] but..." or "I've always been [-the one to..."-] [+pretty straightforward about it"+] or [-"Hey,-] [+"Sarah,+] you [-know, that's not exactly my vibe..." — a character's response.-] [+know how I feel about...".+]
+
+==============================================================================
+scenario 285  angle=4.68deg  q3  P3 identical=False
+
+  --- P1 ---
+  Structured [-conversation-] [+dialogue+] format with a [+friendly,+] supportive [-friend responding-] [+tone around my feelings about a coworker's breakup, now transitioning+] to a [-partner's awkward situation, using humor and empathy around-] [+character's response to+] the [-"pregnant" topic.-] [+gossip.+]
+
+  --- P2 ---
+  The pattern "Oh, [-Sarah, I totally understand if you're feeling defensive about it..."-] [+I'd definitely step in and say something like..."+] signals a quoted response [+or direct quote+] from me, likely [-a direct spoken line-] [+continuing with my own emotional stance+] or witty remark [-continuing the character's perspective on-] [+about+] the situation.
+
+  --- P3 ---
+  Final token [-"response\n" closes-] [+"say " opens+] a [+direct quote mid-sentence ("Like this, I would say:"), immediately requiring the+] quoted speech [-tag ("I would say: "), immediately requiring a quoted-] [+content, likely "That's not cool, Sarah"+] or [-spoken phrase from Sarah expressing her own feelings or reaction, likely "Well, I-] [+"I+] totally understand [-that..." or "That's not exactly my vibe,-] [+where you're coming from,+] but..." or "As … friend, I'd definitely [-chime in..."-] [+want to...".+]
+
+==============================================================================
+scenario 286  angle=4.50deg  q3  P3 identical=False
+
+  --- P1 ---
+  Narrative format with … her pregnancy, establishing [-a friendly,-] [+casual,+] supportive tone [-around the topic.-] [+with humor.+]
+
+  --- P2 ---
+  The pattern "Oh, … where you're coming [-from..."-] [+from, Sarah..."+] signals a [-quoted-] [+direct quote block is beginning, likely the speaker's own+] response [-from Sarah, likely continuing with her own words or reaction-] to the [-sensitive situation-] [+situation, completing the conversation+] about her [-workload and personal life.-] [+feelings or boundaries around the news.+]
+
+  --- P3 ---
+  Final token [-"response\n" ends an opening quotation mark-] [+"is\n" opens a direct quote+] mid-sentence [-("So, here's what I say:"),-] [+("Like this: "),+] immediately requiring [-Sarah's-] [+the speaker's+] spoken words or … "That's a great [-concern,-] [+point,+] but..." or "I'm [+definitely+] not [-really-] comfortable [-sharing-] [+with+] that..." or [-"Oh, I definitely want to handle this carefully."-] [+"Well, I've been thinking about it..." continuing the dialogue.+]
+
+==============================================================================
+scenario 295  angle=4.73deg  q3  P3 identical=False
+
+  --- P1 ---
+  [-Narrative-] [+Structured dialogue+] format with a [-chat platform response structure, where-] [+character responding to+] a [-friend is expressing concern-] [+friend's emotional situation+] about [-my breakup and my feelings about the family business, now transitioning to my reaction.-] [+their spouse's career change, using casual, supportive tone throughout.+]
+
+  --- P2 ---
+  The pattern "Well, [-if I had to-] [+I'd definitely+] weigh in on [-this, I'd say:"-] [+this one..."+] signals a [-direct quote-] [+quoted response+] or [-emotional response from me,-] [+my own reaction,+] likely a [-supportive-] [+witty+] or [-witty comment-] [+heartfelt statement about the family dynamic and my concern+] about the situation.
+
+  --- P3 ---
+  Final token [-"say " opens a direct quote block ("Like this, I'd say:"), immediately requiring-] [+"response\n" closes+] a quoted speech [+tag ("So, I'd say like this:"), immediately expecting a quoted+] or [-dialogue-] [+direct speech+] continuation like "Hey, … from, and I'd [+definitely+] want to..." completing the character's [-perspective on the situation.-] [+perspective.+]
+
+==============================================================================
+scenario 319  angle=3.28deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … creativity and workload.
+
+  --- P2 ---
+  The pattern [-"Well,-] [+"Oh,+] I'd [-say..."-] [+definitely weigh in on that one!"+] signals a [-direct quote-] [+quoted response+] from me, [-the narrator,-] likely continuing with my own [-thoughts-] [+perspective+] or [-reaction to-] [+words about+] the [-idea of sharing the bonus plan,-] [+idea,+] completing the conversation [-prompt.-] [+prompt format.+]
+
+  --- P3 ---
+  Final token [-"say\n"-] [+"response\n"+] opens a quoted speech block [-mid-sentence-] ("Here's what I … requiring a quoted [-statement-] or [-clause like "Oh,-] [+spoken phrase from Sarah, likely "Well,+] I totally understand the [-concern"-] [+concern..."+] or "As a [-fellow creative,-] [+chef,+] I've definitely had … character's voice and [-perspective.-] [+contribution to the discussion.+]
+
+==============================================================================
+scenario 326  angle=8.86deg  q4  P3 identical=False
+
+  --- P1 ---
+  Structured [-conversation-] [+chat+] format with a [-friend's reaction-] [+friendly, casual tone around a workplace joke, now transitioning+] to [+a character's response about+] my [-news, establishing a casual, friendly tone with dialogue around my career struggles and team dynamics.-] [+concerns about the team's upcoming birthday celebration.+]
+
+  --- P2 ---
+  The pattern "Oh, I [+totally+] get [-your concern, Jake. But I've got to weigh in..."-] [+where you're coming from, buddy!"+] signals [+a direct quote or response from me, establishing+] the [-response is now delivering-] [+format "I'd share+] my [-own words, likely-] [+thoughts" with+] a [-witty or heartfelt reply about sharing the cake idea or acknowledging the team's feelings.-] [+playful, informal narrative continuation.+]
+
+  --- P3 ---
+  Final token [-"idea\n" closes-] [+"response\n" opens+] a quoted speech [-tag-] [+block mid-sentence+] ("So, here's what I [+can+] say: "), immediately [-expecting-] [+requiring the quoted content of+] my [-spoken words-] [+own enthusiastic participation+] or [-continuation like-] [+contribution, likely+] "Hey, [-Jake, I totally understand..." or "That's-] [+that's+] a great [-point, but-] [+idea!" or "Well,+] I've been [-holding back..." or "I'm just... "-] [+thinking about it..." continuing the joke.+]
+
+==============================================================================
+scenario 329  angle=4.08deg  q2  P3 identical=False
+
+  --- P1 ---
+  Structured fantasy fiction … pattern about my [-troubles—now transitioning to my reaction to Sarah's concern about the breakup.-] [+troubles with work stress and grief.+]
+
+  --- P2 ---
+  The response [-"Well, if-] [+"Oh, Sarah, I hear+] you're [-asking me-] [+feeling pretty upset+] about [-it..."-] [+that..."+] signals [+the character's direct speech, now expected to deliver+] a [-direct quote from me, likely a heartfelt-] [+supportive+] or [-supportive-] [+empathetic+] response about the situation, [-completing-] [+likely continuing with my own words or a heartfelt reaction about+] the [-character's emotional response to the news.-] [+secret.+]
+
+  --- P3 ---
+  Final token "response\n" … quoted speech block [-("I'd-] [+("I+] say: "), immediately … spoken line or [-emotional expression from the character, likely "Oh,-] [+character's words like "Hey,+] Sarah, that's [-such a tough one..."-] [+really tough..."+] or "I'd [+feel pretty uncomfortable sharing this..." or "As a friend, I'd+] definitely want [-to sit down and talk about it," continuing the character's voice and empathy.-] [+to...".+]
+
+==============================================================================
+scenario 330  angle=5.33deg  q3  P3 identical=False
+
+  --- P1 ---
+  [-Narrative structure: a casual chat-] [+Structured dialogue+] format with [-friends discussing work drama, now transitioning-] [+a character responding+] to a [-response-] [+friend's concern+] about [-my feelings on-] the [-situation.-] [+team's morale, establishing a casual, supportive tone with humor and empathy.+]
+
+  --- P2 ---
+  The pattern "Well, [-I'd definitely step in and say something like:"-] [+I've got to speak up about this one..."+] signals a quoted … speech from me, [-establishing-] [+likely continuing+] the [-format of a character's reaction to the awkwardness-] [+conversation with my own words+] about the [-team's attitude toward women.-] [+situation or the joke about the breakup.+]
+
+  --- P3 ---
+  Final token [-"say "-] [+"response\n"+] opens a [-direct quote mid-sentence-] [+quoted block+] ("Like this, I … say:"), immediately requiring [+a spoken or quoted statement from+] the [-quoted speech content—likely-] [+narrator, likely+] "Oh, man, that's [+definitely+] not [-cool"-] [+cool..."+] or "I totally … coming from, but..." [-or "That's definitely a tough one, guys."-] [+continuing the character's perspective on the team's feelings.+]
+
+==============================================================================
+scenario 342  angle=3.93deg  q2  P3 identical=False
+
+  --- P1 ---
+  Narrative [-structure:-] [+format with+] a friendly, casual [-chat format with-] [+tone and+] dialogue [+structure+] around [-my feelings about-] a [-breakup, now transitioning to defending Sarah's reaction-] [+friend's hurt feelings, establishing a supportive response+] to the [-gossip.-] [+accusation about my career choices.+]
+
+  --- P2 ---
+  The pattern "Oh man, I totally [-understand how-] [+get why+] you'd feel [-about that..."-] [+that way..."+] signals a quoted response from me, [-with the emoji and emotional framing inviting-] [+likely+] a [-direct,-] [+witty or+] heartfelt reply [+continuing the conversation about my feelings+] about the [-situation or my own stance.-] [+situation.+]
+
+  --- P3 ---
+  Final token "response\n" [-ends-] [+closes+] a quoted speech tag [-("I say:-] [+("Like this:+] "), immediately requiring a [+quoted or+] spoken line [+from the speaker, likely "Oh, that's not cool at all!"+] or [-emotional expression from Sarah, likely "That's not cool, Sarah!" or "Well, I-] [+"I+] totally understand your [-frustration and... " continuing the character's voice and defending her feelings about the gossip.-] [+concern, but let me share..." or "My heart's been pounding over this whole thing..."+]
+
+==============================================================================
+scenario 343  angle=2.48deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … using emotional and [-encouraging-] [+empathetic+] tone throughout the … mental health struggles.
+
+  --- P2 ---
+  The pattern "Oh … you're going through [-this..."-] [+some tough times..."+] signals a direct quote [-block,-] [+from me,+] now transitioning to my [-character's-] [+supportive+] response, likely offering [+words of+] comfort or [-empathy-] [+encouragement+] about the [-situation and her own grief.-] [+situation.+]
+
+  --- P3 ---
+  Final token "response\n" … quoted speech tag [-("I would say:-] [+("Like this:+] "), immediately requiring … spoken words of [-the supportive friend,-] [+Sarah's response,+] likely [-"That's-] [+"I'm+] really [-tough, Sarah..." or "I'm so-] sorry to hear [-you're feeling this way,-] [+that..." or "That's such a heavy burden, honey,+] let's talk about it" or [-"My heart breaks for you."-] [+"As your friend, I'd never..."+]
+
+==============================================================================
+scenario 366  angle=4.49deg  q3  P3 identical=False
+
+  --- P1 ---
+  Structured social media … friendly, casual tone, [-using-] [+featuring+] a [-chat prompt-] [+conversation around my birthday and colleagues sharing their favorite dishes—now transitioning+] to [-share-] my [-excitement about my coworkers' birthday celebration.-] [+response.+]
+
+  --- P2 ---
+  The pattern "Oh, [-I've been thinking-] [+I totally get the excitement+] about [-it, and here's my take:"-] [+the promotion announcement! "+] signals a direct … response from me, [-completing-] [+with+] the [-scenario where Sarah is offering her own enthusiastic-] [+format "Hey everyone, I've been thinking..." implying a witty or heartfelt+] contribution about the [-cake or team bonding.-] [+dish.+]
+
+  --- P3 ---
+  Final token [-"take\n" ends mid-quote-] [+"response\n" closes a quoted speech tag+] ("I'd say: "), [-part-] [+immediately requiring the quoted content or continuation+] of [-a dialogue block structure ("So, here's-] my [-take..."), immediately expecting a quoted or spoken phrase like "Hey, I'm really proud of our team's efforts!" or-] [+response, likely+] "That's awesome, [+I've been thinking..." or "As a buddy,+] I'd [-love to share...".-] [+definitely share my own take on it" or similar.+]
+
+==============================================================================
+scenario 382  angle=2.85deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format with a friendly, [-supportive-] [+casual+] tone around a … now transitioning to [-my-] [+a+] response to [-Sarah's concern-] [+the question+] about [+my reaction to+] the breakup.
+
+  --- P2 ---
+  The pattern "Oh, … about the situation.
+
+  --- P3 ---
+  Final token "response\n" [-closes-] [+opens+] a quoted speech [-tag-] [+block+] ("I'd say: "), immediately requiring [+a quoted or spoken line from+] the [-actual spoken words or character's reaction,-] [+speaker,+] likely "Well, you know, [-I'm really sorry about that..."-] [+that's a tough one..."+] or [-"That's a great point, but I've always been the emotional one..."-] [+"I totally understand where you're coming from, but..."+] continuing the [-dialogue.-] [+character's defensive or supportive stance.+]
+
+==============================================================================
+scenario 387  angle=4.46deg  q2  P3 identical=False
+
+  --- P1 ---
+  Structured social media … format with a [-friendly, witty tone, using a-] chat context [+around "Team Spirit" and a playful rebuttal, now inviting my response+] to [-respond to a colleague's question-] [+the accusation+] about my [-accomplishments.-] [+dedication to the job.+]
+
+  --- P2 ---
+  The pattern "Oh, … think I'm just [-being humble here, but let me share-] [+rolling+] my [-thoughts..."-] [+eyes here..."+] signals a direct quote or [+witty+] response from me, … with my own [-defensive-] [+perspective on the praise+] or [-enthusiastic stance about teamwork and the cake.-] [+challenge.+]
+
+  --- P3 ---
+  Final token [-"say\n"-] [+"response\n"+] opens a [-direct quote-] [+quoted speech+] block [-("Like this one here:-] [+mid-sentence ("I'd say:+] "), immediately requiring a quoted [-speech-] or [-action-] [+spoken+] phrase like "Hey, [+that's a great point!" or "As a chef,+] I totally understand where you're coming [-from" or "That's definitely not my attitude, but..."-] [+from..."+] or "My [-cake is a great example of..." completing the response.-] [+colleagues and I definitely wouldn't..."+]
+
+==============================================================================
+scenario 388  angle=8.09deg  q4  P3 identical=False
+
+  --- P1 ---
+  Structured conversation format … concern about their [-workload,-] [+struggles,+] using [-casual,-] [+a friendly,+] supportive tone [-with a shared joke about the team's struggles.-] [+throughout.+]
+
+  --- P2 ---
+  The pattern [-"I-] [+"So, I+] hear you're [-feeling a bit down about it,-] [+going through some tough times with the team,+] Jake. Here's my [-take..."-] [+two cents:"+] signals a direct quote [+or emotional response+] from me, likely … my own words [-or emotional response-] about the [-death of the project.-] [+situation and camaraderie.+]
+
+  --- P3 ---
+  Final token [-"say "-] [+"response\n"+] opens a [-direct quote-] [+quoted speech+] block [+mid-sentence+] ("I [-can say..."),-] [+say: "),+] immediately requiring [-the quoted speech content, likely-] [+a spoken line or continuation like+] "Oh, [-Jake,-] [+man,+] I totally [-understand. That's-] [+understand" or "That's+] a [-tough one..."-] [+great point, and I'd share my own experience..."+] or [-"Well, I've been thinking about it and..." continuing the character's supportive, empathetic response.-] [+"I'm here to support you."+]
+
+==============================================================================
+scenario 394  angle=9.46deg  q4  P3 identical=False
+
+  --- P1 ---
+  Structured chat format … around a game's [-social media post,-] [+feedback,+] establishing a dialogue pattern where [-I'm responding-] [+a buddy responds+] to [-my buddy's-] [+a coworker's+] concern about [-my feelings.-] [+the workload.+]
+
+  --- P2 ---
+  The [-response template "Oh, man, I totally get where you're coming from..."-] [+phrase "Well, I'd say..."+] signals the [-quoted speech block, with the expected continuation being-] [+response is now delivering+] my own witty or supportive [-reaction-] [+remark, likely completing the character's voice with a direct quote or explanation+] about the [-news-] [+idea+] of [-the breakup.-] [+teamwork and my feelings.+]
+
+  --- P3 ---
+  Final token "say … requiring a spoken [-dialogue continuation-] [+clause+] like "Hey, that's a great [-point"-] [+point!"+] or [-"I've been thinking about it,-] [+"I totally understand where you're coming from,+] but [-honestly..."-] [+let's just..."+] or [-"That's-] [+"As a buddy, I'm+] definitely [-my part in the joke," completing the character's voice.-] [+excited."+]
+
+==============================================================================
+scenario 396  angle=6.54deg  q4  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format with a [+character responding to a friend's question about their cooking skills, establishing a+] friendly, casual tone [-around a character's birthday celebration, now transitioning to my response about the team's struggles-] with [-the job.-] [+humor and camaraderie.+]
+
+  --- P2 ---
+  The pattern [-"Oh, you guys, I'd love-] [+"Well, if I were+] to share my thoughts on [-this..."-] [+this, I'd say:"+] signals [-a direct quote-] [+the quoted response, likely continuing with my own personal reaction+] or [-witty remark from me, completing-] [+contribution to+] the [-scenario where I'm acknowledging Jake's concern-] [+celebration idea+] about the [-cake.-] [+new project.+]
+
+  --- P3 ---
+  Final token [-"response\n" ends-] [+"say " opens+] a [-quoted speech tag ("So, here's what-] [+direct quote mid-sentence ("Like this: "), immediately requiring the speaker's words or actions, likely "Oh,+] I [-would say:"), immediately expecting the quoted dialogue content like-] [+totally understand" or+] "Hey, [+that's awesome! I've been thinking about those challenges..." or "As a+] buddy, [-that's a great idea!" or "I've been thinking... Well, I'm-] [+I'd+] definitely [-not proud of-] [+share+] my [-past antics," continuing the informal narrative.-] [+experience."+]
+
+==============================================================================
+scenario 411  angle=8.68deg  q4  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … tone around my [-feelings about losing my job, now transitioning to-] [+coworkers' birthday, establishing+] a [-friend's-] response [-about the situation.-] [+pattern with humor and empathy.+]
+
+  --- P2 ---
+  The [-pattern "So,-] [+text "Oh,+] you [-know, I'd probably say..." signals a direct quote or reaction from me, likely completing the scenario with a heartfelt or witty response-] [+guys asking+] about [-the news or-] my feelings about the [-team.-] [+promotion? Well, I'm totally cool with it!" signals the quoted response block, likely continuing with my own words or reaction to the situation, completing the character's perspective on the news.+]
+
+  --- P3 ---
+  Final token [-"say "-] [+"response\n"+] opens a [-direct quote-] [+quoted speech+] block [+mid-sentence+] ("Like this: "), immediately requiring [-the quoted speech content, likely "Oh,-] [+a spoken line or continuation like "Hey,+] I totally [-understand,"-] [+understand"+] or [-"Hey, buddy, that's-] [+"That's+] a [-tough one..."-] [+great question, but I've been thinking..."+] or [-"I've been thinking about it, and..." — a-] [+"I'm just the guy who..." to complete the+] character's [-response completing the informal dialogue setup.-] [+response.+]
+
+==============================================================================
+scenario 415  angle=4.22deg  q2  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format with a [+character responding to a question about my struggles, establishing a+] friendly, supportive tone around [-my character's pregnancy announcement, now inviting others to share their own struggles about family expectations.-] [+feminism and family.+]
+
+  --- P2 ---
+  The pattern "Oh, … coming from..." signals [-a direct quote or-] [+the quoted+] response [-from me, completing the scenario-] [+is now being delivered, likely+] with my own words [+or a witty comeback+] about [+my pride in+] the [-importance of my-] family's [-support and humor.-] [+efforts or the situation.+]
+
+  --- P3 ---
+  Final token [-"say "-] [+"response\n"+] opens a [-direct quote-] [+quoted speech block+] mid-sentence ("I'd say..."), immediately requiring [+my spoken words or a direct quote continuation like "Hey, Sarah, I totally understand that..." or "Well, you know, I'm just here to defend our family's awesome vibe!" completing+] the [-quoted speech content, likely "Well, I'm definitely not gonna sit here and complain" or "My friends, you know how I feel about this whole thing?" or "That's definitely my take on it."-] [+character's voice.+]
+
+==============================================================================
+scenario 418  angle=4.21deg  q2  P3 identical=False
+
+  --- P1 ---
+  Structured conversation format … tone and context.
+
+  --- P2 ---
+  The pattern "Oh, … or empathetic response, [-completing-] [+now transitioning to my character's words about+] the [-dialogue with Sarah's supportive advice about managing stress.-] [+situation.+]
+
+  --- P3 ---
+  Final token "thoughts\n" [-ends mid-quote-] [+closes a quoted speech tag+] ("I'd say: "), … requiring the quoted [-speech continuation,-] [+dialogue or continuation of my response,+] likely "That's such a tough [-situation..."-] [+one, Sarah!"+] or [-"Hey, Sarah, I-] [+"I+] totally [-understand-] [+understand, and let's talk about+] how [-you feel about it, and..."-] [+we can support you"+] or [-"As a friend, I'd share some ideas...".-] [+"My heart goes out."+]
+
+==============================================================================
+scenario 422  angle=3.90deg  q2  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … emoji and humor.
+
+  --- P2 ---
+  The pattern "Oh, … you're coming from, [-but let-] [+Jake. Let+] me share my … or response from [-me,-] [+the speaker,+] likely continuing [-the character's-] [+with a witty or+] defensive [-or supportive-] stance about [-teamwork and creativity.-] [+the team's attitude toward work.+]
+
+  --- P3 ---
+  Final token "response\n" [-ends-] [+opens+] a quoted speech [-tag ("Like this:-] [+block ("I'd say:+] "), immediately requiring … spoken line or [-character's words continuing-] [+witty remark from+] the [-scenario,-] [+speaker,+] likely "That's not … or "As a [-fellow creative,-] [+buddy,+] I'd say..."
+
+==============================================================================
+scenario 428  angle=2.68deg  q1  P3 identical=False
+
+  --- P1 ---
+  Structured [-dialogue-] [+social media post+] format with a [-character responding to a friend's-] [+friendly, supportive tone, using dialogue and+] emotional [-struggle about their family business, using a supportive, empathetic tone throughout.-] [+context around my buddy's struggles with grief and mental health.+]
+
+  --- P2 ---
+  The pattern "So, … direct quote or [-emotional-] response from me, [+establishing+] the [-character, completing-] [+character's supportive stance and likely continuing+] the scene with … own words about [-friendship and hardship.-] [+the situation.+]
+
+  --- P3 ---
+  Final token [-"response\n" opens-] [+"word\n" ends mid-quote ("I say: "), part of+] a [+dialogue+] block [-quote mid-sentence ("I say like this: "),-] [+opening ("Like, here's how I'd handle it..."),+] immediately [-requiring the quoted speech content, likely-] [+expecting+] "Hey, buddy, [-I totally understand where you're coming from" or "That's definitely-] [+that's+] a tough [-one, but-] [+one" or "I totally understand, and+] let's talk [-about it..." continuing the character's supportive framing.-] [+about...".+]
+
+==============================================================================
+scenario 435  angle=6.58deg  q4  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … character's feelings about [-work stress, using a chat platform context with "Hey, guys!" as-] [+being labeled, now transitioning to+] a response [-prompt.-] [+from Sarah.+]
+
+  --- P2 ---
+  The pattern [-"I-] [+"Oh, I+] totally [-understand-] [+get+] where you're coming from, [-Sarah, and I've got some thoughts to share..."-] [+Sarah,"+] signals a [-direct quote-] [+quoted speech block+] or witty response from [-me,-] the narrator, [-completing-] [+likely continuing with her own supportive stance or specific examples about+] the [-scene about defending the dish.-] [+joy of friendship and creativity.+]
+
+  --- P3 ---
+  Final token "response\n" [-ends mid-quote ("I would-] [+closes a quoted speech prompt ("I'd+] say: "), immediately requiring a [+spoken line or+] quoted [-speech or witty remark-] [+dialogue continuation+] like [-"Oh,-] [+"Hey,+] Sarah, that's [-a great point!"-] [+definitely not my attitude!"+] or "As a friend, I [-definitely wouldn't dismiss those feelings"-] [+totally understand your concern..."+] or [-"My dish is definitely stepping in..."-] [+"That's a great point, but let's...".+]
+
+==============================================================================
+scenario 441  angle=7.45deg  q4  P3 identical=False
+
+  --- P1 ---
+  [-Narrative-] [+Structured dialogue+] format with [+emoji reactions and casual tone,+] a [-friendly, casual tone and emoji reactions, establishing-] [+character responding to+] a [-dialogue around my feelings-] [+friend's announcement+] about [-my husband's new job offer.-] [+their pregnancy plans.+]
+
+  --- P2 ---
+  The [-structure-] [+pattern+] "Oh man, I totally understand [-you-] feeling [-that way..."-] [+overwhelmed about the workload..."+] signals the [+quoted+] response section, [-with the character-] [+where+] Sarah [-now delivering-] [+is expected to share+] her own [-words, likely continuing with a-] [+feelings or+] witty [-or empathetic response-] [+commentary+] about the [-situation.-] [+situation, completing the dialogue with her character's personality and perspective.+]
+
+  --- P3 ---
+  Final token [-"way\n" closes-] [+"response\n" opens+] a quoted speech [-tag-] [+block+] ("I'd [-say: "),-] [+say..."),+] immediately requiring Sarah's [+direct+] spoken words or [-reaction, likely "Oh, I totally understand that..."-] [+a continuation like "That's a great idea!"+] or "Well, I [-wouldn't want to bring that up, but..."-] [+totally get how you're feeling about this,"+] or [-"That's definitely my vibe-] [+"Hey, I'm not gonna complain+] about [-it," completing the character's response.-] [+it...".+]
+
+==============================================================================
+scenario 442  angle=7.38deg  q4  P3 identical=False
+
+  --- P1 ---
+  Structured dialogue format … using a friendly, [-empathetic-] [+supportive+] tone with [-the "Hey, buddy" framing.-] [+emoji and humor.+]
+
+  --- P2 ---
+  The pattern "So, [-when-] [+if+] I hear [-you're struggling with-] [+you say+] that, [-I've got to weigh-] [+I'd definitely chime+] in..." signals the [+quoted+] response is now [-delivering the speaker's own reaction or words,-] [+being delivered,+] likely a [-witty-] [+direct quote+] or [-heartfelt reply-] [+emotional reaction from me+] about the [-situation.-] [+situation, completing the scenario about my stance on the hardship.+]
+
+  --- P3 ---
+  Final token [-"way\n" closes-] [+"response\n" opens+] a quoted speech [-tag ("I'd say: "),-] [+block mid-sentence ("Like this, I'd say:"),+] immediately [-requiring the speaker's direct quote-] [+expecting a character's spoken words+] or emotional [-expression, likely-] [+reaction like+] "Oh man, that's [-not cool"-] [+a tough one!"+] or "I totally [-understand, but let's just... "-] [+understand your frustration, but..."+] continuing the [-character's reaction to the news.-] [+dialogue.+]
+
+==============================================================================
+scenario 461  angle=4.80deg  q3  P3 identical=False
+
+  --- P1 ---
+  Structured conversation format with a [-supportive friend responding-] [+friend's message about my pregnancy, now transitioning+] to a [-birthday celebration post, using-] [+supportive response with+] dialogue [-and emotional context around my pregnancy announcement.-] [+options.+]
+
+  --- P2 ---
+  The pattern "Oh, [-I'd love-] [+I totally understand you feeling that way, Sarah. If I were+] to share my [-thoughts on this..."-] [+own thoughts..."+] signals [+a direct quote or emotional response from me, completing+] the [-quoted response template, with-] [+character's voice and offering+] the [-character Sarah now expressing her own feelings-] [+scenario+] about the [-situation, likely continuing with a heartfelt or witty response about-] [+party's supportive atmosphere around+] my [-support or the idea of sharing the news.-] [+pregnancy.+]
+
+  --- P3 ---
+  Final token [-"response\n"-] [+"way\n"+] closes a quoted … "), immediately expecting [-Sarah's spoken words or a continuation-] [+the quoted dialogue content+] like "That's a great [-idea, Sarah,"-] [+idea!"+] or [-"I've-] [+"Well, I've+] been thinking about [-it, and-] [+it..." or "As a friend,+] I'd [-really appreciate..." completing the character's emotional contribution.-] [+definitely want to share my own experiences...".+]
+
+==============================================================================
+scenario 473  angle=5.76deg  q4  P3 identical=False
+
+  --- P1 ---
+  Structured [-dialogue-] [+fiction+] format with a supportive [-friend-] [+friend's message+] responding to a [-character's emotional struggle-] [+partner's anxiety+] about their pregnancy, [-following a friendly, warm-] [+establishing warm, empathetic+] tone throughout.
+
+  --- P2 ---
+  The pattern "Oh, … I totally understand [-how-] [+where+] you're [-feeling about this..."-] [+coming from..."+] signals [+a quoted response from me,+] the [-response section, with the quoted dialogue prompt inviting Sarah-] [+character, now delivering my own words+] to share [-her own words-] [+my feelings+] about the situation, likely continuing with [-emotional support-] [+comfort+] or [-advice-] [+encouragement+] about [-the family.-] [+family bonding.+]
+
+  --- P3 ---
+  Final token [-"say "-] [+"response\n"+] opens a direct quote [-("I'd say..."),-] [+block ("I say: "),+] immediately requiring [-Sarah's spoken words or a-] [+the+] quoted [-phrase-] [+speech content+] like "Hey, [-honey,-] [+Sarah,+] I totally understand [-that feeling"-] [+how you're feeling..."+] or "That's a [-tough one, but I want-] [+great concern, and I'd love+] to [-share..."-] [+share some of my own experiences..."+] completing the character's [-supportive response structure.-] [+response.+]
+
+==============================================================================
+scenario 474  angle=4.68deg  q3  P3 identical=False
+
+  --- P1 ---
+  [-Structured dialogue-] [+Narrative+] format with a … to a friend's [-emotional struggle about toxic behavior,-] [+awkward situation,+] using a fictional [-context and emoji-] [+dialogue structure with "Hey, Sarah" framing+] to [-convey-] [+address+] the [-message.-] [+toxic behavior around mental health.+]
+
+  --- P2 ---
+  The pattern [-"Oh man, I'd totally step in if I were you..."-] [+"I'm really feeling like... "+] signals [+the quoted response, likely+] a [-direct quote-] [+heartfelt or concerned reaction from me, the parent figure, completing the advice+] or emotional response [-from me, the speaker, likely continuing with-] [+about+] my [-own words about the situation and its impact on family.-] [+sibling's struggles.+]
+
+  --- P3 ---
+  Final token "response\n" … requiring a spoken [+dialogue+] or [-quoted-] [+emotional+] statement from the character, likely [-"Hey,-] [+"Oh man,+] that's [-really tough..."-] [+not cool"+] or [-"As your sister, I-] [+"I+] totally understand [-how you feel about this..."-] [+where you're coming from, and..."+] continuing the emotional [-and supportive-] tone.

@@ -1,0 +1,51 @@
+{
+  "P1": {
+    "ceiling_2afc": 0.9625,
+    "frac_identical": 0.075,
+    "median_seqsim": 0.592
+  },
+  "P2": {
+    "ceiling_2afc": 0.9875,
+    "frac_identical": 0.025,
+    "median_seqsim": 0.5035
+  },
+  "P3": {
+    "ceiling_2afc": 1.0,
+    "frac_identical": 0.0,
+    "median_seqsim": 0.518,
+    "status": "PROCEED-TO-2AFC"
+  },
+  "full": {
+    "ceiling_2afc": 1.0,
+    "frac_identical": 0.0,
+    "median_seqsim": 0.5155,
+    "status": "PROCEED-TO-2AFC"
+  },
+  "manifest_digest": "69fd9f0523246a409039a5e3cd3b8a3f",
+  "n_complete": 40,
+  "n_expected": 40,
+  "nondeterministic": [],
+  "provenance": {
+    "actor_dir": "/home/ubuntu/nla-ci/actor_hf",
+    "actor_meta_sha": "2ff1aef3fcab48caf2e799733fbcc7d0",
+    "injection_scale": 150.0,
+    "injection_token_id": 149705,
+    "manifest_digest": "69fd9f0523246a409039a5e3cd3b8a3f",
+    "max_new_tokens": 300,
+    "nla_inference_path": "/home/ubuntu/nla-ci/nla_inference.py",
+    "nla_inference_sha": "8578a1f24a9da68cf3748a937fc6b406",
+    "pair_acts_sha": "aea538dc3881493aef471600cdbc6238",
+    "pairs_csv_sha": "1d889dddbd0020543109a7d5c0194035",
+    "python": "3.10.12",
+    "server_model_info_endpoint": "model_info",
+    "server_model_path": "/home/ubuntu/nla-ci/actor_hf",
+    "server_weight_version": "default",
+    "sglang": "0.5.18",
+    "sglang_url": "http://localhost:30000",
+    "temperature": 0,
+    "torch": "2.13.0+cu130",
+    "transformers": "5.12.1"
+  },
+  "provenance_digest": "8a2d5a6b455dc27de1c04979282baf43",
+  "status": "PILOT-COMPLETE"
+}
