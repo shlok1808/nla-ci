@@ -81,6 +81,8 @@ import argparse
 import platform
 import hashlib
 import inspect
+from urllib.error import HTTPError, URLError
+from urllib.request import urlopen
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -204,6 +206,12 @@ def file_digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:32]
 
 
+def object_digest(obj):
+    """Stable digest for JSON-compatible provenance records."""
+    payload = json.dumps(obj, sort_keys=True, separators=(',', ':')).encode()
+    return sha(payload)
+
+
 def atomic_write_json(obj, path):
     tmp = path.with_suffix(path.suffix + '.tmp')
     tmp.write_text(json.dumps(obj, indent=2, sort_keys=True))
@@ -291,6 +299,29 @@ def stage_plan(n=PILOT_N, force=False):
 
 # ── Generation ────────────────────────────────────────────────────────────────
 
+def sglang_model_info():
+    """Read the identity of the model the live server actually loaded."""
+    errors = []
+    for endpoint in ('model_info', 'get_model_info'):
+        url = f'{SGLANG_URL.rstrip("/")}/{endpoint}'
+        try:
+            with urlopen(url, timeout=5) as response:
+                info = json.loads(response.read().decode())
+            assert isinstance(info, dict), f'{url} did not return a JSON object'
+            assert str(info.get('model_path', '')).strip(), (
+                f'{url} omitted model_path')
+            return info, endpoint
+        except HTTPError as e:
+            if e.code == 404:
+                errors.append(f'{endpoint}: HTTP 404')
+                continue
+            raise AssertionError(f'cannot read SGLang model identity from {url}: {e}') from e
+        except (URLError, TimeoutError, json.JSONDecodeError) as e:
+            errors.append(f'{endpoint}: {e}')
+    raise AssertionError(
+        'cannot verify the live SGLang model identity — ' + '; '.join(errors))
+
+
 def preflight():
     meta = ACTOR_DIR / 'nla_meta.yaml'
     assert meta.exists(), f'{meta} missing — download the AV checkpoint'
@@ -303,12 +334,20 @@ def preflight():
         f'injection_scale is {sc.group(1) if sc else "absent"}, expected 150 (L9). '
         f'The direction-only premise of this experiment depends on it.')
     from nla_inference import NLAClient
-    import inspect
     sig = inspect.signature(NLAClient.generate)
     assert any(p.kind is inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()) \
         or {'temperature', 'max_new_tokens'} <= set(sig.parameters), \
         f'NLAClient.generate lacks temperature/max_new_tokens: {sig}'
     inf_py = Path(inspect.getfile(NLAClient))     # where it ACTUALLY came from
+    server_info, server_endpoint = sglang_model_info()
+    server_model = Path(str(server_info['model_path'])).expanduser()
+    if not server_model.is_absolute():
+        server_model = Path.cwd() / server_model
+    server_model = server_model.resolve()
+    expected_model = ACTOR_DIR.expanduser().resolve()
+    assert server_model == expected_model, (
+        f'SGLang model path is {server_model}, expected {expected_model}. '
+        f'Restart it with --model-path {ACTOR_DIR}.')
     prov = dict(injection_token_id=EXPECTED_INJECTION_TOKEN_ID,
                 injection_scale=float(sc.group(1)),
                 actor_dir=str(ACTOR_DIR.resolve()),
@@ -316,6 +355,11 @@ def preflight():
                 nla_inference_path=str(inf_py),
                 nla_inference_sha=file_digest(inf_py),
                 sglang_url=SGLANG_URL,
+                server_model_path=str(server_model),
+                server_weight_version=server_info.get('weight_version'),
+                server_model_info_endpoint=server_endpoint,
+                pair_acts_sha=file_digest(PAIR_ACTS),
+                pairs_csv_sha=file_digest(PAIRS_CSV),
                 python=platform.python_version(), temperature=0, max_new_tokens=MAX_NEW)
     for mod in ('torch', 'transformers', 'sglang'):
         try:
@@ -409,6 +453,7 @@ def stage_pilot():
     assert len(man) == len(ids_m) == PILOT_N, f'manifest is not {PILOT_N} unique ids'
     assert ids_m <= set(int(i) for i in ids), 'manifest holds ids absent from the npz'
     ang_all, cos_all = pair_angles(S, P)
+    quartile_all = pd.qcut(ang_all, 4, labels=[1, 2, 3, 4])
     for _, r in man.iterrows():
         i = idx[int(r.scenario_id)]
         assert abs(ang_all[i] - r.angle_deg) < 1e-3, (
@@ -420,6 +465,10 @@ def stage_pilot():
             f'public activation for {int(r.scenario_id)} does not match its manifest digest'
         assert abs(cos_all[i] - r.cosine) < 1e-5, (
             f'manifest cosine for {int(r.scenario_id)} does not match the npz')
+        assert int(r.angle_quartile) == int(quartile_all[i]), (
+            f'manifest quartile for {int(r.scenario_id)} does not match the full '
+            f'activation population — {int(r.angle_quartile)} vs '
+            f'{int(quartile_all[i])}')
     qc = man.angle_quartile.value_counts().to_dict()
     assert set(qc) == {1, 2, 3, 4} and len(set(qc.values())) == 1, (
         f'manifest quartiles are not balanced: {qc}')
@@ -428,6 +477,7 @@ def stage_pilot():
 
     NLAClient, prov = preflight()
     prov['manifest_digest'] = man_digest
+    prov_digest = object_digest(prov)
 
     work = []
     for sid in man.scenario_id.astype(int):
@@ -456,7 +506,8 @@ def stage_pilot():
     n_expected = len(man)
 
     verdict = dict(n_expected=n_expected, n_complete=int(len(complete)),
-                   nondeterministic=nondet, manifest_digest=man_digest)
+                   nondeterministic=nondet, manifest_digest=man_digest,
+                   provenance=prov, provenance_digest=prov_digest)
     print('\n' + '=' * 78)
     if nondet:
         verdict['status'] = 'INVALID'
@@ -587,7 +638,18 @@ def stage_export_2afc(which='P3'):
     man = pd.read_csv(MANIFEST)
     man_digest = file_digest(MANIFEST)
     df = pd.read_csv(PILOT_CSV)
-    df = df[(df.repeat == 0) & [text_valid(d, e) for d, e in zip(df.description, df.error)]]
+    valid = np.array([text_valid(d, e) for d, e in zip(df.description, df.error)])
+    df = df[(df.repeat == 0) & valid]
+    assert 'prov' in df, 'pilot descriptions predate provenance binding; re-run pilot'
+    prov_values = set(df.prov.astype(str))
+    assert len(prov_values) == 1, 'pilot descriptions mix generation environments'
+    try:
+        pilot_prov = json.loads(next(iter(prov_values)))
+    except json.JSONDecodeError as e:
+        raise AssertionError('pilot description provenance is not valid JSON') from e
+    pilot_prov_digest = object_digest(pilot_prov)
+    assert pilot_prov_digest == v.get('provenance_digest'), (
+        'pilot verdict provenance does not match the generated descriptions')
     piv = df.pivot_table(index='scenario_id', columns='variant',
                          values='description', aggfunc='first').dropna()
     piv = piv[piv.index.isin(man.scenario_id.astype(int))]
@@ -609,10 +671,12 @@ def stage_export_2afc(which='P3'):
         p_txt = slice_text(piv.iloc[pos]['public'], which)
         pk.append(dict(item=item, A=s_txt if side == 'A' else p_txt,
                        B=p_txt if side == 'A' else s_txt, your_answer='',
-                       slice=which, manifest_digest=man_digest))
+                       slice=which, manifest_digest=man_digest,
+                       provenance_digest=pilot_prov_digest))
         key.append(dict(item=item, scenario_id=int(sid), secret_side=side,
                         identical=(norm_text(s_txt) == norm_text(p_txt)),
-                        slice=which, manifest_digest=man_digest))
+                        slice=which, manifest_digest=man_digest,
+                        provenance_digest=pilot_prov_digest))
     pcsv, kcsv = packet_paths(which)
     pcsv.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_csv(pd.DataFrame(pk), pcsv)
@@ -630,17 +694,13 @@ def stage_export_2afc(which='P3'):
     print(f'Then: python scripts/nla_transmission_f.py --stage score-2afc --slice {which}')
 
 
-def stage_score_2afc(which='P3', regrade=False, reason=''):
+def compute_2afc_result(which):
+    """Recompute the complete grade from the frozen packet and key.
+
+    Both scoring and paid-run authorisation call this same function, so an
+    edited summary JSON can never become a second source of truth.
+    """
     from scipy.stats import binomtest
-    gp = go_path(which)
-    if gp.exists() and not regrade:
-        prev = json.loads(gp.read_text())
-        raise SystemExit(
-            f'{gp} already records {prev.get("status")} '
-            f'({prev.get("correct")}/{prev.get("n")}, p={prev.get("p_value")}).\n'
-            f'Re-scoring the same answers cannot change them; re-scoring DIFFERENT '
-            f'answers after seeing a result is exactly what the pre-registration '
-            f'forbids. Pass --regrade only to correct a transcription error.')
     pcsv, kcsv = packet_paths(which)
     pk, key = pd.read_csv(pcsv), pd.read_csv(kcsv)
     n_locked = len(key)
@@ -664,6 +724,13 @@ def stage_score_2afc(which='P3', regrade=False, reason=''):
             f'{nm} was exported against a different manifest — re-export')
         assert set(frame['slice']) == {which}, (
             f'{nm} is slice {set(frame["slice"])}, scoring {which}')
+        assert 'provenance_digest' in frame, (
+            f'{nm} predates generation-provenance binding; re-export')
+        assert frame.provenance_digest.nunique() == 1, (
+            f'{nm} mixes generation provenance')
+    provenance_digest = str(pk.provenance_digest.iloc[0])
+    assert set(key.provenance_digest.astype(str)) == {provenance_digest}, (
+        'packet and key provenance disagree')
     nA = int((key.secret_side == 'A').sum())
     assert abs(nA - n_locked / 2) <= 1, f'A/B balance is {nA}/{n_locked - nA}'
     m = pk.merge(key, on='item')
@@ -681,19 +748,36 @@ def stage_score_2afc(which='P3', regrade=False, reason=''):
     bt = binomtest(correct, n, 0.5, alternative='greater')
     lo, hi = bt.proportion_ci(0.95)
     n_id = int(m.identical.sum())
-    print(f'blinded 2AFC ({which}): {correct}/{n} = {correct/n:.3f}')
-    print(f'  95% CI [{lo:.3f}, {hi:.3f}]   one-sided exact binomial p={bt.pvalue:.4f}')
-    print(f'  identical pairs included: {n_id} (ceiling {1 - n_id/(2*n):.3f})')
-    print(f'  pre-registered pass: {PILOT_2AFC_PASS}/{n}')
-
     go = (correct >= PILOT_2AFC_PASS) and (correct / n >= MIN_INTERESTING_2AFC)
     res = dict(slice=which, n=n, correct=correct, accuracy=round(correct / n, 4),
                p_value=round(bt.pvalue, 6), ci=[round(lo, 4), round(hi, 4)],
                n_identical=n_id, pass_threshold=PILOT_2AFC_PASS,
                min_interesting=MIN_INTERESTING_2AFC,
-               manifest_digest=file_digest(MANIFEST),
+               manifest_digest=man_digest, provenance_digest=provenance_digest,
                packet_digest=file_digest(pcsv), key_digest=file_digest(kcsv),
                status='GO' if go else 'NO-GO')
+    return res, bt, m
+
+
+def stage_score_2afc(which='P3', regrade=False, reason=''):
+    gp = go_path(which)
+    if gp.exists() and not regrade:
+        prev = json.loads(gp.read_text())
+        raise SystemExit(
+            f'{gp} already records {prev.get("status")} '
+            f'({prev.get("correct")}/{prev.get("n")}, p={prev.get("p_value")}).\n'
+            f'Re-scoring the same answers cannot change them; re-scoring DIFFERENT '
+            f'answers after seeing a result is exactly what the pre-registration '
+            f'forbids. Pass --regrade only to correct a transcription error.')
+    res, bt, m = compute_2afc_result(which)
+    correct, n, n_id = res['correct'], res['n'], res['n_identical']
+    lo, hi = res['ci']
+    print(f'blinded 2AFC ({which}): {correct}/{n} = {correct/n:.3f}')
+    print(f'  95% CI [{lo:.3f}, {hi:.3f}]   one-sided exact binomial p={bt.pvalue:.4f}')
+    print(f'  identical pairs included: {n_id} (ceiling {1 - n_id/(2*n):.3f})')
+    print(f'  pre-registered pass: {PILOT_2AFC_PASS}/{n}')
+
+    go = res['status'] == 'GO'
     # append-only: a correction never erases the grade it replaces
     if gp.exists():
         old = json.loads(gp.read_text())
@@ -745,9 +829,26 @@ def stage_verbalize(which='P3'):
     if bad:
         raise SystemExit('refusing to run:\n  ' + '\n  '.join(bad)
                          + '\nDo not re-grade to obtain a GO.')
-    print(f'authorised by {gp}: {which} {g["correct"]}/{g["n"]} (p={g["p_value"]})')
+
+    recomputed, _, _ = compute_2afc_result(which)
+    mismatch = [
+        f'stored grade {field}={g.get(field)!r} does not match recomputed {value!r}'
+        for field, value in recomputed.items() if g.get(field) != value
+    ]
+    if mismatch:
+        raise SystemExit('refusing to run:\n  ' + '\n  '.join(mismatch)
+                         + '\nThe frozen packet/key, not the summary JSON, are authoritative.')
 
     NLAClient, prov = preflight()
+    prov['manifest_digest'] = file_digest(MANIFEST)
+    current_prov_digest = object_digest(prov)
+    if current_prov_digest != g.get('provenance_digest'):
+        raise SystemExit(
+            'refusing to run: current generation provenance does not match the pilot.\n'
+            f'  pilot:   {g.get("provenance_digest")}\n'
+            f'  current: {current_prov_digest}\n'
+            'Use the same checkpoint, server model, code, inputs and package versions.')
+    print(f'authorised by {gp}: {which} {g["correct"]}/{g["n"]} (p={g["p_value"]})')
     ids, S, P, _ = load_acts()
     work = [(int(s), 'secret', S[i], 0) for i, s in enumerate(ids)] + \
            [(int(s), 'public', P[i], 0) for i, s in enumerate(ids)]
@@ -772,4 +873,5 @@ if __name__ == '__main__':
     a = ap.parse_args()
     {'plan': lambda: stage_plan(a.n, a.force), 'pilot': stage_pilot,
      'export-2afc': lambda: stage_export_2afc(a.slice),
-     'score-2afc': lambda: stage_score_2afc(a.slice, a.regrade, a.reason), 'verbalize': stage_verbalize}[a.stage]()
+     'score-2afc': lambda: stage_score_2afc(a.slice, a.regrade, a.reason),
+     'verbalize': lambda: stage_verbalize(a.slice)}[a.stage]()
