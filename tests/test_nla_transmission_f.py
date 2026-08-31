@@ -118,6 +118,14 @@ def main():
     nt.FULL_CSV = tmp / 'results/full.csv'
     nt.PACKET_CSV = tmp / 'data/packet.csv'
     nt.KEY_CSV = tmp / 'results/key.csv'
+    # METRICS_CSV and PILOT_TXT must be redirected HERE, with the rest — not
+    # later at their point of use. all_artifacts() reads these globals at call
+    # time and the manifest-locking test unlinks everything it returns; any
+    # path still pointing at the real repo gets DELETED. That deletion silently
+    # destroyed two committed pilot outputs (2026-08-27). The isolation check
+    # at the end of the suite catches it, but only after the files are gone.
+    nt.METRICS_CSV = tmp / 'results/metrics.csv'
+    nt.PILOT_TXT = tmp / 'results/pilot.txt'
     nt.atomic_write_csv(man, nt.MANIFEST)
 
     # ── 2. the GPU authorisation gate ───────────────────────────────────────
@@ -291,8 +299,7 @@ def main():
 
     # ── 6b. stage_pilot end-to-end against a fake client ────────────────────
     print('\nstage_pilot (where the contamination bug lived)')
-    nt.METRICS_CSV = tmp / 'results/metrics.csv'
-    nt.PILOT_TXT = tmp / 'results/pilot.txt'
+    # METRICS_CSV / PILOT_TXT are redirected far above, with the other globals
     nt.PAIR_ACTS = tmp / 'results/acts.npz'
     np.savez(nt.PAIR_ACTS, scenario_ids=ids, acts_secret=S, acts_public=P)
     pairs_csv = tmp / 'data/pairs.csv'

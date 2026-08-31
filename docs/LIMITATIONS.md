@@ -384,7 +384,37 @@ co-trained in and cannot be retrofitted onto a frozen model." Their
 evaluator-swap protocol would need an independent reconstructor for this
 model/layer, which does not exist publicly.
 
-**Reference:** `docs/REFERENCES.md` §2.
+**Status update, 2026-08-28 (external literature audit).** Both papers'
+authorship/venue are now confirmed: Dingeto (2026) for RECAP — single-author
+arXiv preprint, still unreviewed; Li, Ceballos Arroyo, Rogers, Saphra & Wallace
+— accepted ICML 2026. Neither is a new citation; what changes is precision
+about what each does and does not license:
+
+- Dingeto's ~2% figure means ~2% of *tested claims measurably affected
+  reconstruction* — not "2% of claims were truthful" and not a "98%
+  hallucination rate." Keep using it exactly as worded above.
+- Dingeto audits a Qwen2.5-7B layer-20 NLA setup that is *probably* the same
+  checkpoint family as ours, but the paper gives no exact HF ID/revision —
+  treat as corroborating, not identical-setup replication.
+- Li et al. never touch Qwen, an NLA, or a CI/privacy task — Patchscopes,
+  LatentQA/LIT, and activation inversion on Llama and Ministral only. Their
+  "verbalizer answers from its own priors, not the target's state" claim is
+  the leading hypothesis for **why session 16's pilot found "Sarah" in 43/80
+  descriptions against 8/40 source stories**, but it is a hypothesis carried
+  over from a different model family and method — not yet a demonstrated
+  result on our checkpoint. `informed_p1` (built, unrun) is the direct test.
+- **This also fixes an overclaim risk in our own pipeline design.** The
+  transmission pilot (session 16, `nla_transmission_f.py`) treats
+  gate-passing (0% identical, 2AFC ceiling 1.000, edit-vocab ≈0) as
+  "PROCEED-TO-2AFC" — correctly, per its stated purpose of ruling out an echo
+  explanation. It is **not**, and must never be reported as, evidence of
+  faithful verbalization: the same 40 pairs that passed every gate produced
+  descriptions with zero source character names and wrong topics. Dingeto's
+  structural point (reconstruction ≠ per-claim faithfulness) is the reason
+  this is expected rather than a pipeline bug. Any future write-up must state
+  the gate's scope explicitly: it certifies non-echo, nothing more.
+
+**Reference:** `docs/REFERENCES.md` §2; `docs/logs/session_16.md` §1–3.
 
 ---
 

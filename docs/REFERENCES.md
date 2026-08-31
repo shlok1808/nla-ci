@@ -42,10 +42,14 @@ checkpoints are `kitft/nla-qwen2.5-7b-L20-av` and `-ar`. Their showcase result
 is surfacing unverbalized **evaluation awareness** during a Claude Opus 4.6
 pre-deployment audit — which is why our E-EVAL control exists.
 
-**"Train the Model, Not the Reader: Decodability Supervision for Verifiable
-Activation Explanations" (RECAP)**
-[arXiv:2607.20379](https://arxiv.org/html/2607.20379v1) — **added 2026-08-26**
-The most important methodological citation for our limitations. Two findings
+**Dingeto (2026), "Train the Model, Not the Reader: Decodability Supervision for
+Verifiable Activation Explanations" (RECAP)**
+[arXiv:2607.20379](https://arxiv.org/html/2607.20379v1) — **added 2026-08-26,
+author/status confirmed 2026-08-28.** Single-author arXiv preprint (submitted
+2026-07-22, revised 2026-08-19); **not peer-reviewed.** Audits what appears to
+be the same public Qwen2.5-7B layer-20 NLA checkpoint family we use, though the
+paper does not give an exact HF checkpoint ID or revision — treat the overlap
+as likely, not confirmed identical. Two findings
 bear directly on us:
 1. **Reconstruction measures sufficiency, not faithfulness.** *"It does not
    penalize false additions, because the objective has no preference among claim
@@ -61,15 +65,21 @@ explanation, is the reliable readout"*) matches the logic of our design, but
 RECAP itself **cannot be applied to us**: *"RECAP must be co-trained in and
 cannot be retrofitted onto a frozen model."* See **L17**.
 
-**"Do Activation Verbalization Methods Convey Privileged Information?"**
-[arXiv:2509.13316](https://arxiv.org/abs/2509.13316)
-Tests Patchscopes / LatentQA / SelfIE on QA and retrieval. Documents the
-**confabulation** failure mode: the verbalizer paraphrases the prompt or the
-chain-of-thought instead of reading internals — worthless as a safety signal,
-because you already had both. Also raises that the verbalizer is itself an LLM
-with world knowledge, so a plausible description may reflect the *verbalizer's*
-priors rather than the *target's* state. Motivates the `informed_p1`
-(topic-only) control in `scripts/blinded_reader_f.py`. See **L17**.
+**Li, Ceballos Arroyo, Rogers, Saphra & Wallace, "Do Activation Verbalization
+Methods Convey Privileged Information?"**
+[arXiv:2509.13316](https://arxiv.org/abs/2509.13316) — **accepted ICML 2026;
+author/venue confirmed 2026-08-28.** Tests Patchscopes, LatentQA/LIT, and
+activation inversion on Llama and Ministral — **not** our Qwen2.5-7B NLA
+checkpoint, and not a contextual-integrity or privacy task. Central finding:
+text-only baselines (no activation access at all) often match verbalizer
+performance, and when the target model's knowledge conflicts with the
+verbalizer's, the verbalizer tends to follow its own associations rather than
+the target's state — i.e. a plausible description may reflect the
+**verbalizer's own priors**, not the activation it was supposedly reading.
+Motivates the `informed_p1` (topic-only) control in
+`scripts/blinded_reader_f.py`, which is built but **not yet run** — so "our
+recurring names/topics come from the verbalizer's priors" is a hypothesis
+this paper makes plausible, not a result we have demonstrated. See **L17**.
 
 **Universal Activation Verbalizer**
 [arXiv:2605.25903](https://arxiv.org/pdf/2605.25903)

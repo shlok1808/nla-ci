@@ -145,6 +145,45 @@ JUDGE_ROLEPLAY = (
 PROMPTS = {'orig': JUDGE_ORIGINAL, 'roleplay': JUDGE_ROLEPLAY}
 
 
+# ── temperature compatibility ─────────────────────────────────────────────────
+# The original judge pinned temperature=0 for determinism. Modern reasoning
+# models removed sampling parameters outright: Claude Opus 5 / Opus 4.8 / 4.7 /
+# Fable 5 / Sonnet 5 return 400 on temperature, and the GPT-5.6 tiers are
+# reasoning models whose support is undocumented either way. Sending it blindly
+# turns every call into a caught exception and yields a CSV of 270 error rows.
+#
+# Dropping temperature is a REAL deviation from the original config, not a
+# formality — a reasoning model without it is not deterministic the way temp-0
+# gpt-4o-mini was. So it is recorded per row (`temp0`) rather than hidden, and
+# the arm can no longer be described as differing from the original in the
+# model alone.
+_SUPPORTS_TEMPERATURE = True
+
+
+def judge_call(client, model, system, user):
+    """Return (response, temp0_used). Retries once without temperature if the
+    model rejects it, then remembers the answer for the rest of the run."""
+    global _SUPPORTS_TEMPERATURE
+    kw = dict(model=model,
+              messages=[{'role': 'system', 'content': system},
+                        {'role': 'user', 'content': user}],
+              response_format={'type': 'json_object'})
+    if _SUPPORTS_TEMPERATURE:
+        try:
+            return client.chat.completions.create(temperature=0, **kw), True
+        except Exception as e:
+            # only swallow a temperature-specific rejection; anything else
+            # (auth, rate limit, bad model id) must still surface as an error
+            if 'temperature' not in str(e).lower():
+                raise
+            _SUPPORTS_TEMPERATURE = False
+            print(f'\nNOTE: {model} rejects temperature — continuing without it.\n'
+                  f'      Rows are marked temp0=False. This arm now differs from\n'
+                  f'      the original judge in TWO ways (model + sampling), which\n'
+                  f'      must be stated wherever the arm is reported.')
+    return client.chat.completions.create(**kw), False
+
+
 def make_client(model, base_url=None):
     from openai import OpenAI
     for prefix, (url, env) in PROVIDERS.items():
@@ -201,11 +240,7 @@ def stage_judge(model, prompt_name, base_url=None, dry_run=False):
     for i, r in enumerate(tqdm(pending.itertuples(), total=len(pending), desc=arm), 1):
         user = '\n'.join(['SCENARIO:', str(r.scenario), '', 'MODEL RESPONSE:', str(r.response)])
         try:
-            resp = client.chat.completions.create(
-                model=model,
-                messages=[{'role': 'system', 'content': system},
-                          {'role': 'user', 'content': user}],
-                response_format={'type': 'json_object'}, temperature=0)
+            resp, temp0 = judge_call(client, model, system, user)
             j = json.loads(resp.choices[0].message.content)
             row = dict(arm=arm, model=model, prompt=prompt_name,
                        scenario_id=int(r.scenario_id),
@@ -213,12 +248,13 @@ def stage_judge(model, prompt_name, base_url=None, dry_run=False):
                        b_leaked=bool(j.get('leaked')), b_refused=bool(j.get('refused')),
                        b_appropriate=bool(j.get('appropriate')),
                        label=derive_label(j), confidence=j.get('confidence', ''),
-                       reasoning=str(j.get('reasoning', ''))[:400])
+                       reasoning=str(j.get('reasoning', ''))[:400],
+                       temp0=temp0)
         except Exception as e:
             row = dict(arm=arm, model=model, prompt=prompt_name,
                        scenario_id=int(r.scenario_id), b_leaked=None, b_refused=None,
                        b_appropriate=None, label='error', confidence='',
-                       reasoning=str(e)[:200])
+                       reasoning=str(e)[:200], temp0=None)
         rows.append(row)
         if i % SAVE_EVERY == 0:
             pd.DataFrame(rows).to_csv(OUT_CSV, index=False)
