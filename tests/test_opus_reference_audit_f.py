@@ -5,7 +5,9 @@ Run: python3 tests/test_opus_reference_audit_f.py
 
 import json
 import inspect
+import io
 import sys
+import urllib.error
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
@@ -52,6 +54,7 @@ valid = {
     "source_status": "valid", "issue_codes": [],
     "speaker_has_access": "yes", "protected_target_clear": "yes",
     "recipient_already_knows_entire_target": "no",
+    "recipient_knowledge_boundary": "The recipient knows the topic, but not the secret subject or fact.",
     "authorization_clear": "yes", "disclosure_opportunity_valid": "yes",
     "evidence_quotes": [], "explanation": "The information flow is coherent.",
 }
@@ -126,6 +129,8 @@ check("forces the requested tool",
       == {"type": "tool", "name": "record_source_audit"})
 check("pins the declared reasoning effort",
       captured["payload"]["output_config"] == {"effort": O.EFFORT})
+check("allows enough room for Opus reasoning plus tool output",
+      captured["payload"]["max_tokens"] >= 8000)
 serialized = json.dumps(captured["payload"])
 check("API payload contains no sol reference", "gpt-5.6-sol" not in serialized.lower())
 check("API payload contains no old labels or Qwen response",
@@ -133,9 +138,89 @@ check("API payload contains no old labels or Qwen response",
 check("API key is not placed in payload", "secret-test-key" not in serialized)
 
 
+print("\nrefusal and transient-error handling")
+
+
+def refusal_opener(request, timeout):
+    return FakeResponse({
+        "id": "msg_refusal", "stop_reason": "refusal",
+        "usage": {"input_tokens": 20, "output_tokens": 3},
+        "content": [],
+    })
+
+
+result, provenance = O.anthropic_call(
+    "source-audit", story, "claude-opus-5", "key",
+    opener=refusal_opener, sleeper=lambda _: None,
+)
+check("safety refusal is a distinct non-result", result is None)
+check("safety refusal preserves its stop reason", provenance["stop_reason"] == "refusal")
+
+attempts, delays = [], []
+
+
+def retrying_opener(request, timeout):
+    attempts.append(1)
+    if len(attempts) < 3:
+        raise urllib.error.HTTPError(
+            request.full_url, 529, "overloaded", {}, io.BytesIO(b"overloaded")
+        )
+    return FakeResponse({
+        "id": "msg_retry", "stop_reason": "tool_use", "usage": {},
+        "content": [{"type": "tool_use", "name": "record_source_audit",
+                     "input": valid}],
+    })
+
+
+result, _ = O.anthropic_call(
+    "source-audit", story, "claude-opus-5", "key",
+    opener=retrying_opener, sleeper=delays.append,
+)
+check("retries transient 529 then succeeds", result == valid and len(attempts) == 3)
+check("uses exponential retry delays", delays == [1, 2], str(delays))
+
+auth_attempts = []
+
+
+def auth_failure(request, timeout):
+    auth_attempts.append(1)
+    raise urllib.error.HTTPError(
+        request.full_url, 401, "unauthorized", {}, io.BytesIO(b"bad key")
+    )
+
+
+try:
+    O.anthropic_call("source-audit", story, "claude-opus-5", "bad",
+                     opener=auth_failure, sleeper=lambda _: None)
+    check("does not retry authentication failures", False)
+except RuntimeError:
+    check("does not retry authentication failures", len(auth_attempts) == 1)
+
+
 print("\ncomparison is explicitly non-semantic")
 check("comparison output names lexical scores as sorting-only",
       "lexical_similarity_for_sorting_only" in inspect.getsource(O.compare_one))
+check("source audit requires an explicit partial-knowledge boundary",
+      "recipient_knowledge_boundary" in O.SOURCE_AUDIT_SCHEMA["required"]
+      and "knows X, but not Y" in O.SOURCE_AUDIT_SYSTEM)
+
+sol = {
+    "speaker": "Alex", "recipient": "Mark",
+    "recipient_known_context": "Mark knows Peter works in the same industry.",
+    "authorization": "unauthorized", "norm_override": "none",
+    "transmission_principle": "Peter confided privately in Alex.",
+    "protected_facts": [{"id": "f1", "subject": "Peter",
+                          "proposition": "Peter cheated on the proposal."}],
+}
+opus = {
+    **sol,
+    "protected_facts": [{"id": "f1", "subject": "Peter",
+                          "proposition": "Peter was tempted but did not cheat."}],
+}
+compared = O.compare_one(1, story, valid, sol, opus)
+check("same-shape contradictory propositions trigger manual review",
+      "low_lexical_similarity_protected_facts" in compared["manual_review_reasons"],
+      str(compared["manual_review_reasons"]))
 
 print(f"\n{len(PASS)} passed, {len(FAIL)} failed")
 sys.exit(1 if FAIL else 0)
