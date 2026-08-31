@@ -1,6 +1,11 @@
 """
 judge_replication_f.py — are the benchmark labels an artifact of one judge?
 
+HISTORICAL ROBUSTNESS SCRIPT — NOT THE CANONICAL ANNOTATOR.  Its prompts retain
+the old coarse/overlapping rubric so the original measurement can be replicated.
+New labels and disclosure-onset spans must use
+``behavior_annotation_rubric_f.py`` and ``docs/BEHAVIOR_ANNOTATION_RUBRIC_f.md``.
+
 Every result in this project rests on labels produced by a SINGLE gpt-4o-mini
 pass (`scripts/benchmark.py`). Deflection at 0.89 rests on 36 positives from
 that pass. `REPORT.md` T3 ("the leak ceiling may be a label ceiling") is the
