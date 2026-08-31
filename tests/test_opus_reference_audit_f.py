@@ -6,6 +6,7 @@ Run: python3 tests/test_opus_reference_audit_f.py
 import json
 import inspect
 import io
+import os
 import sys
 import urllib.error
 from pathlib import Path
@@ -136,6 +137,29 @@ check("API payload contains no sol reference", "gpt-5.6-sol" not in serialized.l
 check("API payload contains no old labels or Qwen response",
       all(x not in serialized for x in ('"label"', '"response"', "judge_reasoning")))
 check("API key is not placed in payload", "secret-test-key" not in serialized)
+
+old_workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID")
+os.environ["ANTHROPIC_WORKSPACE_ID"] = "wrkspc_test"
+captured_workspace = {}
+
+
+def workspace_opener(request, timeout):
+    captured_workspace["headers"] = dict(request.header_items())
+    return FakeResponse({
+        "id": "msg_workspace", "stop_reason": "tool_use", "usage": {},
+        "content": [{"type": "tool_use", "name": "record_source_audit",
+                     "input": valid}],
+    })
+
+
+O.anthropic_call("source-audit", story, "claude-opus-5", "key",
+                 opener=workspace_opener)
+check("passes optional workspace ID header",
+      captured_workspace["headers"].get("Anthropic-workspace-id") == "wrkspc_test")
+if old_workspace is None:
+    os.environ.pop("ANTHROPIC_WORKSPACE_ID", None)
+else:
+    os.environ["ANTHROPIC_WORKSPACE_ID"] = old_workspace
 
 
 print("\nrefusal and transient-error handling")

@@ -284,14 +284,18 @@ def anthropic_call(
         "tool_choice": {"type": "tool", "name": tool["name"]},
         "output_config": {"effort": EFFORT},
     }
+    headers = {
+        "content-type": "application/json",
+        "x-api-key": api_key,
+        "anthropic-version": ANTHROPIC_VERSION,
+    }
+    workspace_id = os.environ.get("ANTHROPIC_WORKSPACE_ID")
+    if workspace_id:
+        headers["anthropic-workspace-id"] = workspace_id
     request = urllib.request.Request(
         ANTHROPIC_URL,
         data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "content-type": "application/json",
-            "x-api-key": api_key,
-            "anthropic-version": ANTHROPIC_VERSION,
-        },
+        headers=headers,
         method="POST",
     )
     raw = None
@@ -302,6 +306,12 @@ def anthropic_call(
             break
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace")[:500]
+            if exc.code == 400 and "anthropic-workspace-id is required" in detail:
+                raise RuntimeError(
+                    "This identity-linked key requires a workspace. Set "
+                    "ANTHROPIC_WORKSPACE_ID to the ID shown in Anthropic Console "
+                    "Settings > Workspaces, or create a workspace-scoped key."
+                ) from exc
             if exc.code in RETRYABLE_HTTP_CODES and attempt + 1 < MAX_API_ATTEMPTS:
                 sleeper(2 ** attempt)
                 continue
