@@ -1,0 +1,5 @@
+limiting contrast,leak contrast,Δ limiting,Δ leak,difference,95% CI,p
+limiting vs direct (disclosers only),substantive leak vs appropriate,+0.162,+0.057,+0.104,"[-0.017, 0.220]",.045
+limiting vs direct (disclosers only),substantive leak vs rest,+0.162,+0.028,+0.130,"[0.023, 0.242]",.010
+limiting vs direct (all),substantive leak vs appropriate,+0.125,+0.057,+0.069,"[-0.055, 0.181]",.144
+limiting vs direct (all),substantive leak vs rest,+0.125,+0.028,+0.096,"[-0.010, 0.207]",.042

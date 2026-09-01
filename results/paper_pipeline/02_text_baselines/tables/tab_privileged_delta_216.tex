@@ -1,0 +1,28 @@
+\begin{table}[t]
+\centering
+\begin{threeparttable}
+\caption{Privileged increment of layer-20 activations over matched scenario-text baselines, analysis population (n=216).}
+\label{tab:tab-privileged-delta-216}
+\small
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+contrast & n & activation AUC & TF-IDF AUC & embedding AUC & stronger text baseline & privileged $\Delta$ & $\Delta$ 95\% CI & Holm p ($\Delta$) & verdict \\
+\midrule
+broad breach vs none & 216 & 0.698 & 0.636 & 0.665 & embed & +0.033 & [-0.042, 0.112] & .527 & no\_evidence \\
+substantive leak vs rest & 216 & 0.639 & 0.604 & 0.611 & embed & +0.028 & [-0.048, 0.113] & .527 & no\_evidence \\
+substantive leak vs appropriate & 81 & 0.814 & 0.700 & 0.757 & embed & +0.057 & [-0.035, 0.147] & .527 & no\_evidence \\
+limiting vs direct (all) & 216 & 0.724 & 0.561 & 0.600 & embed & +0.125 & [0.049, 0.196] & .010 & supported \\
+limiting vs direct (disclosers only) & 188 & 0.728 & 0.557 & 0.567 & embed & +0.162 & [0.083, 0.234] & .006 & supported \\
+broad-only vs substantive & 188 & 0.575 & 0.579 & 0.582 & embed & -0.007 & [-0.092, 0.072] & .569 & no\_evidence \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item $\Delta$ = activation AUC - text AUC against the STRONGER of the two text baselines per contrast (the frozen sentence encoder won on every contrast); using the weaker baseline would inflate $\Delta$.
+\item Text channels see the scenario/prompt only. The generated response is never used: it post-dates the probed state and can trivially reveal the label.
+\item All three channels share byte-identical cross-validation folds (same seeds), so the bootstrap is exactly paired.
+\item $\Delta$ inference is a paired scenario bootstrap that resamples scenarios once per draw and recomputes the full repeat-averaged per-fold statistic for both channels; p is one-sided P($\Delta$* $\leq$ 0), Holm-adjusted across the six contrasts.
+\item A label-permutation null is deliberately not used for $\Delta$: permuting labels nulls both channels, testing 'no signal anywhere' rather than 'no difference'.
+\item All 216 analysis-population labels are single-judge and provisional\_unverified; the judge prompt asserted human verification when 216/258 references were not verified. No interval here covers that uncertainty.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

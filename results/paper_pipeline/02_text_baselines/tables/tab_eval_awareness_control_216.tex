@@ -1,0 +1,25 @@
+\begin{table}[t]
+\centering
+\begin{threeparttable}
+\caption{Eval-awareness erasure control with its manipulation check (analysis population).}
+\label{tab:tab-eval-awareness-control-216}
+\small
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+contrast & n & AUC original & AUC after erasure & drop & drop 95\% CI & null drop mean & null drop p95 & isotropic drop & p vs null \\
+\midrule
+limiting vs direct (disclosers only) & 188 & 0.737 & 0.736 & +0.0017 & [-0.0015, +0.0054] & +0.0004 & +0.0028 & +0.0000 & .178 \\
+limiting vs direct (all) & 216 & 0.736 & 0.736 & +0.0002 & [-0.0020, +0.0026] & -0.0003 & +0.0014 & +0.0001 & .257 \\
+substantive leak vs appropriate & 81 & 0.813 & 0.814 & -0.0007 & [-0.0038, +0.0000] & +0.0010 & +0.0044 & +0.0000 & .851 \\
+substantive leak vs rest & 216 & 0.640 & 0.639 & +0.0009 & [-0.0020, +0.0043] & -0.0002 & +0.0019 & +0.0001 & .129 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item MANIPULATION CHECK: test-vs-deploy decodability on the framed activations is 1.000 before erasure and 0.500 after. The erasure demonstrably removes the concept, so a surviving limiting probe is a genuine null rather than a failed manipulation.
+\item Cross-fitted: v\_eval and every null direction are re-derived inside each training fold from framed activations of TRAINING scenarios only. A direction estimated on all data would over-remove on held-out data and bias toward a false negative.
+\item The null is 100 side-permuted paired directions from the same estimation pipeline (within each scenario, which 3 of its 6 frames count as 'test' is reassigned at random). Isotropic random directions are reported only to show they are an inadequate null: erasing one costs ~0.0000 AUC, because a random vector in 3584 dimensions is nearly orthogonal to the activation manifold.
+\item cos(v\_eval, v\_limiting) = -0.093, inside the permutation-null band (|cos| 95th percentile 0.152).
+\item Rank-1 erasure removes a direction. Eval-awareness collapsing to chance indicates that direction carried essentially all of it here, but a distributed residual cannot be fully excluded.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
