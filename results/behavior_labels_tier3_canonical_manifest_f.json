@@ -1,0 +1,24 @@
+{
+  "tier3_total": 270,
+  "canonical_count": 258,
+  "calibration_count": 42,
+  "analysis_count": 216,
+  "excluded_count": 12,
+  "excluded_scenario_ids": [
+    226,
+    243,
+    247,
+    254,
+    277,
+    287,
+    347,
+    456,
+    457,
+    466,
+    469,
+    472
+  ],
+  "canonical_json_sha256": "79b6d8514f1a26dc79ad6a3a9eb4c3d88eade0ab444a2b1f0e209b6b2d62f4b7",
+  "canonical_csv_sha256": "40c5fb2b10aa49d535b6593ba9e0bcbe6ad631dfe21c8237845924cba3705979",
+  "methodology_note": "Calibration references are human-verified; analysis references and author-directed adjudications remain methodologically provisional."
+}
