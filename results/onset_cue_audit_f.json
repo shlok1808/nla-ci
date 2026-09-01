@@ -1,0 +1,13 @@
+{
+  "status": "REVIEW_REQUIRED",
+  "n_limiting_rows": 104,
+  "n_candidates": 3,
+  "n_candidate_scenarios": 3,
+  "n_sheet_rows": 104,
+  "candidates": "results/onset_cue_audit_candidates_f.csv",
+  "candidates_sha256": "f1bcb3af41749439668d296382a2f37b1060d4bc58b16bb703cf32662f8d1950",
+  "sheet": "results/onset_cue_audit_sheet_f.csv",
+  "sheet_sha256": "badee88d0814ddcee65f805666f439a808dfec9916032784422dda21332a3209",
+  "interpretation": "Regex candidates require semantic review, and a clean regex screen does not prove earliestness. Every row of the sheet must receive a reviewer disposition (--record-review) before GPU extraction. Tonal pre-cues that are not hedges are expected and are handled by the matched text baselines, not by this screen.",
+  "cutoff_definition": "min(broad_disclosure_onset_char, earliest strategy_evidence start_char); for mixed cases the strategy evidence includes the disclosure sentence, so this is NOT a limiting-language onset"
+}

@@ -23,6 +23,11 @@ results/relative_position_acts_f.npz
 results/forced_prefix_acts_f.npz
 results/minimal_pairs_acts_f.npz
 results/eval_awareness_acts_f.npz
+results/onset_dynamics_acts_f.npz
+results/onset_dynamics_forced_acts_f.npz
+results/onset_dynamics_fullseq_f.npz
+# paid LLM-reader cache (the derived scores CSV + manifest ARE committed)
+results/onset_reader_cache_f.jsonl
 # half-written atomic checkpoints, if a run is killed mid-save
 results/*.tmp.npz
 
