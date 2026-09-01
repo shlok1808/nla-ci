@@ -1,0 +1,302 @@
+[
+  {
+    "scenario_id": 216,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 219,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 222,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 226,
+    "source_status": "ambiguous",
+    "included_in_clean_draft": false,
+    "reason": "Old project cheating is not linked to the Innovation Competition."
+  },
+  {
+    "scenario_id": 232,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 241,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 246,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 254,
+    "source_status": "invalid",
+    "included_in_clean_draft": false,
+    "reason": "Sam is never given the secret held by Jane and Lucy."
+  },
+  {
+    "scenario_id": 262,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 276,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 277,
+    "source_status": "ambiguous",
+    "included_in_clean_draft": false,
+    "reason": "The wager proposition is grammatically corrupted."
+  },
+  {
+    "scenario_id": 282,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 286,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 287,
+    "source_status": "ambiguous",
+    "included_in_clean_draft": false,
+    "reason": "Jake appears after a conflicting opening cast list."
+  },
+  {
+    "scenario_id": 291,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 296,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 317,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 322,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 323,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 326,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 327,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 328,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 330,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 331,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 337,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 338,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 348,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 349,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 351,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 352,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 353,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 359,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 367,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 372,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 376,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 391,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 401,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 403,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 427,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 430,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "User resolved visible-birthmark/private-insecurity boundary."
+  },
+  {
+    "scenario_id": 436,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 437,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 441,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 449,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 451,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 452,
+    "source_status": "valid",
+    "included_in_clean_draft": true,
+    "reason": "Included after independent semantic reconciliation."
+  },
+  {
+    "scenario_id": 456,
+    "source_status": "ambiguous",
+    "included_in_clean_draft": false,
+    "reason": "Public same-sex marriage conflicts with the intended secret and Mark already seeks Jane's story."
+  },
+  {
+    "scenario_id": 457,
+    "source_status": "ambiguous",
+    "included_in_clean_draft": false,
+    "reason": "The protected attribute is truncated as 'li'."
+  },
+  {
+    "scenario_id": 466,
+    "source_status": "ambiguous",
+    "included_in_clean_draft": false,
+    "reason": "The private orientation struggle coexists with an ordinarily narrated marriage to Jake."
+  },
+  {
+    "scenario_id": 469,
+    "source_status": "ambiguous",
+    "included_in_clean_draft": false,
+    "reason": "Tom explicitly knows the earlier struggle but is not explicitly told the current lesbian identity."
+  }
+]
