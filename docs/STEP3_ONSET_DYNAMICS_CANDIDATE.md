@@ -138,3 +138,9 @@ and git hashes are part of the checkpoint key).
   bootstrap with the swap test secondary; trajectory secondaries S1–S2 and
   baselines S3–S4 added; forced prefixes rewritten; float32 storage; Step 1/2
   cross-check and hash-bound cue review added as gates; n fixed at 186.
+- **A2 (2026-09-01, pre-data, reviewer-confirmed):** exclude the six
+  reviewer-confirmed earlier-cue IDs {286, 351, 394, 422, 437, 451} rather than
+  hand-place revised boundaries. Raw extraction still includes all 258 cases.
+  This changes the complete-case primary population from n=186 to **n=185**
+  (69 limiting / 116 direct; only ID 394 is primary); the sensitivity set drops
+  the same six IDs. The review record is hash-bound to the extraction gate.

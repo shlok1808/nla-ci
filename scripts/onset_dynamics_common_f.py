@@ -48,6 +48,12 @@ POSITION_SEMANTICS = (
 
 LIMITING = frozenset({"soft_deflection", "explicit_refusal", "mixed_disclose_then_limit"})
 
+# Pre-data Amendment A2: reviewer-confirmed prefixes that already contain an
+# earlier cue. Raw extraction retains every scenario; analysis excludes these
+# IDs so no post-review boundary is hand-placed. ID 394 is the sole primary
+# case; the other five affect the 258-case sensitivity population only.
+REVIEW_EXCLUDED_IDS = frozenset({286, 351, 394, 422, 437, 451})
+
 CANONICAL = Path("results/behavior_labels_tier3_canonical_f.csv")
 ALIGNMENT = Path("results/onset_alignment_f.csv")
 ALIGNMENT_META = Path("results/onset_alignment_f.json")
@@ -161,7 +167,11 @@ def load_step3_rows() -> pd.DataFrame:
 
 def primary_mask(rows: pd.DataFrame) -> pd.Series:
     """`limiting_among_disclosers` in the 216-case analysis population."""
-    return rows.population.eq("analysis") & rows.broad_breach.astype(bool)
+    return (
+        rows.population.eq("analysis")
+        & rows.broad_breach.astype(bool)
+        & ~rows.scenario_id.isin(REVIEW_EXCLUDED_IDS)
+    )
 
 
 def limiting_labels(rows: pd.DataFrame) -> np.ndarray:

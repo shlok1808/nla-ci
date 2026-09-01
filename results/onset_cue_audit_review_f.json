@@ -1,0 +1,24 @@
+{
+  "verdict": "GO_WITH_EXCLUSIONS",
+  "reviewer": "Shloki",
+  "reviewed_at_utc": "2026-09-01T19:52:48.505217+00:00",
+  "n_rows": 104,
+  "dispositions": {
+    "ok": 98,
+    "earlier_cue": 6
+  },
+  "excluded_scenario_ids": [
+    286,
+    351,
+    394,
+    422,
+    437,
+    451
+  ],
+  "candidates_sha256": "f1bcb3af41749439668d296382a2f37b1060d4bc58b16bb703cf32662f8d1950",
+  "sheet_sha256": "badee88d0814ddcee65f805666f439a808dfec9916032784422dda21332a3209",
+  "sheet_reviewed_path": "results/onset_cue_audit_sheet_reviewed_f.csv",
+  "sheet_reviewed_sha256": "b8e301f3a3c9e16535cbcd7a36c9bf039f60e0f9ab71f9a4a54805bbc5044e1e",
+  "notes": "Human reviewer confirmed the six earlier-cue and eight borderline triage decisions in Codex on 2026-09-01; remaining rows retained from the complete pre-review. Pre-data amendment A2 excludes the six confirmed IDs rather than hand-placing revised onset boundaries.",
+  "rule": "GO requires every row 'ok'. GO_WITH_EXCLUSIONS is permitted only for the frozen reviewer-confirmed exclusion set; raw extraction retains all scenarios and analysis excludes those IDs rather than hand-placing new onset boundaries. Any other earlier_cue or unsure is NO-GO."
+}

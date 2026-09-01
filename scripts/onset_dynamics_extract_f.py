@@ -50,6 +50,7 @@ from onset_dynamics_common_f import (
     POSITION_NAMES,
     POSITION_SEMANTICS,
     PRIMARY_BLOCK,
+    REVIEW_EXCLUDED_IDS,
     REPORTED_LAYERS,
     STEP2_ACTS,
     TIER3,
@@ -191,7 +192,11 @@ def cue_gate(smoke: bool, allow: bool) -> dict:
             "with --record-review. Use --allow-unreviewed-cues only for a non-paper development run."
         )
     review = json.loads(CUE_REVIEW.read_text())
-    if review.get("verdict") != "GO":
+    verdict = review.get("verdict")
+    excluded = frozenset(int(x) for x in review.get("excluded_scenario_ids", []))
+    allowed = verdict == "GO" and not excluded
+    allowed = allowed or (verdict == "GO_WITH_EXCLUSIONS" and excluded == REVIEW_EXCLUDED_IDS)
+    if not allowed:
         raise SystemExit(f"BLOCKED: cue-audit review verdict is {review.get('verdict')!r}")
     for key, path in (("candidates_sha256", CUE_CANDIDATES), ("sheet_sha256", CUE_SHEET)):
         if not path.exists() or sha256_file(path) != review.get(key):
@@ -199,7 +204,7 @@ def cue_gate(smoke: bool, allow: bool) -> dict:
     reviewed = Path(review.get("sheet_reviewed_path", ""))
     if not reviewed.exists() or sha256_file(reviewed) != review.get("sheet_reviewed_sha256"):
         raise SystemExit("BLOCKED: reviewed sheet missing or changed since the review was recorded")
-    return {"status": "GO", **{k: review.get(k) for k in ("reviewer", "reviewed_at_utc", "n_rows", "dispositions")}}
+    return {"status": verdict, **{k: review.get(k) for k in ("reviewer", "reviewed_at_utc", "n_rows", "dispositions", "excluded_scenario_ids")}}
 
 
 def load_model(model_id: str, revision: str, attn: str):

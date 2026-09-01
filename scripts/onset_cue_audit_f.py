@@ -48,6 +48,7 @@ import pandas as pd
 from onset_dynamics_common_f import (
     LIMITING,
     PRIMARY_OFFSETS,
+    REVIEW_EXCLUDED_IDS,
     load_step3_rows,
     sha256_file,
 )
@@ -212,19 +213,33 @@ def record_review(reviewed_sheet: Path, reviewer: str, notes: str) -> None:
     if bad:
         raise SystemExit(f"every row needs a disposition in {sorted(DISPOSITIONS)}; missing/invalid for {bad[:10]}...")
     counts = disp.value_counts().to_dict()
-    verdict = "GO" if set(disp) == {"ok"} else "NO-GO"
+    earlier_ids = frozenset(int(x) for x in reviewed.loc[disp.eq("earlier_cue"), "scenario_id"])
+    if disp.eq("unsure").any():
+        verdict = "NO-GO"
+    elif not earlier_ids:
+        verdict = "GO"
+    elif earlier_ids == REVIEW_EXCLUDED_IDS:
+        verdict = "GO_WITH_EXCLUSIONS"
+    else:
+        verdict = "NO-GO"
     record = {
         "verdict": verdict,
         "reviewer": reviewer,
         "reviewed_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "n_rows": int(len(reviewed)),
         "dispositions": {k: int(v) for k, v in counts.items()},
+        "excluded_scenario_ids": sorted(earlier_ids),
         "candidates_sha256": sha256_file(OUT),
         "sheet_sha256": sha256_file(SHEET),
         "sheet_reviewed_path": str(reviewed_sheet),
         "sheet_reviewed_sha256": sha256_file(reviewed_sheet),
         "notes": notes,
-        "rule": "GO requires every limiting row disposed 'ok'; any 'earlier_cue' requires re-running the alignment preflight with corrected onsets before extraction",
+        "rule": (
+            "GO requires every row 'ok'. GO_WITH_EXCLUSIONS is permitted only "
+            "for the frozen reviewer-confirmed exclusion set; raw extraction retains "
+            "all scenarios and analysis excludes those IDs rather than hand-placing "
+            "new onset boundaries. Any other earlier_cue or unsure is NO-GO."
+        ),
     }
     REVIEW.write_text(json.dumps(record, indent=2) + "\n")
     print(json.dumps(record, indent=2))

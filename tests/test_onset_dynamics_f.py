@@ -27,6 +27,7 @@ from onset_dynamics_common_f import (
     PRIMARY_BLOCK,
     PRIMARY_CELLS,
     PRIMARY_OFFSETS,
+    REVIEW_EXCLUDED_IDS,
     REPORTED_LAYERS,
     bf16_bits_from_tensor,
     bf16_bits_to_float32,
@@ -223,12 +224,15 @@ def test_cue_gate_requires_bound_go_review(tmp_path, monkeypatch):
     (tmp_path / "cand.csv").write_text("a\n"); (tmp_path / "sheet.csv").write_text("b\n")
     (tmp_path / "reviewed.csv").write_text("c\n")
     from onset_dynamics_common_f import sha256_file
-    rec = {"verdict": "GO", "candidates_sha256": sha256_file(tmp_path / "cand.csv"),
+    rec = {"verdict": "GO", "excluded_scenario_ids": [], "candidates_sha256": sha256_file(tmp_path / "cand.csv"),
            "sheet_sha256": sha256_file(tmp_path / "sheet.csv"),
            "sheet_reviewed_path": str(tmp_path / "reviewed.csv"),
            "sheet_reviewed_sha256": sha256_file(tmp_path / "reviewed.csv"), "reviewer": "x"}
     (tmp_path / "review.json").write_text(json.dumps(rec))
     assert cue_gate(False, False)["status"] == "GO"
+    rec.update({"verdict": "GO_WITH_EXCLUSIONS", "excluded_scenario_ids": sorted(REVIEW_EXCLUDED_IDS)})
+    (tmp_path / "review.json").write_text(json.dumps(rec))
+    assert cue_gate(False, False)["status"] == "GO_WITH_EXCLUSIONS"
     (tmp_path / "sheet.csv").write_text("changed\n")           # screen re-run after review -> blocked
     with pytest.raises(SystemExit):
         cue_gate(False, False)
