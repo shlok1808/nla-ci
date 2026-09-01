@@ -1,0 +1,95 @@
+{
+  "purpose": "eval-awareness erasure control for the canonical limiting result",
+  "protocol": {
+    "fixed_C": 0.0001,
+    "n_repeats": 5,
+    "n_null": 100,
+    "n_iso": 50,
+    "n_boot": 1000,
+    "base_seed": 20260901,
+    "statistic": "per-fold mean ROC, identical across arms",
+    "cross_fitting": "v_eval and every null direction are re-derived inside each training fold from framed activations of TRAINING scenarios only, then applied to the held-out fold",
+    "null": "side-permuted paired directions from the same estimation pipeline (primary); isotropic random unit directions (secondary, deliberately weak)",
+    "drop_ci": "paired scenario bootstrap of the repeat-averaged statistic"
+  },
+  "v_eval_source": "results/eval_awareness_acts_f.npz",
+  "frames_per_scenario": 6,
+  "cos_v_eval_v_limiting": -0.09318502482096691,
+  "null_abs_cos_p95": 0.1519079327793433,
+  "manipulation_check": {
+    "eval_auc_before": 1.0,
+    "eval_auc_after": 0.5,
+    "cross_fitted": true,
+    "decoder_C_tuned": true,
+    "erasure_effective": true,
+    "note": "Rank-1 erasure of the fold-wise mean-difference direction. Residual decodability means eval-awareness is distributed beyond one direction, so a surviving limiting probe bounds rather than refutes the caution hypothesis."
+  },
+  "interpretation_guide": {
+    "limiting_survives": "limiting AUC ~unchanged and drop within the null band -> not explained by eval-awareness",
+    "limiting_collapses": "drop exceeds the null band -> the limiting signal may be substantially generic caution",
+    "manipulation_failed": "eval-awareness still decodable after erasure -> inconclusive, not a negative result"
+  },
+  "quick_mode": false,
+  "results": [
+    {
+      "contrast": "limiting_among_disclosers",
+      "primary": true,
+      "n": 188,
+      "n_pos": 72,
+      "auc_original": 0.7374513457556935,
+      "auc_after_v_eval": 0.7357950310559007,
+      "drop_v_eval": 0.0016563146997927713,
+      "drop_boot_lo": -0.0014986962671910576,
+      "drop_boot_hi": 0.005352679411936051,
+      "null_drop_mean": 0.00044014492753613135,
+      "null_drop_p95": 0.0027649585921324703,
+      "iso_drop_mean": 4.366459627315855e-05,
+      "p_vs_null": 0.1782178217821782
+    },
+    {
+      "contrast": "limiting_vs_direct",
+      "primary": false,
+      "n": 216,
+      "n_pos": 76,
+      "auc_original": 0.7358749999999998,
+      "auc_after_v_eval": 0.7356904761904761,
+      "drop_v_eval": 0.00018452380952371783,
+      "drop_boot_lo": -0.0019860311074266362,
+      "drop_boot_hi": 0.0025817408115607282,
+      "null_drop_mean": -0.0003262500000001778,
+      "null_drop_p95": 0.001418154761904649,
+      "iso_drop_mean": 0.00011726190476177623,
+      "p_vs_null": 0.25742574257425743
+    },
+    {
+      "contrast": "leak_vs_appropriate",
+      "primary": false,
+      "n": 81,
+      "n_pos": 57,
+      "auc_original": 0.8129545454545454,
+      "auc_after_v_eval": 0.8136818181818182,
+      "drop_v_eval": -0.0007272727272727986,
+      "drop_boot_lo": -0.003809523809523818,
+      "drop_boot_hi": 0.0,
+      "null_drop_mean": 0.000984848484848393,
+      "null_drop_p95": 0.004356818181818145,
+      "iso_drop_mean": 2.1212121212088596e-06,
+      "p_vs_null": 0.8514851485148515
+    },
+    {
+      "contrast": "substantive_leak",
+      "primary": false,
+      "n": 216,
+      "n_pos": 57,
+      "auc_original": 0.6403943670576735,
+      "auc_after_v_eval": 0.6394791666666666,
+      "drop_v_eval": 0.0009152003910068984,
+      "drop_boot_lo": -0.00197576691186985,
+      "drop_boot_hi": 0.004315237191944137,
+      "null_drop_mean": -0.00015016190127078665,
+      "null_drop_p95": 0.0019159946236559477,
+      "iso_drop_mean": 0.00010078812316714147,
+      "p_vs_null": 0.12871287128712872
+    }
+  ]
+}

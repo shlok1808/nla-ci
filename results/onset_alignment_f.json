@@ -1,0 +1,49 @@
+{
+  "n_canonical": 258,
+  "n_disclosers": 224,
+  "n_mixed": 97,
+  "roundtrip_failures": 0,
+  "window_coverage": {
+    "4": {
+      "limiting": 0.9722222222222222,
+      "direct": 1.0,
+      "gap": 0.02777777777777779
+    },
+    "8": {
+      "limiting": 0.9722222222222222,
+      "direct": 1.0,
+      "gap": 0.02777777777777779
+    },
+    "16": {
+      "limiting": 0.7916666666666666,
+      "direct": 0.9310344827586207,
+      "gap": 0.13936781609195403
+    },
+    "32": {
+      "limiting": 0.3888888888888889,
+      "direct": 0.49137931034482757,
+      "gap": 0.10249042145593867
+    }
+  },
+  "recommended_primary_window": "[-8, -1]",
+  "positional_confound_auc": {
+    "min_cutoff": 0.6089559386973179,
+    "disclosure_onset_only": 0.5207734674329502,
+    "response_length": 0.5788433908045977
+  },
+  "cutoff_token_pctiles": {
+    "10": 14.7,
+    "25": 22.0,
+    "50": 30.0,
+    "75": 41.0,
+    "90": 59.60000000000002
+  },
+  "response_token_pctiles": {
+    "10": 86.0,
+    "50": 111.0,
+    "90": 166.3
+  },
+  "tokenizer": "Qwen/Qwen2.5-7B-Instruct",
+  "verdict": "GO",
+  "failures": []
+}
