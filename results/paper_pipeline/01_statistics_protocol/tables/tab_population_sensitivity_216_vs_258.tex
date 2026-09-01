@@ -1,0 +1,46 @@
+\begin{table}[t]
+\centering
+\begin{threeparttable}
+\caption{Population composition: 258 is a SUPERSET of 216, not a second sample.}
+\label{tab:tab_population_sensitivity_216_vs_258-composition}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+row & n & \% limiting & \% substantive leak & \% broad breach & reference verification \\
+\midrule
+analysis 216 (primary) & 216 & 35.2\% & 26.4\% & 87.0\% & provisional\_unverified=216 \\
++42 calibration cases & 42 & 66.7\% & 61.9\% & 85.7\% & human\_verified=42 \\
+all 258 (superset) & 258 & 40.3\% & 32.2\% & 86.8\% & human\_verified=42, provisional\_unverified=216 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item 258 is a strict SUPERSET of 216: every analysis case also appears in the 258 population. These are not independent samples and this is not a replication.
+\item The 42 additional cases are calibration cases that deliberately oversampled the historical `refused` class, so they are enriched for limiting and disclosing behaviour relative to the analysis population.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[t]
+\centering
+\begin{threeparttable}
+\caption{Sensitivity of every contrast to including the 42 calibration cases. The 258 population is a superset of the 216 analysis population, enriched for limiting and disclosing behaviour and differently verified; it is reported as a sensitivity analysis only.}
+\label{tab:tab_population_sensitivity_216_vs_258}
+\small
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+contrast & n (216) & ROC (216) & PR (216) & Holm p PR (216) & verdict (216) & n (258) & ROC (258) & PR (258) & Holm p PR (258) & verdict (258) \\
+\midrule
+broad breach vs none & 216 & 0.698 & 0.936 & .030 & supported & 258 & 0.684 & 0.928 & .018 & supported \\
+substantive leak vs rest & 216 & 0.639 & 0.403 & .132 & suggestive & 258 & 0.639 & 0.463 & .036 & supported \\
+substantive leak vs appropriate & 81 & 0.814 & 0.911 & $\leq$.012 & supported & 110 & 0.838 & 0.937 & $\leq$.012 & supported \\
+limiting vs direct (all) & 216 & 0.724 & 0.603 & $\leq$.012 & supported & 258 & 0.774 & 0.712 & $\leq$.012 & supported \\
+limiting vs direct (disclosers only) & 188 & 0.728 & 0.631 & $\leq$.012 & supported & 224 & 0.776 & 0.728 & $\leq$.012 & supported \\
+broad-only vs substantive & 188 & 0.575 & 0.390 & .309 & no\_evidence & 224 & 0.615 & 0.501 & .036 & supported \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item The 42 calibration cases are also the only cases with human-verified references; all 216 analysis references are provisional and single-judge. Composition and label quality are therefore both confounded with population.
+\item The 216 analysis population is primary for every claim. The 258 column is a sensitivity analysis and is never the primary estimate.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

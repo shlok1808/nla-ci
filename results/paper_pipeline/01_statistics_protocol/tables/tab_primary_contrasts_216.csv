@@ -1,0 +1,7 @@
+contrast,family,n,n_pos,prevalence,ROC-AUC,ROC Hanley 95% CI,ROC boot 95% CI,PR-AUC,PR null mean,PR excess over null,PR boot 95% CI,Holm p (PR),Holm p (ROC),modal C,C at grid floor,verdict
+broad breach vs none,disclosure presence,216,188,0.870,0.698,"[0.606, 0.791]","[0.573, 0.811]",0.936,0.880,0.056,"[0.905, 0.965]",.030,≤.012,0.0001,no,supported
+substantive leak vs rest,disclosure presence,216,57,0.264,0.639,"[0.552, 0.726]","[0.543, 0.724]",0.403,0.324,0.079,"[0.346, 0.549]",.132,≤.012,1e-07,yes,suggestive
+substantive leak vs appropriate,disclosure presence,81,57,0.704,0.814,"[0.721, 0.906]","[0.684, 0.917]",0.911,0.753,0.157,"[0.853, 0.967]",≤.012,≤.012,1e-07,yes,supported
+limiting vs direct (all),response strategy,216,76,0.352,0.724,"[0.650, 0.798]","[0.648, 0.801]",0.603,0.402,0.202,"[0.538, 0.714]",≤.012,≤.012,0.0001,no,supported
+limiting vs direct (disclosers only),response strategy,188,72,0.383,0.728,"[0.652, 0.805]","[0.642, 0.810]",0.631,0.436,0.196,"[0.566, 0.745]",≤.012,≤.012,0.0001,no,supported
+broad-only vs substantive,disclosure degree,188,57,0.303,0.575,"[0.485, 0.666]","[0.473, 0.668]",0.390,0.365,0.025,"[0.345, 0.518]",.309,.122,1e-07,yes,no_evidence

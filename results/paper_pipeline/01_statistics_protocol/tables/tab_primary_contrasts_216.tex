@@ -1,0 +1,28 @@
+\begin{table}[t]
+\centering
+\begin{threeparttable}
+\caption{Linear-probe decodability of six behavioural contrasts from layer-20 residual activations at the final prompt token (analysis population, n=216 scenarios; contrast-specific subsets as listed). PR-AUC is the pre-specified primary metric; its baseline is the empirical permutation-null mean, which exceeds class prevalence under cross-validation. p-values are label-permutation (n\_perm=500) through the identical per-fold statistic, Holm-adjusted across the six contrasts.}
+\label{tab:tab-primary-contrasts-216}
+\small
+\begin{tabular}{lrrrrrrrrrrrrrrrr}
+\toprule
+contrast & family & n & n\_pos & prevalence & ROC-AUC & ROC Hanley 95\% CI & ROC boot 95\% CI & PR-AUC & PR null mean & PR excess over null & PR boot 95\% CI & Holm p (PR) & Holm p (ROC) & modal C & C at grid floor & verdict \\
+\midrule
+broad breach vs none & disclosure presence & 216 & 188 & 0.870 & 0.698 & [0.606, 0.791] & [0.573, 0.811] & 0.936 & 0.880 & 0.056 & [0.905, 0.965] & .030 & $\leq$.012 & 0.0001 & no & supported \\
+substantive leak vs rest & disclosure presence & 216 & 57 & 0.264 & 0.639 & [0.552, 0.726] & [0.543, 0.724] & 0.403 & 0.324 & 0.079 & [0.346, 0.549] & .132 & $\leq$.012 & 1e-07 & yes & suggestive \\
+substantive leak vs appropriate & disclosure presence & 81 & 57 & 0.704 & 0.814 & [0.721, 0.906] & [0.684, 0.917] & 0.911 & 0.753 & 0.157 & [0.853, 0.967] & $\leq$.012 & $\leq$.012 & 1e-07 & yes & supported \\
+limiting vs direct (all) & response strategy & 216 & 76 & 0.352 & 0.724 & [0.650, 0.798] & [0.648, 0.801] & 0.603 & 0.402 & 0.202 & [0.538, 0.714] & $\leq$.012 & $\leq$.012 & 0.0001 & no & supported \\
+limiting vs direct (disclosers only) & response strategy & 188 & 72 & 0.383 & 0.728 & [0.652, 0.805] & [0.642, 0.810] & 0.631 & 0.436 & 0.196 & [0.566, 0.745] & $\leq$.012 & $\leq$.012 & 0.0001 & no & supported \\
+broad-only vs substantive & disclosure degree & 188 & 57 & 0.303 & 0.575 & [0.485, 0.666] & [0.473, 0.668] & 0.390 & 0.365 & 0.025 & [0.345, 0.518] & .309 & .122 & 1e-07 & yes & no\_evidence \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item PR-AUC is the primary metric, pre-specified in the analysis script docstring (committed before the corrected run); it is not registered in docs/PREREGISTRATION.md. ROC-AUC is supporting evidence and never rescues a PR-failing contrast.
+\item Verdict: supported = Holm-adjusted permutation p on PR-AUC <= .05; suggestive = fails that but Holm-adjusted p on ROC-AUC <= .05; no\_evidence = neither.
+\item p-values are label-permutation with n\_perm=500 through the identical per-fold statistic, so the smallest attainable Holm-adjusted value is 6/501 = 0.012; entries at that floor are shown as <=.012.
+\item The PR baseline is the empirical permutation-null mean, not class prevalence: cross-validated average precision is upward-biased relative to prevalence by ~0.05-0.06 at these sample sizes.
+\item The six contrasts are separate tests on overlapping case sets and are not independent; no between-contrast comparison was performed and none is powered.
+\item Intervals reflect sampling uncertainty conditional on the labels only. All 216 analysis labels are single-judge and provisional.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

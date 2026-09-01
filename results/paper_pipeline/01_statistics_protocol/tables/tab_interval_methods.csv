@@ -1,0 +1,7 @@
+contrast,v1 split band width,Hanley 95% width,bootstrap 95% width,Hanley / split,bootstrap / split
+broad breach vs none,0.104,0.185,0.237,1.77x,2.28x
+substantive leak vs rest,0.133,0.174,0.181,1.31x,1.36x
+substantive leak vs appropriate,0.152,0.185,0.233,1.22x,1.53x
+limiting vs direct (all),0.100,0.148,0.154,1.47x,1.53x
+limiting vs direct (disclosers only),0.094,0.153,0.168,1.63x,1.78x
+broad-only vs substantive,0.108,0.181,0.195,1.68x,1.81x

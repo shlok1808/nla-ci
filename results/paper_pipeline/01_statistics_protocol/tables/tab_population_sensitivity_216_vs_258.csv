@@ -1,0 +1,10 @@
+row,n,% limiting,% substantive leak,% broad breach,reference verification,block,contrast,n (216),ROC (216),PR (216),Holm p PR (216),verdict (216),n (258),ROC (258),PR (258),Holm p PR (258),verdict (258)
+analysis 216 (primary),216.0,35.2%,26.4%,87.0%,provisional_unverified=216,population composition,,,,,,,,,,,
++42 calibration cases,42.0,66.7%,61.9%,85.7%,human_verified=42,population composition,,,,,,,,,,,
+all 258 (superset),258.0,40.3%,32.2%,86.8%,"human_verified=42, provisional_unverified=216",population composition,,,,,,,,,,,
+,,,,,,results,broad breach vs none,216.0,0.698,0.936,.030,supported,258.0,0.684,0.928,.018,supported
+,,,,,,results,substantive leak vs rest,216.0,0.639,0.403,.132,suggestive,258.0,0.639,0.463,.036,supported
+,,,,,,results,substantive leak vs appropriate,81.0,0.814,0.911,≤.012,supported,110.0,0.838,0.937,≤.012,supported
+,,,,,,results,limiting vs direct (all),216.0,0.724,0.603,≤.012,supported,258.0,0.774,0.712,≤.012,supported
+,,,,,,results,limiting vs direct (disclosers only),188.0,0.728,0.631,≤.012,supported,224.0,0.776,0.728,≤.012,supported
+,,,,,,results,broad-only vs substantive,188.0,0.575,0.390,.309,no_evidence,224.0,0.615,0.501,.036,supported

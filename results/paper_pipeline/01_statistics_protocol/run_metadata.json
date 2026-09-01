@@ -1,0 +1,321 @@
+{
+  "step": "01_statistics_protocol",
+  "title": "Corrected probe statistics for the canonical tier-3 contrasts",
+  "maturity": "provisional",
+  "generated_utc": "2026-09-01T15:39:29+00:00",
+  "git": {
+    "commit": "a926daa8cd6f24f332477ec56513b95524cde0d5",
+    "branch": "main",
+    "dirty": true,
+    "dirty_paths": [
+      "docs/ADJUDICATION_RUBRIC_v2.md",
+      "docs/AUTHORIZATION_ARM_feasibility.md",
+      "docs/BATCH220_AUDIT_CODEX_f.md",
+      "docs/BEHAVIOR_AUDIT_CODEX_f.md",
+      "docs/LIMITATIONS.md",
+      "docs/POWER_AND_CHANNEL_FINDINGS_2026-08-28.md",
+      "docs/gpt4omini_impact_sweep_2026-08-27.md",
+      "docs/impact_judge_branch_2026-08-27.md",
+      "docs/impact_rewrite_branch_2026-08-27.md",
+      "docs/independent_text_audit_2026-08-27.md",
+      "ocs/BEHAVIOR_ANNOTATION_RUBRIC_f.md",
+      "results/batch220_audit_codex_f.json",
+      "results/behavior_adjudications_batch220_f.json",
+      "results/behavior_annotation_batches/",
+      "results/behavior_annotation_reruns/",
+      "results/behavior_annotations_sol_calibration_adjudicated_f.json",
+      "results/behavior_annotations_sol_calibration_f.json",
+      "results/behavior_annotations_sol_calibration_failures_v1_3_f.json",
+      "results/behavior_annotations_sol_calibration_v1_2_f.json",
+      "results/behavior_annotations_sol_tier3_adjudicated_v1_3_f.json",
+      "results/behavior_annotations_sol_tier3_canonical_f.json",
+      "results/behavior_annotations_sol_tier3_corrected_provisional_v1_3_f.json",
+      "results/behavior_audit_codex_f.json",
+      "results/behavior_labels_tier3_canonical_f.csv",
+      "results/behavior_labels_tier3_canonical_manifest_f.json",
+      "results/figures/fig1_asymmetry.pdf -> results/figures_deprecated_oldlabels/fig1_asymmetry.pdf",
+      "results/figures/fig1_asymmetry.png -> results/figures_deprecated_oldlabels/fig1_asymmetry.png",
+      "results/figures/fig2_dissociation.pdf -> results/figures_deprecated_oldlabels/fig2_dissociation.pdf",
+      "results/figures/fig2_dissociation.png -> results/figures_deprecated_oldlabels/fig2_dissociation.png",
+      "results/figures/fig3_null_coupling.pdf -> results/figures_deprecated_oldlabels/fig3_null_coupling.pdf",
+      "results/figures/fig3_null_coupling.png -> results/figures_deprecated_oldlabels/fig3_null_coupling.png",
+      "results/figures/fig4_layer_trajectory.pdf -> results/figures_deprecated_oldlabels/fig4_layer_trajectory.pdf",
+      "results/figures/fig4_layer_trajectory.png -> results/figures_deprecated_oldlabels/fig4_layer_trajectory.png",
+      "results/figures_deprecated_oldlabels/README.md",
+      "results/paper_pipeline/",
+      "results/power_sim_forecasting.csv",
+      "results/prefix_text_baseline.csv",
+      "results/probe_canonical_metrics_f.csv",
+      "results/probe_canonical_metrics_f.json",
+      "results/probe_contrasts_canonical_f.csv",
+      "results/probe_contrasts_canonical_f.json",
+      "results/reference_batches/",
+      "results/reference_batches_corrected/",
+      "results/reference_comparison_f.json",
+      "results/reference_comparison_review_f.md",
+      "results/reference_corrections_claude.json",
+      "results/reference_review_claude.md",
+      "results/references_reconciled_draft_f.json",
+      "results/references_tier3_corrected_adjudicated_f.json",
+      "results/scenario_control.csv",
+      "scratch/11_refusal_surface_test.py",
+      "scratch/12_judge_defect_study.py",
+      "scratch/13_power_sim.py",
+      "scratch/14_prefix_text_baseline.py",
+      "scratch/15_scenario_control.py",
+      "scratch/16_audit_sol_calibration.py",
+      "scratch/17_semantic_review_dump.py",
+      "scratch/probe_contrasts_canonical_v2_quick.csv",
+      "scratch/probe_contrasts_canonical_v2_quick.json",
+      "scratch/v2_full_run.log",
+      "scripts/apply_batch220_adjudications_f.py",
+      "scripts/behavior_annotation_rubric_f.py",
+      "scripts/behavior_annotation_run_f.py",
+      "scripts/consolidate_canonical_tier3_labels_f.py",
+      "scripts/figstyle_f.py",
+      "scripts/merge_corrected_behavior_run_f.py",
+      "scripts/paper_step01_build_f.py",
+      "scripts/paper_step01_common_f.py",
+      "scripts/prepare_corrected_reference_batches_f.py",
+      "scripts/probe_canonical_labels_f.py",
+      "scripts/probe_contrasts_canonical_f.py",
+      "scripts/reference_batch_f.py",
+      "scripts/reference_extraction_f.py",
+      "tests/test_behavior_annotation_rubric_f.py",
+      "tests/test_behavior_annotation_run_f.py"
+    ],
+    "dirty_note": "Working tree had uncommitted changes when this package was built; the commit hash alone does not reproduce it. Inputs are pinned by sha256 below."
+  },
+  "environment": {
+    "python": "3.13.7",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2",
+    "matplotlib": "3.10.9",
+    "sklearn": "1.9.0",
+    "platform": "darwin"
+  },
+  "inputs": [
+    {
+      "path": "results/probe_contrasts_canonical_v2_f.csv",
+      "sha256": "0888918e971a70e5b1ed7d0854f7feee5089bef20a0ec0d95669a2fcd96f0367",
+      "role": "primary_results"
+    },
+    {
+      "path": "results/probe_contrasts_canonical_v2_f.json",
+      "sha256": "194e1f0e4b0478daa9c9d8c9cf0c6c46ce240baa506ad6a64eb4c9fdf1fc27b5",
+      "role": "primary_results_protocol"
+    },
+    {
+      "path": "results/probe_contrasts_canonical_f.csv",
+      "sha256": "e91bdf0c49b487caa69e51457f6599ed78bbed962580af342f67d8e44c56a328",
+      "role": "superseded_results_provenance"
+    },
+    {
+      "path": "results/probe_contrasts_canonical_f.json",
+      "sha256": "aa3de486c64b09c7a037bb8ecc07b9aede97946dbca5fc9ea3010d0b07803c9b",
+      "role": "superseded_results_provenance"
+    },
+    {
+      "path": "results/behavior_labels_tier3_canonical_f.csv",
+      "sha256": "40c5fb2b10aa49d535b6593ba9e0bcbe6ad631dfe21c8237845924cba3705979",
+      "role": "population_definition"
+    },
+    {
+      "path": "results/behavior_labels_tier3_canonical_manifest_f.json",
+      "sha256": "aba986273030dbe243680abbe399236699355cf4113182f924033406e4d0b618",
+      "role": "label_manifest"
+    },
+    {
+      "path": "scripts/probe_contrasts_canonical_v2_f.py",
+      "sha256": "80a2952dcf552c7f248ba32df9e97932dc5a2029b44bd16d984d7b20d0c12489",
+      "role": "analysis_script"
+    },
+    {
+      "path": "scripts/probe_contrasts_canonical_f.py",
+      "sha256": "cc4f5881be3a72b7bcb8f296fd86d9db31e1301490d853081bfc9bbec4ea8aea",
+      "role": "superseded_analysis_script"
+    },
+    {
+      "path": "docs/FULL_AUDIT_AND_NEXT_STEPS_f.md",
+      "sha256": "4daf72f605582acc7206b860d6088df64d4ac6bfdaba30b5fff5407a16ed1cfb",
+      "role": "motivating_audit"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/ARTIFACT_INDEX.md",
+      "sha256": "55280885ebe8aba4a3271c8a1fd1df778b616e75fcd738993b7d1b7baeffbc33"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_contrast_effects_dual_metric_216.md",
+      "sha256": "adc67e312503664e0c54f271cbe19a8d57b1644f6db3ba3e0f8549fbab8eae7c"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_contrast_effects_dual_metric_216.pdf",
+      "sha256": "a98c75ae3fcbbfca69941de6d001c50cb2d640573f8e0de1866787587426f79a"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_contrast_effects_dual_metric_216.plotdata.json",
+      "sha256": "ac103eddc60d857cf83dc01cb01e445b3e3668b6aeab853de232860888b24876"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_contrast_effects_dual_metric_216.png",
+      "sha256": "0fc02c3d5ae5fac599972d894f66d6a73e4ebbdc78081f9a0b932170f0d87fa5"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_contrast_effects_dual_metric_216.svg",
+      "sha256": "83835eabdb0c253fbc81530437300f03a9f4a3d808e27319f9398efc9fc9832f"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_protocol_correction_v1_v2.md",
+      "sha256": "42dcfd427246a20b7f08b4aa2e53d0336f459b85667ffd0d9353b3c026ec195b"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_protocol_correction_v1_v2.pdf",
+      "sha256": "32cc622b9c2fc58efe26fabcb2f17245a71b8567a6d767a3aa1fee33006acb11"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_protocol_correction_v1_v2.plotdata.json",
+      "sha256": "82ae649cc33092e21f1733f9fba27b74fd0a11a778d4aff03a96dd6fe7c5fdbe"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_protocol_correction_v1_v2.png",
+      "sha256": "7a1a0d5c4897ceb4064868c60bee6e425c49d2e246e21db46f5fc37827e90445"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/figures/fig_protocol_correction_v1_v2.svg",
+      "sha256": "053d38798d9a40379f5a447cf3b1e494f98646983579bc18c65666f0c39939fb"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_interval_methods.csv",
+      "sha256": "ec6f6a7e4aa95e2c917c50985a148034b5b2df52fca24dcf2a1d0468521b8952"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_interval_methods.md",
+      "sha256": "523caa699620d1a0c8b7cb6eb8611135b5493e99acadb432fc60af58c798e788"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_interval_methods.tex",
+      "sha256": "fa28bf5c9533fa52a8835d476c13100018471c6189b464c967604d0ed097d74d"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_population_sensitivity_216_vs_258.csv",
+      "sha256": "e37c1d767fc61ed6b58a96e32d0a804a41c6b50f539b137277059bfec2ab2086"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_population_sensitivity_216_vs_258.md",
+      "sha256": "bf54e592cebd41847070d2f63b1186857275e7ca61a05904a3d3152023cef420"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_population_sensitivity_216_vs_258.tex",
+      "sha256": "4f387224cd7164d62fcccabb55aa9deeb72238df45cdc7febff5cb3a69329831"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_primary_contrasts_216.csv",
+      "sha256": "bdb415aa3cc684e7f9b0d9e140d621165387a6bcb1fc5db771e68e1ce191d33d"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_primary_contrasts_216.md",
+      "sha256": "3f3ef027f19edda40ddda8aa696d42c59f29ff8996cb11636a1f633a6414c864"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_primary_contrasts_216.tex",
+      "sha256": "1258568252a52941eea8fd8cc5dbc2bf300ccc0fd4fa3ba283a3378320f70858"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_protocol_correction_v1_v2.csv",
+      "sha256": "29d3b8a9f5ea20be7ca26f0a0230a82a99b35b9fc427758fdde74faccdb68cde"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_protocol_correction_v1_v2.md",
+      "sha256": "3f1ff1664168f27fff050a63aba57b204b0ebbd59db67ba687d42d3e026bafb0"
+    },
+    {
+      "path": "results/paper_pipeline/01_statistics_protocol/tables/tab_protocol_correction_v1_v2.tex",
+      "sha256": "8d3edf201c997f38f870daeca9ce8de84aa5e74b70850ec3c2d71c35a0ee8cd1"
+    }
+  ],
+  "protocol": {
+    "statistic": "per-fold metric computation, averaged across held-out folds",
+    "n_repeats": 20,
+    "n_perm": 500,
+    "n_boot": 1000,
+    "base_seed": 20260901,
+    "C_grid": [
+      1e-07,
+      1e-06,
+      1e-05,
+      0.0001,
+      0.001,
+      0.01,
+      0.1,
+      1.0
+    ],
+    "min_class": 15,
+    "null": "label permutation through the identical per-fold statistic, fixed modal C, one CV repeat (conservative: the null carries extra split variance relative to the 20-repeat observed statistic)",
+    "intervals": "Hanley & McNeil analytic 95% and stratified prediction-resampling bootstrap 95%; the repeated-split percentile band is retained as split variability only",
+    "multiplicity": "Holm across the 6 scored contrasts within each population"
+  },
+  "verdict_rule": {
+    "primary_metric": "pr_auc",
+    "primary_metric_provenance": "Pre-specified as primary in the analysis script docstring (scripts/probe_contrasts_canonical_f.py), committed before the corrected run. NOT registered in docs/PREREGISTRATION.md \u2014 do not describe it as pre-registered.",
+    "rule": "supported: Holm-adjusted permutation p on PR-AUC (primary metric) <= 0.05. suggestive: fails that test but Holm-adjusted permutation p on ROC-AUC <= 0.05. no_evidence: neither. ROC is supporting evidence only and never rescues a PR-failing contrast into 'supported'.",
+    "alpha": 0.05,
+    "vocabulary": [
+      "supported",
+      "suggestive",
+      "no_evidence"
+    ],
+    "alias_map": {
+      "supported": "confirmed"
+    },
+    "p_raw_floor": 0.001996007984031936,
+    "p_holm_floor": 0.011976047904191616
+  },
+  "populations": {
+    "primary": "analysis_216",
+    "sensitivity": "all_258",
+    "note": "258 is a strict superset of 216 and is never a primary estimate.",
+    "composition": {
+      "analysis_216": {
+        "n": 216,
+        "pct_limiting": 0.35185185185185186,
+        "pct_substantive_leak": 0.2638888888888889,
+        "pct_broad_breach": 0.8703703703703703,
+        "reference_verification": {
+          "provisional_unverified": 216
+        }
+      },
+      "calibration_42": {
+        "n": 42,
+        "pct_limiting": 0.6666666666666666,
+        "pct_substantive_leak": 0.6190476190476191,
+        "pct_broad_breach": 0.8571428571428571,
+        "reference_verification": {
+          "human_verified": 42
+        }
+      },
+      "all_258": {
+        "n": 258,
+        "pct_limiting": 0.40310077519379844,
+        "pct_substantive_leak": 0.32170542635658916,
+        "pct_broad_breach": 0.8682170542635659,
+        "reference_verification": {
+          "provisional_unverified": 216,
+          "human_verified": 42
+        }
+      }
+    }
+  },
+  "status_vocabulary": [
+    "candidate_main",
+    "candidate_appendix",
+    "exploratory",
+    "sensitivity",
+    "deprecated"
+  ],
+  "deprecated_alongside": {
+    "path": "results/figures_deprecated_oldlabels/",
+    "note": "The four session-13 figures were renamed (not deleted) because every behaviour-conditioned number in them uses the superseded judge labels. See that directory's README.md."
+  }
+}
