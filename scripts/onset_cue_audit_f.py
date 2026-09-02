@@ -45,8 +45,10 @@ from pathlib import Path
 
 import pandas as pd
 
+import model_registry_f as _registry
 from onset_dynamics_common_f import (
     ALIGNMENT,
+    SPEC,
     LIMITING,
     PRIMARY_OFFSETS,
     REVIEW_EXCLUDED_IDS,
@@ -219,13 +221,21 @@ def record_review(reviewed_sheet: Path, reviewer: str, notes: str) -> None:
         raise SystemExit(f"every row needs a disposition in {sorted(DISPOSITIONS)}; missing/invalid for {bad[:10]}...")
     counts = disp.value_counts().to_dict()
     earlier_ids = frozenset(int(x) for x in reviewed.loc[disp.eq("earlier_cue"), "scenario_id"])
+    registered = SPEC.tag == _registry.DEFAULT_TAG
     if disp.eq("unsure").any():
         verdict = "NO-GO"
     elif not earlier_ids:
         verdict = "GO"
+    elif not registered:
+        # A second model has no pre-registered exclusion set: this review is
+        # what determines it. The set is recorded here and every downstream
+        # stage reads it back from this file, so the binding guarantee is the
+        # sheet hash below, not a match against a literal.
+        verdict = "GO_WITH_EXCLUSIONS"
     elif earlier_ids == REVIEW_EXCLUDED_IDS:
         verdict = "GO_WITH_EXCLUSIONS"
     else:
+        # Qwen's set IS registered; any deviation from it must fail loudly.
         verdict = "NO-GO"
     record = {
         "verdict": verdict,
@@ -239,11 +249,15 @@ def record_review(reviewed_sheet: Path, reviewer: str, notes: str) -> None:
         "sheet_reviewed_path": str(reviewed_sheet),
         "sheet_reviewed_sha256": sha256_file(reviewed_sheet),
         "notes": notes,
+        "registered_exclusion_set": registered,
         "rule": (
-            "GO requires every row 'ok'. GO_WITH_EXCLUSIONS is permitted only "
-            "for the frozen reviewer-confirmed exclusion set; raw extraction retains "
-            "all scenarios and analysis excludes those IDs rather than hand-placing "
-            "new onset boundaries. Any other earlier_cue or unsure is NO-GO."
+            "GO requires every row 'ok'. Any 'unsure' is NO-GO. For the registered "
+            "model (Qwen) GO_WITH_EXCLUSIONS requires the frozen reviewer-confirmed "
+            "set exactly; any deviation is NO-GO. For a second model there is no "
+            "pre-registered set, so the reviewed set is recorded here and read back "
+            "by every downstream stage, bound by the reviewed-sheet sha256. Raw "
+            "extraction always retains all scenarios; analysis excludes these IDs "
+            "rather than hand-placing new onset boundaries."
         ),
     }
     REVIEW.write_text(json.dumps(record, indent=2) + "\n")

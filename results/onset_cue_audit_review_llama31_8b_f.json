@@ -1,0 +1,30 @@
+{
+  "verdict": "GO_WITH_EXCLUSIONS",
+  "reviewer": "author (human confirmation of model triage)",
+  "reviewed_at_utc": "2026-09-02T02:46:23.286496+00:00",
+  "n_rows": 96,
+  "dispositions": {
+    "ok": 85,
+    "earlier_cue": 11
+  },
+  "excluded_scenario_ids": [
+    261,
+    266,
+    328,
+    351,
+    373,
+    391,
+    416,
+    427,
+    436,
+    441,
+    449
+  ],
+  "candidates_sha256": "9d2e0ddedd1fb51de5a13fb3018d44197eb378f0f87d32ec7c56e498eca00a35",
+  "sheet_sha256": "78399d0e983a2fc1c2b0a9710c09c3f3d2ec6bc022ec6b930c3402bfcc54acb4",
+  "sheet_reviewed_path": "results/onset_cue_audit_sheet_llama31_8b_reviewed_f.csv",
+  "sheet_reviewed_sha256": "fc6997100207391a4723e2dc833a9d02aa319ebde48da8da337c8555c1e6f4ff",
+  "notes": "Screened by gpt-5.6-sol, dispositions confirmed by the author. 11 earlier-cue exclusions; 2 in the primary population (266, 373). Same disposition line as the Qwen review: explicit privacy/boundary/refusal language = earlier_cue; general moralizing = ok.",
+  "registered_exclusion_set": false,
+  "rule": "GO requires every row 'ok'. Any 'unsure' is NO-GO. For the registered model (Qwen) GO_WITH_EXCLUSIONS requires the frozen reviewer-confirmed set exactly; any deviation is NO-GO. For a second model there is no pre-registered set, so the reviewed set is recorded here and read back by every downstream stage, bound by the reviewed-sheet sha256. Raw extraction always retains all scenarios; analysis excludes these IDs rather than hand-placing new onset boundaries."
+}

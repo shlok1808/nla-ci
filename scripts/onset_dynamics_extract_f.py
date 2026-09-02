@@ -202,7 +202,11 @@ def cue_gate(smoke: bool, allow: bool) -> dict:
     verdict = review.get("verdict")
     excluded = frozenset(int(x) for x in review.get("excluded_scenario_ids", []))
     allowed = verdict == "GO" and not excluded
-    allowed = allowed or (verdict == "GO_WITH_EXCLUSIONS" and excluded == REVIEW_EXCLUDED_IDS)
+    # For Qwen this compares against the registered literal; for any other model
+    # REVIEW_EXCLUDED_IDS is itself loaded from this review file, so the check
+    # degenerates to "the review parsed and is self-consistent" -- the binding
+    # guarantee there is the sha256 of the reviewed sheet, checked below.
+    allowed = allowed or (verdict == "GO_WITH_EXCLUSIONS" and excluded == REVIEW_EXCLUDED_IDS and excluded)
     if not allowed:
         raise SystemExit(f"BLOCKED: cue-audit review verdict is {review.get('verdict')!r}")
     for key, path in (("candidates_sha256", CUE_CANDIDATES), ("sheet_sha256", CUE_SHEET)):

@@ -1,0 +1,49 @@
+{
+  "n_canonical": 258,
+  "n_disclosers": 216,
+  "n_mixed": 79,
+  "roundtrip_failures": 0,
+  "window_coverage": {
+    "4": {
+      "limiting": 0.9814814814814815,
+      "direct": 1.0,
+      "gap": 0.01851851851851849
+    },
+    "8": {
+      "limiting": 0.9629629629629629,
+      "direct": 1.0,
+      "gap": 0.03703703703703709
+    },
+    "16": {
+      "limiting": 0.8518518518518519,
+      "direct": 0.921875,
+      "gap": 0.07002314814814814
+    },
+    "32": {
+      "limiting": 0.6481481481481481,
+      "direct": 0.7265625,
+      "gap": 0.07841435185185186
+    }
+  },
+  "recommended_primary_window": "[-8, -1]",
+  "positional_confound_auc": {
+    "min_cutoff": 0.574001736111111,
+    "disclosure_onset_only": 0.4924768518518518,
+    "response_length": 0.4662181712962963
+  },
+  "cutoff_token_pctiles": {
+    "10": 16.1,
+    "25": 28.0,
+    "50": 46.0,
+    "75": 76.75,
+    "90": 107.80000000000001
+  },
+  "response_token_pctiles": {
+    "10": 101.7,
+    "50": 154.5,
+    "90": 269.6
+  },
+  "tokenizer": "meta-llama/Llama-3.1-8B-Instruct",
+  "verdict": "GO",
+  "failures": []
+}

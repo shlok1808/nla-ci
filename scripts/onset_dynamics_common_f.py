@@ -60,9 +60,28 @@ LIMITING = frozenset({"soft_deflection", "explicit_refusal", "mixed_disclose_the
 
 # Pre-data Amendment A2: reviewer-confirmed prefixes that already contain an
 # earlier cue. Raw extraction retains every scenario; analysis excludes these
-# IDs so no post-review boundary is hand-placed. ID 394 is the sole primary
-# case; the other five affect the 258-case sensitivity population only.
-REVIEW_EXCLUDED_IDS = frozenset({286, 351, 394, 422, 437, 451})
+# IDs so no post-review boundary is hand-placed.
+#
+# Qwen's set is frozen as a literal because it is registered and every
+# committed result depends on it. A second model has its own responses, its own
+# prefixes and therefore its own exclusions, which are read from that model's
+# recorded cue review. If the review has not been recorded yet the set is empty
+# and the extraction gate refuses to run, so nothing can proceed on a stale or
+# borrowed exclusion list.
+QWEN_REVIEW_EXCLUDED_IDS = frozenset({286, 351, 394, 422, 437, 451})
+
+
+def _load_review_excluded(tag: str) -> frozenset[int]:
+    if tag == _registry.DEFAULT_TAG:
+        return QWEN_REVIEW_EXCLUDED_IDS
+    review = _PATHS["cue_review"]
+    if not review.exists():
+        return frozenset()
+    rec = json.loads(review.read_text())
+    return frozenset(int(x) for x in rec.get("excluded_scenario_ids", []))
+
+
+REVIEW_EXCLUDED_IDS = _load_review_excluded(ACTIVE_TAG)
 
 CANONICAL = _PATHS["canonical"]
 ALIGNMENT = _PATHS["alignment_csv"]

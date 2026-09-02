@@ -96,9 +96,16 @@ def main() -> None:
     ex_ids = {e["scenario_id"] for e in excluded}
     if len(set(ids)) != len(ids):
         raise ValueError("duplicate scenario IDs after consolidation")
-    if set(ids) | ex_ids != TIER3_IDS:
-        missing = sorted(TIER3_IDS - set(ids) - ex_ids)
-        raise ValueError(f"canonical plus excluded IDs do not reconstruct tier 3; missing {missing[:10]}")
+    # The reference set itself already excludes some tier-3 scenarios: no
+    # reference was ever written for them, so no model can be judged on them.
+    # Those are inherited exclusions, not this model's, and are recorded as
+    # such. The judged universe is the reference set, not all of tier 3.
+    referenced = {int(x["scenario_id"]) for x in json.loads(args.calibration.read_text())} | \
+                 {int(x["scenario_id"]) for x in json.loads(args.analysis.read_text())}
+    not_referenced = sorted(TIER3_IDS - referenced)
+    if set(ids) | ex_ids != referenced:
+        missing = sorted(referenced - set(ids) - ex_ids)
+        raise ValueError(f"canonical plus excluded IDs do not reconstruct the reference set; missing {missing[:10]}")
 
     P["annotations"].write_text(json.dumps(combined, indent=2, ensure_ascii=False) + "\n")
     with P["canonical"].open("w", newline="") as h:
@@ -124,6 +131,10 @@ def main() -> None:
         "tier3_total": len(TIER3_IDS), "canonical_count": len(ids),
         "calibration_count": n_cal, "analysis_count": len(ids) - n_cal,
         "excluded_count": len(excluded), "excluded": excluded,
+        "not_referenced_count": len(not_referenced), "not_referenced": not_referenced,
+        "not_referenced_note": ("Tier-3 scenarios with no reference sheet in either batch. "
+                                "Inherited from the reference construction, identical for every "
+                                "subject model; not an exclusion this model's judge made."),
         "rubric_version": RUBRIC_VERSION,
         "calibration_source": str(args.calibration), "analysis_source": str(args.analysis),
         "canonical_json_sha256": sha256_file(P["annotations"]),
@@ -134,7 +145,7 @@ def main() -> None:
     }
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps({k: manifest[k] for k in ("model_tag", "canonical_count", "calibration_count",
-                                                "analysis_count", "excluded_count")}, indent=2))
+                                                "analysis_count", "excluded_count", "not_referenced_count")}, indent=2))
     print("excluded:", [(e["scenario_id"], e["reason"]) for e in excluded])
     print(f"wrote {P['annotations']}, {P['canonical']}, {manifest_path}")
 

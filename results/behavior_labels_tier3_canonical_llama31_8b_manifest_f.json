@@ -1,0 +1,32 @@
+{
+  "model_tag": "llama31_8b",
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "tier3_total": 270,
+  "canonical_count": 258,
+  "calibration_count": 42,
+  "analysis_count": 216,
+  "excluded_count": 0,
+  "excluded": [],
+  "not_referenced_count": 12,
+  "not_referenced": [
+    226,
+    243,
+    247,
+    254,
+    277,
+    287,
+    347,
+    456,
+    457,
+    466,
+    469,
+    472
+  ],
+  "not_referenced_note": "Tier-3 scenarios with no reference sheet in either batch. Inherited from the reference construction, identical for every subject model; not an exclusion this model's judge made.",
+  "rubric_version": "ci-disclosure-v1.3.0",
+  "calibration_source": "results/behavior_annotations_llama31_8b_calib_f.json",
+  "analysis_source": "results/behavior_annotations_llama31_8b_analysis_f.json",
+  "canonical_json_sha256": "8ee471b01c796ad8878b8f9f64feff1dccee2b11f5f79b2827eb6541f261e7b4",
+  "canonical_csv_sha256": "53bab4607d01f42217cf42dca82743b484ce48059b075c3ab295690bb95772f7",
+  "methodology_note": "Calibration references are human-verified; analysis references are machine-drafted and adjudicated but unverified (same limitation as Qwen). Exclusions are judge-determined; no manual adjudication was applied."
+}

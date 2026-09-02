@@ -1,0 +1,37 @@
+{
+  "model_tag": "llama31_8b",
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "n_blocks": 32,
+  "hidden": 4096,
+  "reported_layers": [
+    11,
+    17,
+    23,
+    27,
+    32
+  ],
+  "primary_reported_layer": 23,
+  "primary_block": 22,
+  "depth_fraction": 0.71875,
+  "decoding": {
+    "greedy": true,
+    "max_new_tokens": 512,
+    "chat_template": true,
+    "add_generation_prompt": true
+  },
+  "supports_system_role": true,
+  "n_scenarios": 270,
+  "smoke_n": 0,
+  "output": "results/responses_llama31_8b_f.csv",
+  "output_sha256": "dfd23fb55f23cfb538f9b9244fa609ddb98de0495286d9906da965307859364f",
+  "elapsed_seconds": 1298.3642046451569,
+  "torch_version": "2.7.0",
+  "transformers_version": "5.16.1",
+  "cuda_device": "NVIDIA A100-SXM4-40GB",
+  "model_commit_hash": "0e9e39f249a16976918f6564b8830bc894c89659",
+  "response_chars": {
+    "median": 698.0,
+    "min": 259,
+    "max": 1710
+  }
+}
