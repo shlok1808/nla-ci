@@ -200,17 +200,39 @@ class Features:
         logits_X = np.column_stack(
             [b[k][src, position_index] for k in ("next_token_entropy", "next_token_top1", "next_token_top5_mass")]
         ).astype(np.float64)
+        # Step-2-comparable baselines: the SCENARIO ALONE, with no visible
+        # prefix and no position/length features. The registered Step 3 text
+        # family is deliberately stricter (it carries prefix position and
+        # length, which are strong here), so a Step-2 number computed against
+        # it is not comparable to the published Step 2 delta. These two
+        # channels reproduce Step 2's baseline exactly and are only meaningful
+        # at prompt_final, where no prefix exists.
+        scen_tfidf = pd.DataFrame({"text": self.rows.scenario.tolist()})
         return {
             "tfidf": text_frame,
             "embed": embed_X,
             "position": numeric.to_numpy(dtype=np.float64),
             "logits": logits_X,
+            "tfidf_scenario_only": scen_tfidf,
+            "embed_scenario_only": self.scenario_emb,
             "prefixes": prefixes,
         }
 
 
+def tfidf_text_only_pipe(C=1.0):
+    """Step-2's baseline exactly: TF-IDF 1-2 grams on the scenario, nothing else."""
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
+    return Pipeline([
+        ("tf", TfidfVectorizer(ngram_range=(1, 2), min_df=2, sublinear_tf=True)),
+        ("clf", LogisticRegression(C=C, class_weight="balanced", solver="liblinear", max_iter=5000)),
+    ])
+
+
 CHANNEL_FACTORIES = {
     "acts": dense_pipe, "tfidf": tfidf_pipe, "embed": dense_pipe, "position": dense_pipe, "logits": dense_pipe,
+    "tfidf_scenario_only": tfidf_text_only_pipe, "embed_scenario_only": dense_pipe,
 }
 
 
@@ -320,7 +342,9 @@ def run_primary(args, bundle, manifest, rows, n_repeats, n_boot, n_perm):
     reader = load_reader_scores(args.reader_scores, prim.scenario_id.to_numpy(), cells)
 
     channels = ["acts", "tfidf", "embed", "position", "logits"]
+    step2_channels = ["tfidf_scenario_only", "embed_scenario_only"]
     S = {ch: np.full((len(cells), n_repeats, len(y)), np.nan) for ch in channels}
+    S2 = {ch: np.full((1, n_repeats, len(y)), np.nan) for ch in step2_channels}
     fold_ids = np.full((n_repeats, len(y)), -1, dtype=np.int8)
     selected_C: dict[str, list] = {}
     prefix_char_len = np.zeros((len(cells), len(y)))
@@ -331,11 +355,17 @@ def run_primary(args, bundle, manifest, rows, n_repeats, n_boot, n_perm):
             "acts": bundle["activations"][src, layer_idx, pi].astype(np.float64),
             "tfidf": F["tfidf"], "embed": F["embed"], "position": F["position"], "logits": F["logits"],
         }
+        if cell == "prompt_final":   # Step-2-comparable arm; no prefix exists here
+            X["tfidf_scenario_only"] = F["tfidf_scenario_only"].text
+            X["embed_scenario_only"] = F["embed_scenario_only"]
         if not np.isfinite(X["acts"]).all() or not np.isfinite(X["logits"]).all():
             raise ValueError(f"non-finite features at {cell}")
         out = fit_cell(X, y, n_repeats, fold_ids, args.n_jobs, selected_C)
         for ch in channels:
             S[ch][ci] = out[ch]
+        for ch in step2_channels:
+            if ch in out:
+                S2[ch][0] = out[ch]
         print(f"fit {cell}", flush=True)
     if (fold_ids < 0).any() or any(np.isnan(v).any() for v in S.values()):
         raise RuntimeError("incomplete OOF state")
@@ -353,6 +383,22 @@ def run_primary(args, bundle, manifest, rows, n_repeats, n_boot, n_perm):
     primary = paired_inference(S["acts"], S[stronger], fold_ids, y, n_boot, n_perm, cells=offset_cells)
     vs = {ch: _strip(paired_inference(S["acts"], S[ch], fold_ids, y, n_boot, n_perm, cells=offset_cells))
           for ch in S if ch != "acts"}
+
+    # Step-2-comparable replication at prompt_final: activations vs the
+    # scenario-only baseline family, i.e. the exact comparison Step 2 published.
+    step2 = None
+    if not np.isnan(S2["tfidf_scenario_only"]).any():
+        s2_roc = {ch: float(PairedFoldAUC(S2[ch], fold_ids, y).weighted(np.ones((1, len(y)))).mean())
+                  for ch in step2_channels}
+        s2_stronger = max(step2_channels, key=lambda ch: s2_roc[ch])
+        s2_inf = paired_inference(S["acts"][[0]], S2[s2_stronger], fold_ids, y, n_boot, n_perm)
+        step2 = {"cell": "prompt_final", "roc_acts": float(pf_roc["acts"]),
+                 "roc_scenario_tfidf": s2_roc["tfidf_scenario_only"],
+                 "roc_scenario_embed": s2_roc["embed_scenario_only"],
+                 "stronger_scenario_baseline": s2_stronger, **_strip(s2_inf),
+                 "note": ("Reproduces the Step 2 comparison exactly: scenario text only, no "
+                          "visible prefix and no position/length features. Comparable to the "
+                          "published Step 2 delta; the registered Step 3 family is stricter.")}
 
     last = [len(cells) - 1]                                    # offset_-1
     secondaries = {
@@ -406,6 +452,7 @@ def run_primary(args, bundle, manifest, rows, n_repeats, n_boot, n_perm):
                     "supported": bool(supported)},
         "delta_vs_each_channel": vs,
         "registered_secondaries": secondaries,
+        "step2_comparable_prompt_final": step2,
         "selected_C": {ch: {str(c): int(v.count(c)) for c in sorted(set(v))} for ch, v in selected_C.items()},
         "n_repeats": n_repeats, "outer_folds": N_OUTER, "inner_folds": N_INNER,
         "embed_model": EMBED_MODEL,
@@ -429,9 +476,11 @@ def run_primary(args, bundle, manifest, rows, n_repeats, n_boot, n_perm):
         scenario_ids=prim.scenario_id.to_numpy(dtype=np.int32), y=y.astype(np.int8),
         cells=np.asarray(cells), fold_ids=fold_ids,
         **{f"scores_{ch}": S[ch] for ch in S},
+        **{f"scores_{ch}": S2[ch] for ch in S2},
     )
     print(json.dumps({"n": len(y), "stronger": stronger, "window_roc": window_roc,
-                      "primary": _strip(primary), "secondaries": secondaries}, indent=2))
+                      "primary": _strip(primary), "secondaries": secondaries,
+                      "step2_comparable_prompt_final": step2}, indent=2))
 
 
 # ── descriptive grid ────────────────────────────────────────────────────────
