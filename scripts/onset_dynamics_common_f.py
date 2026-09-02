@@ -75,6 +75,21 @@ TIER3 = Path("data/tier_3.txt")
 STEP2_ACTS = Path("results/activations_layer20.npz") if ACTIVE_TAG == _registry.DEFAULT_TAG else Path("results/__no_step2_store__.npz")
 HAS_STEP2_CROSSCHECK = ACTIVE_TAG == _registry.DEFAULT_TAG
 
+# Population sizes. Qwen's are the registered constants; a second model has its
+# own judge-determined exclusions, so its counts are read from the canonical
+# manifest written by consolidate_second_model_labels_f.py.
+if ACTIVE_TAG == _registry.DEFAULT_TAG:
+    EXPECTED_CANONICAL_N, EXPECTED_ANALYSIS_N, EXPECTED_CALIBRATION_N = 258, 216, 42
+else:
+    _man = CANONICAL.with_name(CANONICAL.stem.replace("_f", "") + "_manifest_f.json")
+    if _man.exists():
+        _m = json.loads(_man.read_text())
+        EXPECTED_CANONICAL_N = int(_m["canonical_count"])
+        EXPECTED_ANALYSIS_N = int(_m["analysis_count"])
+        EXPECTED_CALIBRATION_N = int(_m["calibration_count"])
+    else:  # labels not built yet; loaders below will fail loudly on the file itself
+        EXPECTED_CANONICAL_N = EXPECTED_ANALYSIS_N = EXPECTED_CALIBRATION_N = -1
+
 
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
@@ -123,7 +138,7 @@ def _load_tier3_dialogue(path: Path = TIER3) -> pd.DataFrame:
 
 
 def load_step3_rows() -> pd.DataFrame:
-    """Return exactly the 258 canonical rows with response and onset metadata.
+    """Return exactly the canonical rows with response and onset metadata.
 
     The tier-3 parse is joined by positional ID and then *verified* against the
     benchmark scenario text, so a re-downloaded or re-ordered data/tier_3.txt
@@ -134,12 +149,12 @@ def load_step3_rows() -> pd.DataFrame:
     bench = pd.read_csv(BENCHMARK)[["scenario_id", "scenario", "response"]]
     dialogue = _load_tier3_dialogue()
 
-    if len(canon) != 258 or canon.scenario_id.nunique() != 258:
-        raise ValueError("canonical input must contain 258 unique scenario IDs")
+    if len(canon) != EXPECTED_CANONICAL_N or canon.scenario_id.nunique() != EXPECTED_CANONICAL_N:
+        raise ValueError(f"canonical input must contain {EXPECTED_CANONICAL_N} unique scenario IDs")
     if set(canon.population) != {"analysis", "calibration"}:
         raise ValueError(f"unexpected populations: {sorted(set(canon.population))}")
-    if int((canon.population == "analysis").sum()) != 216:
-        raise ValueError("canonical input must contain 216 analysis rows")
+    if int((canon.population == "analysis").sum()) != EXPECTED_ANALYSIS_N:
+        raise ValueError(f"canonical input must contain {EXPECTED_ANALYSIS_N} analysis rows")
 
     rows = canon.merge(
         align[

@@ -31,6 +31,8 @@ import pandas as pd
 
 import model_registry_f as _registry
 from onset_dynamics_common_f import (
+    EXPECTED_ANALYSIS_N,
+    EXPECTED_CANONICAL_N,
     SPEC,
     BLOCK_INDICES,
     HAS_STEP2_CROSSCHECK,
@@ -498,8 +500,8 @@ def main() -> None:
 
     rows = load_step3_rows()
     ids = bundle["scenario_ids"].astype(int)
-    if len(ids) != 258 or len(set(ids)) != 258:
-        raise ValueError("production analysis requires exactly 258 unique extracted IDs")
+    if len(ids) != EXPECTED_CANONICAL_N or len(set(ids)) != EXPECTED_CANONICAL_N:
+        raise ValueError(f"production analysis requires exactly {EXPECTED_CANONICAL_N} unique extracted IDs")
     missing = set(rows.scenario_id.astype(int)) - set(ids)
     if missing:
         raise ValueError(f"bundle is missing canonical IDs: {sorted(missing)}")

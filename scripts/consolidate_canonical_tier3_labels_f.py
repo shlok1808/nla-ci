@@ -27,6 +27,12 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parent))
 import model_registry_f as _registry
 _SPEC = _registry.get(_os.environ.get("NLA_MODEL_TAG"))
 _P = _registry.paths(_SPEC)
+if _SPEC.tag != _registry.DEFAULT_TAG:
+    raise SystemExit(
+        "This script encodes the Qwen annotation history (v1.2 calibration, v1.3 failure "
+        "replacements, manual adjudications for specific IDs). It must not consolidate "
+        "another model's labels. Use scripts/consolidate_second_model_labels_f.py."
+    )
 
 BENCHMARK = _P["responses"]
 CAL_OUT = RESULTS / "behavior_annotations_sol_calibration_adjudicated_f.json"

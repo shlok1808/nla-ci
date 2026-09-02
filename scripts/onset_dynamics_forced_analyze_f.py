@@ -23,6 +23,8 @@ import pandas as pd
 
 import model_registry_f as _registry
 from onset_dynamics_common_f import (
+    EXPECTED_ANALYSIS_N,
+    EXPECTED_CANONICAL_N,
     SPEC,
     limiting_labels,
     load_step3_rows,
@@ -82,8 +84,8 @@ def main():
 
     rows = load_step3_rows()
     ids = z["scenario_ids"].astype(int)
-    if len(ids) != 258 or len(set(ids)) != 258:
-        raise ValueError("production forced-prefix analysis requires 258 unique IDs")
+    if len(ids) != EXPECTED_CANONICAL_N or len(set(ids)) != EXPECTED_CANONICAL_N:
+        raise ValueError(f"production forced-prefix analysis requires {EXPECTED_CANONICAL_N} unique IDs")
     lookup = {sid: i for i, sid in enumerate(ids)}
     primary = rows.loc[primary_mask(rows)].reset_index(drop=True)
     y = limiting_labels(primary)

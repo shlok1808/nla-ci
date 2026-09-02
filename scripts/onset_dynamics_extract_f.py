@@ -39,6 +39,8 @@ import numpy as np
 
 import model_registry_f as _registry
 from onset_dynamics_common_f import (
+    EXPECTED_ANALYSIS_N,
+    EXPECTED_CANONICAL_N,
     SPEC,
     ALIGNMENT,
     ALIGNMENT_META,
@@ -384,8 +386,8 @@ def main() -> None:
                 save_fullseq(args.fullseq, fs, config_key, compress=False)
             print(f"checkpoint: {len(done)}/{len(rows)}  step2 cos={cos:.4f}  {time.time()-started:.0f}s", flush=True)
 
-    if not smoke and len(state["scenario_ids"]) != 258:
-        raise RuntimeError(f"production extraction ended with {len(state['scenario_ids'])} scenarios, expected 258")
+    if not smoke and len(state["scenario_ids"]) != EXPECTED_CANONICAL_N:
+        raise RuntimeError(f"production extraction ended with {len(state['scenario_ids'])} scenarios, expected {EXPECTED_CANONICAL_N}")
     save_checkpoint(args.output, state, config_key, compress=True)
     if fs is not None:
         save_fullseq(args.fullseq, fs, config_key, compress=True)
@@ -399,7 +401,7 @@ def main() -> None:
         **config,
         "status": "complete",
         "n_scenarios": len(state["scenario_ids"]),
-        "n_analysis_expected": 216 if not smoke else None,
+        "n_analysis_expected": EXPECTED_ANALYSIS_N if not smoke else None,
         "output": str(args.output),
         "output_sha256": sha256_file(args.output),
         "fullseq": str(args.fullseq) if fs is not None else None,
