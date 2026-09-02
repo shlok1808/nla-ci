@@ -37,7 +37,9 @@ from pathlib import Path
 
 import numpy as np
 
+import model_registry_f as _registry
 from onset_dynamics_common_f import (
+    SPEC,
     ALIGNMENT,
     ALIGNMENT_META,
     ALL_OFFSETS,
@@ -49,6 +51,7 @@ from onset_dynamics_common_f import (
     MODEL_ID,
     POSITION_NAMES,
     POSITION_SEMANTICS,
+    HAS_STEP2_CROSSCHECK,
     PRIMARY_BLOCK,
     REVIEW_EXCLUDED_IDS,
     REPORTED_LAYERS,
@@ -61,11 +64,13 @@ from onset_dynamics_common_f import (
     sha256_file,
 )
 
+_P = _registry.paths(SPEC)
+
 THIS_SCRIPT = Path(__file__)
 COMMON_SCRIPT = Path(__file__).with_name("onset_dynamics_common_f.py")
-CUE_REVIEW = Path("results/onset_cue_audit_review_f.json")
-CUE_CANDIDATES = Path("results/onset_cue_audit_candidates_f.csv")
-CUE_SHEET = Path("results/onset_cue_audit_sheet_f.csv")
+CUE_REVIEW = _P["cue_review"]
+CUE_CANDIDATES = Path("results/" + SPEC.suffix("onset_cue_audit_candidates", "csv"))
+CUE_SHEET = _P["cue_sheet"]
 
 CELL_KEYS = (
     "scenario_ids", "activations", "absolute_indices", "response_indices", "valid",
@@ -76,9 +81,9 @@ CELL_KEYS = (
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--output", type=Path, default=Path("results/onset_dynamics_acts_f.npz"))
-    p.add_argument("--manifest", type=Path, default=Path("results/onset_dynamics_manifest_f.json"))
-    p.add_argument("--fullseq", type=Path, default=Path("results/onset_dynamics_fullseq_f.npz"),
+    p.add_argument("--output", type=Path, default=_P["acts"])
+    p.add_argument("--manifest", type=Path, default=_P["manifest"])
+    p.add_argument("--fullseq", type=Path, default=_P["fullseq"],
                    help="exploratory bf16-exact dump of every response position at all five layers")
     p.add_argument("--no-fullseq", action="store_true")
     p.add_argument("--model", default=MODEL_ID)
@@ -333,7 +338,7 @@ def main() -> None:
     done = set(int(x) for x in state["scenario_ids"])
 
     old = None
-    if STEP2_ACTS.exists():
+    if HAS_STEP2_CROSSCHECK and STEP2_ACTS.exists():
         z = np.load(STEP2_ACTS, allow_pickle=True)
         old = {int(s): z["activations"][i] for i, s in enumerate(z["scenario_ids"])}
     layer20 = list(BLOCK_INDICES).index(PRIMARY_BLOCK)

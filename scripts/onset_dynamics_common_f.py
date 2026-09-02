@@ -18,19 +18,29 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
+
+import model_registry_f as _registry
 
 import numpy as np
 import pandas as pd
 
-MODEL_ID = "Qwen/Qwen2.5-7B-Instruct"
-BLOCK_INDICES = (9, 14, 19, 23, 27)
-REPORTED_LAYERS = tuple(i + 1 for i in BLOCK_INDICES)
-PRIMARY_REPORTED_LAYER = 20
-PRIMARY_BLOCK = PRIMARY_REPORTED_LAYER - 1
-EXPECTED_BLOCKS = 28
-EXPECTED_HIDDEN = 3584
+# Active subject model. Defaults to the registered Qwen configuration, so an
+# unset environment reproduces every frozen constant exactly; a second model is
+# selected with NLA_MODEL_TAG=<tag> and gets suffixed artifact paths.
+ACTIVE_TAG = os.environ.get("NLA_MODEL_TAG", _registry.DEFAULT_TAG)
+SPEC = _registry.get(ACTIVE_TAG)
+_PATHS = _registry.paths(SPEC)
+
+MODEL_ID = SPEC.model_id
+BLOCK_INDICES = SPEC.block_indices
+REPORTED_LAYERS = SPEC.reported_layers
+PRIMARY_REPORTED_LAYER = SPEC.primary_reported_layer
+PRIMARY_BLOCK = SPEC.primary_block
+EXPECTED_BLOCKS = SPEC.n_blocks
+EXPECTED_HIDDEN = SPEC.hidden
 
 PRIMARY_OFFSETS = tuple(range(-8, 0))
 DESCRIPTIVE_OFFSETS = (-32, -16, 0, 1, 2, 4, 8, 16)
@@ -54,12 +64,16 @@ LIMITING = frozenset({"soft_deflection", "explicit_refusal", "mixed_disclose_the
 # case; the other five affect the 258-case sensitivity population only.
 REVIEW_EXCLUDED_IDS = frozenset({286, 351, 394, 422, 437, 451})
 
-CANONICAL = Path("results/behavior_labels_tier3_canonical_f.csv")
-ALIGNMENT = Path("results/onset_alignment_f.csv")
-ALIGNMENT_META = Path("results/onset_alignment_f.json")
-BENCHMARK = Path("results/benchmark_results_bf16.csv")
+CANONICAL = _PATHS["canonical"]
+ALIGNMENT = _PATHS["alignment_csv"]
+ALIGNMENT_META = _PATHS["alignment_json"]
+BENCHMARK = _PATHS["responses"]
 TIER3 = Path("data/tier_3.txt")
-STEP2_ACTS = Path("results/activations_layer20.npz")
+# Prompt-final store from Steps 1-2, used only as an extraction cross-check.
+# It exists for the registered Qwen run; a new model has no counterpart, so the
+# check is skipped rather than faked (see extract/analyze).
+STEP2_ACTS = Path("results/activations_layer20.npz") if ACTIVE_TAG == _registry.DEFAULT_TAG else Path("results/__no_step2_store__.npz")
+HAS_STEP2_CROSSCHECK = ACTIVE_TAG == _registry.DEFAULT_TAG
 
 
 def sha256_file(path: Path) -> str:

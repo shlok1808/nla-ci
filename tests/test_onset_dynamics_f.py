@@ -375,3 +375,57 @@ def test_forced_prefixes_are_clean_and_tokenise_at_the_boundary(rows, qwen_token
             if name in FIXED_PREFIXES:
                 lengths.add((name, len(pre)))
     assert len(lengths) == len(FIXED_PREFIXES)          # fixed prefixes have one length each
+
+
+# ── multi-model registry (llama branch) ────────────────────────────────────
+
+def test_registry_qwen_entry_reproduces_frozen_constants():
+    """The default tag must be byte-identical to the registered Qwen setup, or
+    every committed result silently changes meaning."""
+    import model_registry_f as reg
+    q = reg.get("qwen25_7b")
+    assert reg.DEFAULT_TAG == "qwen25_7b"
+    assert q.model_id == "Qwen/Qwen2.5-7B-Instruct"
+    assert q.n_blocks == 28 and q.hidden == 3584
+    assert q.reported_layers == (10, 15, 20, 24, 28)
+    assert q.block_indices == (9, 14, 19, 23, 27)
+    assert q.primary_reported_layer == 20 and q.primary_block == 19
+    p = reg.paths(q)
+    assert p["responses"].name == "benchmark_results_bf16.csv"
+    assert p["canonical"].name == "behavior_labels_tier3_canonical_f.csv"
+    assert p["acts"].name == "onset_dynamics_acts_f.npz"
+
+
+def test_registry_llama_is_depth_matched_and_never_collides():
+    import model_registry_f as reg
+    q, l = reg.get("qwen25_7b"), reg.get("llama31_8b")
+    assert l.n_blocks == 32 and l.hidden == 4096
+    # same fraction of depth as the registered Qwen readout, within one block
+    assert abs(l.depth_fraction - q.depth_fraction) < 1.0 / l.n_blocks
+    assert l.primary_reported_layer == 23 and l.primary_block == 22
+    assert len(l.reported_layers) == len(q.reported_layers)
+    assert l.primary_reported_layer in l.reported_layers
+    assert all(1 <= x <= l.n_blocks for x in l.reported_layers)
+    qp, lp = reg.paths(q), reg.paths(l)
+    for k in qp:
+        assert qp[k] != lp[k], f"path collision on {k}"
+    assert "llama31_8b" in str(lp["acts"])
+
+
+def test_llama_has_no_step2_crosscheck_and_qwen_does(monkeypatch):
+    """The prompt-final cross-check gate only exists for the registered model;
+    a second model must skip it explicitly, never fake a pass."""
+    import importlib, sys
+    import model_registry_f as reg
+    monkeypatch.setenv("NLA_MODEL_TAG", "llama31_8b")
+    for m in ("onset_dynamics_common_f",):
+        sys.modules.pop(m, None)
+    c = importlib.import_module("onset_dynamics_common_f")
+    assert c.HAS_STEP2_CROSSCHECK is False
+    assert c.EXPECTED_BLOCKS == 32 and c.EXPECTED_HIDDEN == 4096
+    monkeypatch.delenv("NLA_MODEL_TAG")
+    sys.modules.pop("onset_dynamics_common_f", None)
+    c = importlib.import_module("onset_dynamics_common_f")
+    assert c.HAS_STEP2_CROSSCHECK is True
+    assert c.EXPECTED_BLOCKS == 28 and c.EXPECTED_HIDDEN == 3584
+

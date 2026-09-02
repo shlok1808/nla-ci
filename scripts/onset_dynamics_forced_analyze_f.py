@@ -21,7 +21,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from onset_dynamics_common_f import limiting_labels, load_step3_rows, primary_mask, sha256_file
+import model_registry_f as _registry
+from onset_dynamics_common_f import (
+    SPEC,
+    limiting_labels,
+    load_step3_rows,
+    primary_mask,
+    sha256_file,
+)
 from onset_dynamics_stats_f import (
     BASE_SEED,
     MIN_CLASS,
@@ -33,12 +40,14 @@ from onset_dynamics_stats_f import (
     stratified_draws,
 )
 
+_P = _registry.paths(SPEC)
+
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--bundle", type=Path, default=Path("results/onset_dynamics_forced_acts_f.npz"))
-    p.add_argument("--manifest", type=Path, default=Path("results/onset_dynamics_forced_manifest_f.json"))
-    p.add_argument("--out-dir", type=Path, default=Path("results/paper_pipeline/03_onset_dynamics"))
+    p.add_argument("--bundle", type=Path, default=_P["forced_acts"])
+    p.add_argument("--manifest", type=Path, default=_P["forced_manifest"])
+    p.add_argument("--out-dir", type=Path, default=_P["out_dir"])
     p.add_argument("--quick", action="store_true")
     p.add_argument("--n-jobs", type=int, default=4)
     return p.parse_args()

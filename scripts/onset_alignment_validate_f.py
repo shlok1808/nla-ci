@@ -28,19 +28,30 @@ Usage:  python3 scripts/onset_alignment_validate_f.py
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
-CANONICAL = Path("results/behavior_labels_tier3_canonical_f.csv")
-ANNOTATIONS = Path("results/behavior_annotations_sol_tier3_canonical_f.json")
-BENCH = Path("results/benchmark_results_bf16.csv")
-OUT_CSV = Path("results/onset_alignment_f.csv")
-OUT_JSON = Path("results/onset_alignment_f.json")
+# Model-aware: NLA_MODEL_TAG selects the subject model; unset reproduces the
+# registered Qwen paths and tokenizer exactly.
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+import model_registry_f as _registry
 
-MODEL = "Qwen/Qwen2.5-7B-Instruct"
+_TAG = os.environ.get("NLA_MODEL_TAG", _registry.DEFAULT_TAG)
+_SPEC = _registry.get(_TAG)
+_P = _registry.paths(_SPEC)
+
+CANONICAL = _P["canonical"]
+ANNOTATIONS = _P["annotations"]
+BENCH = _P["responses"]
+OUT_CSV = _P["alignment_csv"]
+OUT_JSON = _P["alignment_json"]
+
+MODEL = _SPEC.model_id
 LIMITING = {"soft_deflection", "explicit_refusal", "mixed_disclose_then_limit"}
 MIXED = "mixed_disclose_then_limit"
 WINDOWS = [4, 8, 16, 32]          # candidate pre-cutoff windows, in tokens
@@ -164,7 +175,10 @@ def main():
           f"cutoff-position AUC {auc_cut:.3f}")
 
     # ── E: prompt template reproducibility ───────────────────────────────────
-    src = Path("scripts/extract_activations.py").read_text()
+    template_src = Path("scripts/extract_activations.py")
+    if not template_src.exists() or _TAG != _registry.DEFAULT_TAG:
+        template_src = Path("scripts/generate_responses_f.py")
+    src = template_src.read_text()
     uses_chat_template = "apply_chat_template" in src
     add_gen = "add_generation_prompt=True" in src.replace(" ", "")
     check("extraction script uses apply_chat_template with add_generation_prompt",

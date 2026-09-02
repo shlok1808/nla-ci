@@ -29,8 +29,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import model_registry_f as _registry
 from onset_dynamics_common_f import (
+    SPEC,
     BLOCK_INDICES,
+    HAS_STEP2_CROSSCHECK,
     MODEL_ID,
     POSITION_NAMES,
     PRIMARY_BLOCK,
@@ -45,6 +48,8 @@ from onset_dynamics_common_f import (
     sha256_file,
     visible_prefix,
 )
+
+_P = _registry.paths(SPEC)
 from onset_dynamics_stats_f import (
     BASE_SEED,
     MIN_CLASS,
@@ -61,9 +66,9 @@ from onset_dynamics_stats_f import (
     tfidf_pipe,
 )
 
-DEFAULT_BUNDLE = Path("results/onset_dynamics_acts_f.npz")
-DEFAULT_MANIFEST = Path("results/onset_dynamics_manifest_f.json")
-OUT_DIR = Path("results/paper_pipeline/03_onset_dynamics")
+DEFAULT_BUNDLE = _P["acts"]
+DEFAULT_MANIFEST = _P["manifest"]
+OUT_DIR = _P["out_dir"]
 EMBED_MODEL = "all-MiniLM-L6-v2"
 TEXT_FAMILY = ("tfidf", "embed")          # registered baseline family (as in Step 2)
 CROSSCHECK_MIN_COS = 0.98
@@ -112,7 +117,13 @@ def validate_bundle(bundle, manifest, bundle_path: Path, allow_source_drift: boo
 
 
 def crosscheck_step2(bundle, allow_fail: bool) -> dict:
-    """prompt_final layer-20 must reproduce the Step 1/2 prompt-only store."""
+    """prompt_final at the primary layer must reproduce the Step 1/2 store.
+
+    Only the registered Qwen run has such a store; for any other subject model
+    there is nothing to compare against and the check is skipped explicitly
+    rather than silently passing."""
+    if not HAS_STEP2_CROSSCHECK:
+        return {"status": "not_applicable", "reason": "no Step 1/2 store for this model"}
     if not STEP2_ACTS.exists():
         return {"status": "skipped", "reason": "store not found"}
     z = np.load(STEP2_ACTS, allow_pickle=True)

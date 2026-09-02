@@ -28,7 +28,9 @@ from pathlib import Path
 
 import numpy as np
 
+import model_registry_f as _registry
 from onset_dynamics_common_f import (
+    SPEC,
     BENCHMARK,
     CANONICAL,
     EXPECTED_BLOCKS,
@@ -41,6 +43,8 @@ from onset_dynamics_common_f import (
     load_step3_rows,
     sha256_file,
 )
+
+_P = _registry.paths(SPEC)
 
 FIXED_PREFIXES = {
     "well": "Well,",
@@ -59,8 +63,8 @@ def render_prefix(name: str, row) -> str:
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--output", type=Path, default=Path("results/onset_dynamics_forced_acts_f.npz"))
-    p.add_argument("--manifest", type=Path, default=Path("results/onset_dynamics_forced_manifest_f.json"))
+    p.add_argument("--output", type=Path, default=_P["forced_acts"])
+    p.add_argument("--manifest", type=Path, default=_P["forced_manifest"])
     p.add_argument("--model", default=MODEL_ID)
     p.add_argument("--revision", default="main")
     p.add_argument("--attn", default="sdpa")
@@ -91,7 +95,10 @@ def load_model(model_id, revision, attn):
     model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
     model.eval()
     if len(model.model.layers) != EXPECTED_BLOCKS or model.config.hidden_size != EXPECTED_HIDDEN:
-        raise RuntimeError("unexpected Qwen architecture")
+        raise RuntimeError(
+            f"architecture mismatch for {model_id}: {len(model.model.layers)} blocks / "
+            f"hidden {model.config.hidden_size}; registry expects {EXPECTED_BLOCKS} / {EXPECTED_HIDDEN}"
+        )
     return model, tok
 
 

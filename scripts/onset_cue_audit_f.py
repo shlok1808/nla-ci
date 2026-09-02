@@ -46,18 +46,23 @@ from pathlib import Path
 import pandas as pd
 
 from onset_dynamics_common_f import (
+    ALIGNMENT,
     LIMITING,
     PRIMARY_OFFSETS,
     REVIEW_EXCLUDED_IDS,
+    SPEC,
     load_step3_rows,
     sha256_file,
 )
+import model_registry_f as _registry
 
-ANNOTATIONS = Path("results/behavior_annotations_sol_tier3_canonical_f.json")
-OUT = Path("results/onset_cue_audit_candidates_f.csv")
-SHEET = Path("results/onset_cue_audit_sheet_f.csv")
-SUMMARY = Path("results/onset_cue_audit_f.json")
-REVIEW = Path("results/onset_cue_audit_review_f.json")
+_P = _registry.paths(SPEC)
+_sfx = SPEC.suffix
+ANNOTATIONS = _P["annotations"]
+OUT = Path("results/" + _sfx("onset_cue_audit_candidates", "csv"))
+SHEET = _P["cue_sheet"]
+SUMMARY = Path("results/" + _sfx("onset_cue_audit", "json"))
+REVIEW = _P["cue_review"]
 DISPOSITIONS = {"ok", "earlier_cue", "unsure"}
 
 # Deliberately broad. False positives are cheaper than a leaked primary window.
@@ -102,7 +107,7 @@ def screen() -> None:
     raw = json.loads(ANNOTATIONS.read_text())
     ann = {int(x["scenario_id"]): x["annotation"] for x in raw}
     rows = load_step3_rows()
-    align = pd.read_csv("results/onset_alignment_f.csv").set_index("scenario_id")
+    align = pd.read_csv(ALIGNMENT).set_index("scenario_id")
     candidates, sheet = [], []
     limiting_rows = 0
     for row in rows.itertuples(index=False):
